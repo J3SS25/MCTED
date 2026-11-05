@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#1B4332"/>
+  <!-- Wrench icon -->
+  <path d="M38 10a12 12 0 0 0-11.5 15.5L12 40a4.24 4.24 0 0 0 6 6l14.5-14.5A12 12 0 0 0 48 20c0-.9-.1-1.8-.3-2.7l-5.6 5.6-4-1-1-4 5.6-5.6C41.8 12.1 40 10 38 10z" fill="#D4A017" stroke="#D4A017" stroke-width="0.5"/>
+  <!-- Small gear circle -->
+  <circle cx="47" cy="45" r="8" stroke="#6EE7B7" stroke-width="2.5" fill="none"/>
+  <circle cx="47" cy="45" r="2.5" fill="#6EE7B7"/>
+  <line x1="47" y1="37" x2="47" y2="34" stroke="#6EE7B7" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="47" y1="53" x2="47" y2="56" stroke="#6EE7B7" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="39" y1="45" x2="36" y2="45" stroke="#6EE7B7" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="55" y1="45" x2="58" y2="45" stroke="#6EE7B7" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
+

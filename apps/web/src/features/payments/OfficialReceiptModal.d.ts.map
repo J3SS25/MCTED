@@ -1,0 +1,1 @@
+{"version":3,"file":"OfficialReceiptModal.d.ts","sourceRoot":"","sources":["OfficialReceiptModal.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,OAAO,CAAC;AAO1B,UAAU,yBAAyB;IACjC,MAAM,EAAE,OAAO,CAAC;IAChB,OAAO,EAAE,MAAM,IAAI,CAAC;IACpB,OAAO,EAAE,GAAG,CAAC;CACd;AAED,wBAAgB,oBAAoB,CAAC,EAAE,MAAM,EAAE,OAAO,EAAE,OAAO,EAAE,EAAE,yBAAyB,4BA4F3F"}
