@@ -115,6 +115,45 @@ export class PaymentsRepository {
     return (stmt.get(input.status, verifierId, id) as Payment) || null;
   }
 
+  static createMockPayment(userId: string, data: {
+    reservation_id?: string;
+    rental_id?: string;
+    tool_id?: string;
+    amount_centavos: number;
+    payment_method: string;
+    account_number?: string;
+  }): PaymentWithDetails {
+    const id = generateUUID();
+    const cleanMethod = data.payment_method.toUpperCase().replace(/\s+/g, '');
+    const year = new Date().getFullYear();
+    const receiptRef = `BASCO-${cleanMethod}-${year}-${Math.floor(100000 + Math.random() * 900000)}`;
+    const gatewayRef = `SIM-${cleanMethod.substring(0, 4)}-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const paidAt = new Date().toISOString();
+
+    const stmt = db.prepare(`
+      INSERT INTO payments (
+        id, receipt_reference, user_id, reservation_id, rental_id, tool_id,
+        amount_centavos, payment_method, status, gateway_reference, paid_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Paid', ?, ?)
+    `);
+
+    stmt.run(
+      id,
+      receiptRef,
+      userId,
+      data.reservation_id ?? null,
+      data.rental_id ?? null,
+      data.tool_id ?? null,
+      data.amount_centavos,
+      data.payment_method,
+      gatewayRef,
+      paidAt,
+    );
+
+    return this.findById(id)!;
+  }
+
   static generateReceiptReference(): string {
     const year = new Date().getFullYear();
     const randomSuffix = Math.floor(100000 + Math.random() * 900000);

@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { UsersService } from './users.service.js';
 import { UpdateProfileSchema, UpdateUserStatusSchema, UpdateUserRoleSchema } from '@mcteb/shared';
 import { AppError } from '../../utils/errors.js';
+import { saveUploadFile } from '../../utils/fileStorage.js';
 
 export class UsersController {
   static list(req: Request, res: Response, next: NextFunction): void {
@@ -78,6 +79,32 @@ export class UsersController {
 
       const validated = UpdateUserRoleSchema.parse(req.body);
       const user = UsersService.updateUserRole(id, validated, {
+        id: req.user.id,
+        name: req.user.full_name,
+      });
+
+      res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static uploadAvatar(req: Request, res: Response, next: NextFunction): void {
+    try {
+      if (!req.user) throw AppError.unauthorized();
+      const id = (req.params['id'] as string) || req.user.id;
+
+      if (req.user.role !== 'Administrator' && req.user.role !== 'Admin' && req.user.id !== id) {
+        throw AppError.forbidden('You can only update your own profile picture');
+      }
+
+      const avatarData = req.body.avatar_url || req.body.profile_picture_url || req.body.image;
+      if (!avatarData) {
+        throw AppError.badRequest('Avatar image data is required');
+      }
+
+      const savedUrl = saveUploadFile(avatarData, 'avatars');
+      const user = UsersService.updateAvatar(id, savedUrl, {
         id: req.user.id,
         name: req.user.full_name,
       });

@@ -8,8 +8,9 @@ export const toolsRouter = Router();
 toolsRouter.get('/', ToolsController.list);
 toolsRouter.get('/:id', ToolsController.getById);
 
-// Staff and Admin inventory management
-toolsRouter.post('/', requireAuth, requireRole('Municipal Staff', 'Administrator'), ToolsController.create);
-toolsRouter.patch('/:id', requireAuth, requireRole('Municipal Staff', 'Administrator'), ToolsController.update);
-toolsRouter.post('/:id/archive', requireAuth, requireRole('Municipal Staff', 'Administrator'), ToolsController.archive);
+// Tool / Equipment listings (Borrowers, Lenders, Staff, and Admins can create)
+toolsRouter.post('/', requireAuth, ToolsController.create);
+toolsRouter.patch('/:id', requireAuth, ToolsController.update);
+toolsRouter.delete('/:id', requireAuth, ToolsController.delete);
+toolsRouter.post('/:id/archive', requireAuth, requireRole('Municipal Staff', 'Staff', 'Administrator', 'Admin'), ToolsController.archive);
 

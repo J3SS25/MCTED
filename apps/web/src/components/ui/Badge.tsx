@@ -11,47 +11,48 @@ export function Badge({ className, status, variant, children, ...props }: BadgeP
   let computedVariant: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = variant || 'neutral';
 
   if (status) {
-    switch (status) {
-      case 'Available':
-      case 'Active':
-      case 'Approved':
-      case 'Paid':
-      case 'Completed':
-      case 'Excellent':
+    const s = status.toLowerCase();
+    switch (s) {
+      case 'available':
+      case 'active':
+      case 'approved':
+      case 'paid':
+      case 'completed':
+      case 'excellent':
       case 'success':
         computedVariant = 'success';
         break;
-      case 'Pending':
-      case 'Pending Verification':
-      case 'Reserved':
-      case 'Good':
-      case 'Scheduled':
+      case 'pending':
+      case 'pending verification':
+      case 'reserved':
+      case 'good':
+      case 'scheduled':
       case 'warning':
         computedVariant = 'warning';
         break;
-      case 'Borrowed':
-      case 'In Progress':
-      case 'Fair':
+      case 'borrowed':
+      case 'in progress':
+      case 'fair':
       case 'info':
         computedVariant = 'info';
         break;
-      case 'Rejected':
-      case 'Cancelled':
-      case 'Failed':
-      case 'Suspended':
-      case 'Damaged':
-      case 'Needs Repair':
-      case 'Severe':
-      case 'Critical':
+      case 'rejected':
+      case 'cancelled':
+      case 'failed':
+      case 'suspended':
+      case 'damaged':
+      case 'needs repair':
+      case 'severe':
+      case 'critical':
       case 'danger':
         computedVariant = 'danger';
         break;
-      case 'Returned':
-      case 'Archived':
-      case 'Decommissioned':
-      case 'Under Maintenance':
-      case 'Moderate':
-      case 'Minor':
+      case 'returned':
+      case 'archived':
+      case 'decommissioned':
+      case 'under maintenance':
+      case 'moderate':
+      case 'minor':
       default:
         computedVariant = 'neutral';
         break;

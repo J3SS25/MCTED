@@ -12,4 +12,6 @@ export * from './schemas/maintenance.js';
 export * from './schemas/feedback.js';
 export * from './schemas/notification.js';
 export * from './schemas/audit.js';
+export * from './schemas/wishlist.js';
+export * from './schemas/borrowRequest.js';
 

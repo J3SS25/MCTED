@@ -15,6 +15,10 @@ usersRouter.get('/:id', UsersController.getById);
 // Update profile
 usersRouter.patch('/:id/profile', UsersController.updateProfile);
 
+// Upload profile picture / avatar
+usersRouter.post('/:id/avatar', UsersController.uploadAvatar);
+usersRouter.post('/me/avatar', UsersController.uploadAvatar);
+
 // Admin-only account status and role management
 usersRouter.patch('/:id/status', requireRole('Administrator'), UsersController.updateStatus);
 usersRouter.patch('/:id/role', requireRole('Administrator'), UsersController.updateRole);

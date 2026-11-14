@@ -3,6 +3,7 @@ import { ToolAvailabilityStatusSchema, ToolConditionStatusSchema } from '../enum
 
 export const ToolSchema = z.object({
   id: z.string().uuid(),
+  user_id: z.string().uuid().nullable().optional(),
   name: z.string().min(2).max(150),
   category: z.string().min(2).max(50),
   description: z.string().min(5),
@@ -10,7 +11,9 @@ export const ToolSchema = z.object({
   availability_status: ToolAvailabilityStatusSchema,
   condition_status: ToolConditionStatusSchema,
   rental_fee_centavos: z.number().int().nonnegative(),
+  daily_rate_centavos: z.number().int().nonnegative().optional(),
   deposit_fee_centavos: z.number().int().nonnegative(),
+  discount_percentage: z.number().int().min(0).max(100).default(0),
   total_quantity: z.number().int().positive(),
   available_quantity: z.number().int().nonnegative(),
   serial_number: z.string().nullable().optional(),
@@ -22,6 +25,7 @@ export const ToolSchema = z.object({
 export type Tool = z.infer<typeof ToolSchema>;
 
 export const CreateToolSchema = z.object({
+  user_id: z.string().uuid().optional(),
   name: z.string().min(2).max(150),
   category: z.string().min(2).max(50),
   description: z.string().min(5),
@@ -29,7 +33,9 @@ export const CreateToolSchema = z.object({
   availability_status: ToolAvailabilityStatusSchema.default('Available'),
   condition_status: ToolConditionStatusSchema.default('Good'),
   rental_fee_centavos: z.number().int().nonnegative(),
+  daily_rate_centavos: z.number().int().nonnegative().optional(),
   deposit_fee_centavos: z.number().int().nonnegative(),
+  discount_percentage: z.number().int().min(0).max(100).default(0),
   total_quantity: z.number().int().positive(),
   serial_number: z.string().optional(),
   image_url: z.string().optional(),

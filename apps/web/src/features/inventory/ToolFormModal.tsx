@@ -50,12 +50,15 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
     specifications: '',
     rentalFeePesos: 50,
     depositFeePesos: 200,
+    discountPercentage: 0,
     totalQuantity: 1,
     serialNumber: '',
+    imageUrl: '',
     availabilityStatus: 'Available' as ToolAvailabilityStatus,
     conditionStatus: 'Good' as ToolConditionStatus,
   });
 
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -68,11 +71,14 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
         specifications: tool.specifications || '',
         rentalFeePesos: tool.rental_fee_centavos / 100,
         depositFeePesos: tool.deposit_fee_centavos / 100,
+        discountPercentage: tool.discount_percentage || 0,
         totalQuantity: tool.total_quantity,
         serialNumber: tool.serial_number || '',
+        imageUrl: tool.image_url || '',
         availabilityStatus: tool.availability_status,
         conditionStatus: tool.condition_status,
       });
+      setImagePreview(tool.image_url || null);
     } else {
       setFormData({
         name: '',
@@ -81,13 +87,34 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
         specifications: '',
         rentalFeePesos: 50,
         depositFeePesos: 200,
+        discountPercentage: 0,
         totalQuantity: 1,
         serialNumber: '',
+        imageUrl: '',
         availabilityStatus: 'Available',
         conditionStatus: 'Good',
       });
+      setImagePreview(null);
     }
   }, [tool, isOpen]);
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be smaller than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setImagePreview(result);
+      setFormData((prev) => ({ ...prev, imageUrl: result }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,8 +129,10 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
         specifications: formData.specifications || undefined,
         rental_fee_centavos: Math.round(formData.rentalFeePesos * 100),
         deposit_fee_centavos: Math.round(formData.depositFeePesos * 100),
+        discount_percentage: Number(formData.discountPercentage) || 0,
         total_quantity: Number(formData.totalQuantity),
         serial_number: formData.serialNumber || undefined,
+        image_url: formData.imageUrl || undefined,
         availability_status: formData.availabilityStatus,
         condition_status: formData.conditionStatus,
       };
@@ -226,6 +255,37 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
             }
           />
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Discount Badge (%)"
+            type="number"
+            min="0"
+            max="100"
+            value={formData.discountPercentage}
+            onChange={(e) => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
+            helperText="Applies discount badge on product card (0 for none)"
+          />
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              Equipment Photo
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageFileChange}
+              className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-civic-forest file:text-white hover:file:bg-civic-deep cursor-pointer"
+            />
+          </div>
+        </div>
+
+        {imagePreview && (
+          <div className="flex items-center gap-4 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+            <img src={imagePreview} alt="Preview" className="h-16 w-16 object-contain rounded" />
+            <span className="text-xs text-slate-500">Image ready for local storage upload</span>
+          </div>
+        )}
 
         <div className="pt-2 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>

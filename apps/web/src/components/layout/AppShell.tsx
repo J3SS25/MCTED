@@ -18,6 +18,7 @@ import {
   LogOut,
   Menu,
   X,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { useTheme } from '../../lib/theme-context';
@@ -51,11 +52,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
       { label: 'Community Feedback', href: '/feedback', icon: <MessageSquare className="h-5 w-5" /> },
     ];
-  } else if (user.role === 'Borrower') {
-    // Borrower Navigation
+  } else if (user.role === 'Borrower' || user.role === 'Lender') {
+    // Borrower / Lender Navigation
     navItems = [
       { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
+      { label: 'Borrow Requests', href: '/requests', icon: <FileText className="h-5 w-5" /> },
       { label: 'My Reservations', href: '/my-reservations', icon: <CalendarCheck className="h-5 w-5" /> },
       { label: 'My Rentals', href: '/my-rentals', icon: <ShoppingBag className="h-5 w-5" /> },
       { label: 'Payments & Receipts', href: '/my-payments', icon: <CreditCard className="h-5 w-5" /> },
@@ -63,11 +65,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       { label: 'Notifications', href: '/notifications', icon: <Bell className="h-5 w-5" /> },
       { label: 'Profile & Settings', href: '/profile', icon: <User className="h-5 w-5" /> },
     ];
-  } else if (user.role === 'Municipal Staff') {
+  } else if (user.role === 'Municipal Staff' || user.role === 'Staff') {
     // Municipal Staff Navigation
     navItems = [
       { label: 'Staff Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
+      { label: 'Borrow Requests', href: '/requests', icon: <FileText className="h-5 w-5" /> },
       { label: 'Reservation Queue', href: '/staff/reservations', icon: <CalendarCheck className="h-5 w-5" /> },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
       { label: 'Inventory Management', href: '/staff/inventory', icon: <SlidersHorizontal className="h-5 w-5" /> },
@@ -77,11 +80,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       { label: 'Notifications', href: '/notifications', icon: <Bell className="h-5 w-5" /> },
       { label: 'Profile', href: '/profile', icon: <User className="h-5 w-5" /> },
     ];
-  } else if (user.role === 'Administrator') {
+  } else if (user.role === 'Administrator' || user.role === 'Admin') {
     // Administrator Navigation
     navItems = [
       { label: 'Admin Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
+      { label: 'Borrow Requests', href: '/requests', icon: <FileText className="h-5 w-5" /> },
       { label: 'Reservation Queue', href: '/staff/reservations', icon: <CalendarCheck className="h-5 w-5" /> },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
       { label: 'Inventory Management', href: '/staff/inventory', icon: <SlidersHorizontal className="h-5 w-5" /> },

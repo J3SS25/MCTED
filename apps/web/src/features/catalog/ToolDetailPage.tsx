@@ -7,7 +7,8 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ReservationFormModal } from '../reservations/ReservationFormModal';
-import { ArrowLeft, Check, Shield, Star, MessageSquare } from 'lucide-react';
+import { BorrowRequestModal } from '../requests/BorrowRequestModal';
+import { ArrowLeft, Check, Shield, Star, MessageSquare, FileText, CalendarCheck } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
 import { formatPHP } from '@mcteb/shared';
 
@@ -20,6 +21,7 @@ export function ToolDetailPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [reserveModalOpen, setReserveModalOpen] = useState(false);
+  const [borrowModalOpen, setBorrowModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -154,21 +156,47 @@ export function ToolDetailPage() {
                   className="w-full"
                   onClick={() => navigate('/login', { state: { from: { pathname: `/catalog/${tool.id}` } } })}
                 >
-                  Sign In to Reserve Equipment
+                  Sign In to Borrow Equipment
                 </Button>
                 <p className="text-center text-xs text-slate-500">
                   Residency in Basco required for equipment loans
                 </p>
               </div>
-            ) : user.role === 'Borrower' ? (
-              <Button
-                className="w-full"
-                size="lg"
-                disabled={!isAvailable}
-                onClick={() => setReserveModalOpen(true)}
-              >
-                {isAvailable ? 'Request Reservation' : 'Currently Unavailable'}
-              </Button>
+            ) : user.id === tool.user_id ? (
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl space-y-2 text-center">
+                <p className="text-xs font-bold text-amber-800 dark:text-amber-200">
+                  You are the owner of this equipment listing
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  Self-borrowing is prohibited by municipal regulations. You have owner privileges to manage or self-remove this listing in Inventory.
+                </p>
+                <Link to="/staff/inventory" className="inline-block mt-1">
+                  <Button variant="outline" size="sm">
+                    Manage My Equipment
+                  </Button>
+                </Link>
+              </div>
+            ) : user.role === 'Borrower' || user.role === 'Lender' ? (
+              <div className="space-y-2.5">
+                <Button
+                  className="w-full bg-civic-forest hover:bg-civic-deep text-white flex items-center justify-center gap-2"
+                  size="lg"
+                  disabled={!isAvailable}
+                  onClick={() => setBorrowModalOpen(true)}
+                >
+                  <FileText className="h-5 w-5" />
+                  {isAvailable ? 'Submit Borrow Request' : 'Currently Unavailable'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2"
+                  disabled={!isAvailable}
+                  onClick={() => setReserveModalOpen(true)}
+                >
+                  <CalendarCheck className="h-4 w-4" />
+                  Standard Reservation
+                </Button>
+              </div>
             ) : (
               <Link to="/staff/inventory" className="block w-full">
                 <Button variant="outline" className="w-full">
@@ -217,13 +245,23 @@ export function ToolDetailPage() {
         )}
       </div>
 
-      {/* Reservation Modal */}
+      {/* Reservation & Borrow Request Modals */}
       {tool && (
-        <ReservationFormModal
-          isOpen={reserveModalOpen}
-          onClose={() => setReserveModalOpen(false)}
-          tool={tool}
-        />
+        <>
+          <ReservationFormModal
+            isOpen={reserveModalOpen}
+            onClose={() => setReserveModalOpen(false)}
+            tool={tool}
+          />
+          <BorrowRequestModal
+            isOpen={borrowModalOpen}
+            onClose={() => setBorrowModalOpen(false)}
+            tool={tool}
+            onSuccess={() => {
+              navigate('/requests');
+            }}
+          />
+        </>
       )}
     </div>
   );

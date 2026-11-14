@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
 
+import path from 'node:path';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -22,6 +23,9 @@ import { maintenanceRouter } from './modules/maintenance/maintenance.routes.js';
 import { feedbackRouter } from './modules/feedback/feedback.routes.js';
 import { notificationsRouter } from './modules/notifications/notifications.routes.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
+import { requestsRouter } from './modules/requests/requests.routes.js';
+import { wishlistRouter } from './modules/wishlist/wishlist.routes.js';
+import { hrRouter } from './modules/hr/hr.routes.js';
 
 export const app: Express = express();
 
@@ -87,21 +91,35 @@ app.get('/health', (_req, res) => {
   });
 });
 
+// Static uploads directory (avatars and equipment images)
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
 // Mount Versioned API Routes (/api/v1)
 const v1Router = express.Router();
 
 v1Router.use('/auth', authRouter);
 v1Router.use('/users', usersRouter);
 v1Router.use('/tools', toolsRouter);
+v1Router.use('/items', toolsRouter); // Alias for tools
 v1Router.use('/reservations', reservationsRouter);
 v1Router.use('/rentals', rentalsRouter);
 v1Router.use('/payments', paymentsRouter);
+v1Router.use('/requests', requestsRouter);
+v1Router.use('/wishlists', wishlistRouter);
+v1Router.use('/wishlist', wishlistRouter);
+v1Router.use('/hr', hrRouter);
 v1Router.use('/maintenance', maintenanceRouter);
 v1Router.use('/feedback', feedbackRouter);
 v1Router.use('/notifications', notificationsRouter);
 v1Router.use('/audit', auditRouter);
 
 app.use('/api/v1', v1Router);
+
+// Direct /api root aliases for blueprint compatibility
+app.use('/api/items', toolsRouter);
+app.use('/api/requests', requestsRouter);
+app.use('/api/wishlist', wishlistRouter);
+app.use('/api/payments', paymentsRouter);
 
 // 404 Handler
 app.use((req, _res, next) => {

@@ -37,6 +37,11 @@ export class ReservationsService {
       throw AppError.badRequest(`This tool is currently ${tool.availability_status.toLowerCase()} and cannot be reserved`);
     }
 
+    // Validation Rule: Prevent borrowing own item
+    if (tool.user_id && tool.user_id === userId) {
+      throw AppError.badRequest('You cannot borrow your own tool or equipment');
+    }
+
     // Check date conflict & active stock limits
     const currentlyReserved = ReservationsRepository.getActiveReservedQuantityForDates(
       input.tool_id,

@@ -8,6 +8,8 @@ paymentsRouter.use(requireAuth);
 
 paymentsRouter.get('/', PaymentsController.list);
 paymentsRouter.post('/', PaymentsController.create);
+paymentsRouter.post('/mock-checkout', PaymentsController.mockCheckout);
+paymentsRouter.get('/:id/receipt', PaymentsController.getReceipt);
 paymentsRouter.get('/:id', PaymentsController.getById);
 
 // Staff and Admin payment verification

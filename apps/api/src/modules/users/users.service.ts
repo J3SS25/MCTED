@@ -35,6 +35,24 @@ export class UsersService {
     return updated;
   }
 
+  static updateAvatar(id: string, avatarUrl: string, actor: { id: string; name: string }): User {
+    const updated = UsersRepository.updateAvatar(id, avatarUrl);
+    if (!updated) {
+      throw AppError.notFound('User not found');
+    }
+
+    AuditService.record({
+      actor_id: actor.id,
+      actor_name: actor.name,
+      action: 'USER_AVATAR_UPDATED',
+      target_type: 'user',
+      target_id: id,
+      details: 'Updated profile picture avatar',
+    });
+
+    return updated;
+  }
+
   static updateUserStatus(id: string, input: UpdateUserStatusInput, actor: { id: string; name: string }): User {
     const targetUser = this.getUserById(id);
 

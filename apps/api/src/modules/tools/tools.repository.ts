@@ -52,30 +52,51 @@ export class ToolsRepository {
 
   static create(input: CreateToolInput): Tool {
     const id = generateUUID();
+    const discount = input.discount_percentage ?? 0;
+    const userId = input.user_id ?? null;
+    const imageUrl = input.image_url ?? null;
+
     const stmt = db.prepare(`
       INSERT INTO tools (
-        id, name, category, description, specifications, availability_status, condition_status,
-        rental_fee_centavos, deposit_fee_centavos, total_quantity, available_quantity, serial_number, image_url
+        id, user_id, name, title, category, description, specifications, availability_status, condition_status, condition,
+        rental_fee_centavos, daily_rate_centavos, deposit_fee_centavos, discount_percentage, total_quantity, available_quantity, serial_number, image_url, photo_url
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING *
     `);
 
     return stmt.get(
       id,
+      userId,
+      input.name,
       input.name,
       input.category,
       input.description,
       input.specifications ?? null,
       input.availability_status,
       input.condition_status,
+      input.condition_status,
+      input.rental_fee_centavos,
       input.rental_fee_centavos,
       input.deposit_fee_centavos,
+      discount,
       input.total_quantity,
       input.total_quantity, // Initially all are available
       input.serial_number ?? null,
-      input.image_url ?? null,
+      imageUrl,
+      imageUrl,
     ) as Tool;
+  }
+
+  static delete(id: string): boolean {
+    const rentalCheck = db.prepare("SELECT COUNT(*) as count FROM rentals WHERE tool_id = ? AND status = 'Borrowed'").get(id) as { count: number };
+    if (rentalCheck && rentalCheck.count > 0) {
+      db.prepare("UPDATE tools SET availability_status = 'Archived' WHERE id = ?").run(id);
+      return true;
+    }
+    db.prepare('DELETE FROM wishlists WHERE tool_id = ?').run(id);
+    db.prepare('DELETE FROM tools WHERE id = ?').run(id);
+    return true;
   }
 
   static update(id: string, input: UpdateToolInput): Tool | null {

@@ -14,19 +14,23 @@ export class AuthRepository {
   }
 
   static findById(id: string): User | null {
-    const stmt = db.prepare('SELECT id, full_name, email, phone, birth_date, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at FROM users WHERE id = ?');
+    const stmt = db.prepare('SELECT id, full_name, email, phone, birth_date, age, province, profile_picture_url, avatar_url, is_age_verified, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at FROM users WHERE id = ?');
     const row = stmt.get(id);
     return (row as User) || null;
   }
 
-  static createBorrower(input: RegisterUserInput, passwordHash: string): User {
+  static createBorrower(input: RegisterUserInput, passwordHash: string, calculatedAge: number): User {
     const id = generateUUID();
+    const role = input.role || 'Borrower';
+    const province = input.province || 'Batanes';
+    const avatar = input.profile_picture_url || null;
+
     const stmt = db.prepare(`
       INSERT INTO users (
-        id, full_name, email, password_hash, phone, birth_date, barangay, address, role, status, failed_login_attempts
+        id, full_name, email, password_hash, phone, birth_date, age, province, profile_picture_url, avatar_url, is_age_verified, barangay, address, role, status, failed_login_attempts
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Borrower', 'Active', 0)
-      RETURNING id, full_name, email, phone, birth_date, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, 'Active', 0)
+      RETURNING id, full_name, email, phone, birth_date, age, province, profile_picture_url, avatar_url, is_age_verified, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at
     `);
 
     return stmt.get(
@@ -36,8 +40,13 @@ export class AuthRepository {
       passwordHash,
       input.phone,
       input.birth_date,
+      calculatedAge,
+      province,
+      avatar,
+      avatar,
       input.barangay,
       input.address,
+      role,
     ) as User;
   }
 

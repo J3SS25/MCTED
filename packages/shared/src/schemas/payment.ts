@@ -12,6 +12,8 @@ export const PaymentSchema = z.object({
   payment_method: PaymentMethodSchema,
   status: PaymentStatusSchema,
   proof_url: z.string().nullable().optional(),
+  gateway_reference: z.string().nullable().optional(),
+  paid_at: z.string().nullable().optional(),
   verified_by: z.string().uuid().nullable().optional(),
   verified_at: z.string().nullable().optional(),
   created_at: z.string(),

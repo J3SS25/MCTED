@@ -84,5 +84,27 @@ export class ToolsService {
 
     return updated;
   }
+
+  static deleteTool(id: string, actor: { id: string; role: string; name: string }): void {
+    const tool = this.getToolById(id);
+
+    const isOwner = Boolean(tool.user_id && tool.user_id === actor.id);
+    const isStaffOrAdmin = ['Administrator', 'Admin', 'Municipal Staff', 'Staff'].includes(actor.role);
+
+    if (!isOwner && !isStaffOrAdmin) {
+      throw AppError.forbidden('You are not authorized to remove this item');
+    }
+
+    ToolsRepository.delete(id);
+
+    AuditService.record({
+      actor_id: actor.id,
+      actor_name: actor.name,
+      action: 'TOOL_DELETED',
+      target_type: 'tool',
+      target_id: id,
+      details: `${isOwner ? 'Owner' : 'Staff/Admin'} removed item "${tool.name}"`,
+    });
+  }
 }
 

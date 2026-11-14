@@ -7,6 +7,11 @@ export const UserSchema = z.object({
   email: z.string().email('Invalid email address'),
   phone: z.string().min(7, 'Phone number must be at least 7 digits').max(20),
   birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Birth date must be YYYY-MM-DD'),
+  age: z.number().int().min(18, 'Age must be at least 18').nullable().optional(),
+  province: z.string().default('Batanes'),
+  profile_picture_url: z.string().nullable().optional(),
+  avatar_url: z.string().nullable().optional(),
+  is_age_verified: z.boolean().or(z.number()).default(true),
   barangay: BarangaySchema,
   address: z.string().min(5, 'Address must be at least 5 characters').max(255),
   role: UserRoleSchema,
@@ -25,8 +30,12 @@ export const RegisterUserSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().min(7, 'Phone number must be at least 7 digits').max(20),
   birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Birth date must be YYYY-MM-DD'),
+  age: z.number().int().min(18, 'You must be at least 18 years old to register').optional(),
+  province: z.string().min(2, 'Province is required').default('Batanes'),
   barangay: BarangaySchema,
   address: z.string().min(5, 'Address must be at least 5 characters').max(255),
+  role: z.enum(['Borrower', 'Lender']).default('Borrower'),
+  profile_picture_url: z.string().optional(),
 });
 
 export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;

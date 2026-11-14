@@ -31,7 +31,7 @@ export class AuthService {
     const passwordHash = await hashPassword(input.password);
 
     // 4. Create borrower account
-    const user = AuthRepository.createBorrower(input, passwordHash);
+    const user = AuthRepository.createBorrower(input, passwordHash, age);
 
     // 5. Create session token
     const token = generateSessionToken();

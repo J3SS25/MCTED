@@ -1,6 +1,13 @@
 import { z } from 'zod';
 
-export const UserRoleSchema = z.enum(['Administrator', 'Municipal Staff', 'Borrower']);
+export const UserRoleSchema = z.enum([
+  'Administrator',
+  'Municipal Staff',
+  'Admin',
+  'Staff',
+  'Borrower',
+  'Lender',
+]);
 export type UserRole = z.infer<typeof UserRoleSchema>;
 
 export const UserStatusSchema = z.enum(['Active', 'Pending Verification', 'Suspended']);
@@ -47,7 +54,17 @@ export type RentalStatus = z.infer<typeof RentalStatusSchema>;
 export const PaymentStatusSchema = z.enum(['Pending', 'Paid', 'Failed', 'Refunded']);
 export type PaymentStatus = z.infer<typeof PaymentStatusSchema>;
 
-export const PaymentMethodSchema = z.enum(['Cash', 'GCash', 'Bank Transfer', 'Municipal Treasury']);
+export const PaymentMethodSchema = z.enum([
+  'Cash',
+  'GCash',
+  'LANDBANK',
+  'Landbank',
+  'PayMaya',
+  'Maya',
+  'BDO',
+  'Bank Transfer',
+  'Municipal Treasury',
+]);
 export type PaymentMethod = z.infer<typeof PaymentMethodSchema>;
 
 export const MaintenanceSeveritySchema = z.enum(['Minor', 'Moderate', 'Severe', 'Critical']);

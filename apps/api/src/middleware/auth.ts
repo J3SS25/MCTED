@@ -89,11 +89,21 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
 }
 
 export function requireRole(...roles: UserRole[]) {
+  const expanded = new Set<string>(roles);
+  if (roles.includes('Administrator') || roles.includes('Admin')) {
+    expanded.add('Administrator');
+    expanded.add('Admin');
+  }
+  if (roles.includes('Municipal Staff') || roles.includes('Staff')) {
+    expanded.add('Municipal Staff');
+    expanded.add('Staff');
+  }
+
   return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       return next(AppError.unauthorized('Authentication required'));
     }
-    if (!roles.includes(req.user.role)) {
+    if (!expanded.has(req.user.role)) {
       return next(AppError.forbidden('You do not have permission to perform this action'));
     }
     next();

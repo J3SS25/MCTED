@@ -4,7 +4,7 @@ import type { User, UpdateProfileInput } from '@mcteb/shared';
 export class UsersRepository {
   static findById(id: string): User | null {
     const stmt = db.prepare(`
-      SELECT id, full_name, email, phone, birth_date, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at
+      SELECT id, full_name, email, phone, birth_date, age, province, profile_picture_url, avatar_url, is_age_verified, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at
       FROM users
       WHERE id = ?
     `);
@@ -14,7 +14,7 @@ export class UsersRepository {
 
   static findAll(): User[] {
     const stmt = db.prepare(`
-      SELECT id, full_name, email, phone, birth_date, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at
+      SELECT id, full_name, email, phone, birth_date, age, province, profile_picture_url, avatar_url, is_age_verified, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at
       FROM users
       ORDER BY datetime(created_at) DESC
     `);
@@ -25,10 +25,19 @@ export class UsersRepository {
     const stmt = db.prepare(`
       SELECT COUNT(*) as count
       FROM users
-      WHERE role = 'Administrator' AND status = 'Active'
+      WHERE role IN ('Administrator', 'Admin') AND status = 'Active'
     `);
     const row = stmt.get() as { count: number };
     return row ? row.count : 0;
+  }
+
+  static updateAvatar(id: string, avatarUrl: string): User | null {
+    db.prepare(`
+      UPDATE users
+      SET avatar_url = ?, profile_picture_url = ?, updated_at = DATETIME('now')
+      WHERE id = ?
+    `).run(avatarUrl, avatarUrl, id);
+    return this.findById(id);
   }
 
   static updateProfile(id: string, input: UpdateProfileInput): User | null {

@@ -17,6 +17,11 @@ const BARANGAYS: Array<{ value: Barangay; label: string }> = [
   { value: 'San Joaquin', label: 'San Joaquin' },
 ];
 
+const ROLES: Array<{ value: 'Borrower' | 'Lender'; label: string }> = [
+  { value: 'Borrower', label: 'Borrower (I want to borrow tools)' },
+  { value: 'Lender', label: 'Lender (I want to list & lend tools)' },
+];
+
 export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -27,8 +32,10 @@ export function RegisterPage() {
     password: '',
     phone: '',
     birth_date: '1995-01-01',
+    province: 'Batanes',
     barangay: 'San Antonio' as Barangay,
     address: '',
+    role: 'Borrower' as 'Borrower' | 'Lender',
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -37,10 +44,28 @@ export function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // 18+ Age Validation
+    const birthDate = new Date(formData.birth_date);
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      calculatedAge--;
+    }
+
+    if (calculatedAge < 18) {
+      setError('Registration rejected: Under municipal regulations, all users must be at least 18 years of age.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await register(formData);
+      await register({
+        ...formData,
+        age: calculatedAge,
+      });
       navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -98,6 +123,23 @@ export function RegisterPage() {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="0917-000-0000"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Select
+                  label="Account Type"
+                  options={ROLES}
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'Borrower' | 'Lender' })}
+                />
+
+                <Input
+                  label="Province"
+                  required
+                  value={formData.province}
+                  onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                  placeholder="Batanes"
                 />
               </div>
 

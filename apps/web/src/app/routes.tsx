@@ -22,6 +22,7 @@ import { NotificationsPage } from '../features/notifications/NotificationsPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { UsersPage } from '../features/admin/UsersPage';
 import { AuditLogPage } from '../features/admin/AuditLogPage';
+import { BorrowRequestsPage } from '../features/requests/BorrowRequestsPage';
 
 export function AppRoutes() {
   const { user } = useAuth();
@@ -50,6 +51,22 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <MyReservationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <BorrowRequestsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/borrow-requests"
+        element={
+          <ProtectedRoute>
+            <BorrowRequestsPage />
           </ProtectedRoute>
         }
       />
