@@ -1,38 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { apiRequest } from '../../lib/api';
-import { Card, CardContent } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
+import { useAuth } from '../../lib/auth-context';
+import { useWishlistCart } from '../../lib/wishlist-cart-context';
+import { setLocalToolImage } from '../../lib/local-storage';
 import { Button } from '../../components/ui/Button';
-import { Input, Select } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Input';
+import { Alert } from '../../components/ui/Alert';
 import { CardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { Search, Wrench, Filter } from 'lucide-react';
+import { CategoryNav } from '../../components/catalog/CategoryNav';
+import { ToolCard } from '../../components/catalog/ToolCard';
+import { ToolFormModal } from '../inventory/ToolFormModal';
+import { Search, Plus, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
-import { formatPHP } from '@mcteb/shared';
 
-const CATEGORIES = [
-  { value: '', label: 'All Categories' },
-  { value: 'Agriculture', label: 'Agriculture' },
-  { value: 'Fishing', label: 'Fishing' },
-  { value: 'Carpentry', label: 'Carpentry' },
-  { value: 'Construction', label: 'Construction' },
-  { value: 'Electrical', label: 'Electrical' },
-  { value: 'Emergency Response', label: 'Emergency Response' },
+const AVAILABILITY_FILTERS = [
+  { value: '', label: 'All Statuses' },
+  { value: 'Available', label: 'Available' },
+  { value: 'Borrowed', label: 'Borrowed' },
+  { value: 'Reserved', label: 'Reserved' },
+  { value: 'Maintenance', label: 'Maintenance' },
+  { value: 'Archived', label: 'Archived' },
+];
+
+const SORT_OPTIONS = [
+  { value: 'name_asc', label: 'Name (A – Z)' },
+  { value: 'name_desc', label: 'Name (Z – A)' },
+  { value: 'price_asc', label: 'Rental Fee: Low to High' },
+  { value: 'price_desc', label: 'Rental Fee: High to Low' },
+  { value: 'availability', label: 'Availability Priority' },
+  { value: 'newest', label: 'Newest Added' },
 ];
 
 export function CatalogPage() {
+  const { user } = useAuth();
+  const { isInWishlist, isInCart, toggleWishlist, addToCart } = useWishlistCart();
+
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [availability, setAvailability] = useState('');
+  const [sortBy, setSortBy] = useState('name_asc');
+  const [onlyMyTools, setOnlyMyTools] = useState(false);
 
-  const fetchCatalog = async () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTool, setEditingTool] = useState<Tool | null>(null);
+  const [feedbackBanner, setFeedbackBanner] = useState<string | null>(null);
+
+  const fetchCatalog = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (search) params.append('search', search);
+      if (search.trim()) params.append('search', search.trim());
       if (category) params.append('category', category);
+      if (availability) params.append('availability', availability);
+      if (sortBy) params.append('sort_by', sortBy);
+      if (onlyMyTools && user) params.append('owner_id', user.id);
+      params.append('limit', '100');
 
       const res = await apiRequest<{ items: Tool[]; total: number }>(`/tools?${params.toString()}`);
       setTools(res.items);
@@ -41,32 +66,107 @@ export function CatalogPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, category, availability, sortBy, onlyMyTools, user]);
 
   useEffect(() => {
     fetchCatalog();
-  }, [category]);
+  }, [category, availability, sortBy, onlyMyTools]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchCatalog();
   };
 
+  const handleDeleteTool = async (tool: Tool) => {
+    if (
+      !confirm(
+        `Are you sure you want to permanently remove "${tool.name}" from the catalog? This action cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await apiRequest(`/tools/${tool.id}`, { method: 'DELETE' });
+      setLocalToolImage(tool.id, null);
+      setFeedbackBanner(`"${tool.name}" was removed successfully.`);
+      await fetchCatalog();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to remove tool');
+    }
+  };
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { __total: tools.length };
+    for (const item of tools) {
+      const normalized =
+        item.category === 'Agricultural'
+          ? 'Agriculture'
+          : item.category === 'Fishery'
+            ? 'Fishing'
+            : item.category;
+      counts[normalized] = (counts[normalized] || 0) + 1;
+    }
+    return counts;
+  }, [tools]);
+
+  const isStaffOrAdmin = user?.role === 'Municipal Staff' || user?.role === 'Administrator';
+
   return (
     <div className="space-y-6">
-      {/* Catalog Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Shared Equipment Catalog
-        </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Municipal shared tools available for agricultural, carpentry, marine, and community project loans.
-        </p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            Shared Equipment Catalog
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Browse municipal and community-shared tools across agriculture, marine, carpentry, and emergency response.
+          </p>
+        </div>
+
+        {user && (
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            {user.role === 'Borrower' && (
+              <Button
+                variant={onlyMyTools ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => setOnlyMyTools((prev) => !prev)}
+              >
+                {onlyMyTools ? 'Showing My Uploads' : 'My Uploaded Tools'}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingTool(null);
+                setIsModalOpen(true);
+              }}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              {user.role === 'Borrower' ? 'Share My Tool' : 'Add Equipment'}
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <form onSubmit={handleSearchSubmit} className="flex-1 w-full flex gap-2">
+      {feedbackBanner && (
+        <Alert variant="success" onClose={() => setFeedbackBanner(null)}>
+          {feedbackBanner}
+        </Alert>
+      )}
+
+      {/* Structured Category Navigation */}
+      <CategoryNav
+        selectedCategory={category}
+        onSelectCategory={setCategory}
+        counts={category === '' ? categoryCounts : undefined}
+      />
+
+      {/* Search, Filter & Sorting Bar */}
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+        <form onSubmit={handleSearchSubmit} className="flex-1 flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
@@ -82,16 +182,30 @@ export function CatalogPage() {
           </Button>
         </form>
 
-        <div className="w-full md:w-64">
-          <Select
-            options={CATEGORIES}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:w-[420px]">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4 text-slate-400 flex-shrink-0 hidden sm:block" />
+            <Select
+              aria-label="Filter by availability status"
+              options={AVAILABILITY_FILTERS}
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="h-4 w-4 text-slate-400 flex-shrink-0 hidden sm:block" />
+            <Select
+              aria-label="Sort tools"
+              options={SORT_OPTIONS}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Tools Grid */}
+      {/* Responsive Tools Grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <CardSkeleton />
@@ -102,78 +216,64 @@ export function CatalogPage() {
       ) : tools.length === 0 ? (
         <EmptyState
           title="No equipment found"
-          description="Try modifying your search keywords or clearing your category filters."
+          description="Try modifying your search keywords or clearing your category and status filters."
           actionText="Clear Filters"
           onAction={() => {
             setSearch('');
             setCategory('');
+            setAvailability('');
+            setOnlyMyTools(false);
           }}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {tools.map((tool) => {
-            const isAvailable = tool.availability_status === 'Available' && tool.available_quantity > 0;
+            const isOwner = !!user && tool.owner_id === user.id;
+            const canManage = isStaffOrAdmin || isOwner;
 
             return (
-              <Card key={tool.id} className="flex flex-col hover:shadow-md transition-shadow">
-                <div className="h-48 bg-slate-100 dark:bg-slate-700/50 p-4 flex items-center justify-center relative overflow-hidden">
-                  <img
-                    src={tool.image_url || '/equipment/fallback.svg'}
-                    alt={tool.name}
-                    className="max-h-full max-w-full object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/equipment/fallback.svg';
-                    }}
-                  />
-                  <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
-                    <Badge status={tool.availability_status} />
-                  </div>
-                  <div className="absolute bottom-3 left-3">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-900/70 text-white backdrop-blur-sm">
-                      {tool.category}
-                    </span>
-                  </div>
-                </div>
-
-                <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 line-clamp-1">
-                      {tool.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                      {tool.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60 space-y-2 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 dark:text-slate-400">Rental Fee:</span>
-                      <span className="font-bold text-civic-forest dark:text-civic-light text-sm">
-                        {formatPHP(tool.rental_fee_centavos)} / day
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
-                      <span>Available Units:</span>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {tool.available_quantity} of {tool.total_quantity}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <Link to={`/catalog/${tool.id}`} className="block w-full">
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Details & Reserve
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+              <ToolCard
+                key={tool.id}
+                tool={tool}
+                inWishlist={isInWishlist(tool.id)}
+                inCart={isInCart(tool.id)}
+                canManage={canManage}
+                onToggleWishlist={(item) => {
+                  const added = toggleWishlist(item);
+                  setFeedbackBanner(
+                    added
+                      ? `"${item.name}" saved to your Wishlist.`
+                      : `"${item.name}" removed from your Wishlist.`,
+                  );
+                }}
+                onAddToCart={(item) => {
+                  addToCart(item, 1);
+                  setFeedbackBanner(`"${item.name}" added to your Borrowing Cart.`);
+                }}
+                onEdit={(item) => {
+                  setEditingTool(item);
+                  setIsModalOpen(true);
+                }}
+                onDelete={handleDeleteTool}
+              />
             );
           })}
         </div>
       )}
+
+      {/* Add / Edit Tool Modal */}
+      <ToolFormModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingTool(null);
+        }}
+        tool={editingTool}
+        onSuccess={() => {
+          setFeedbackBanner(editingTool ? 'Tool details updated.' : 'Tool added to catalog.');
+          fetchCatalog();
+        }}
+      />
     </div>
   );
 }
-

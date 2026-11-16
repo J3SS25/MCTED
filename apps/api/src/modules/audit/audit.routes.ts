@@ -4,6 +4,6 @@ import { requireAuth, requireRole } from '../../middleware/auth.js';
 
 export const auditRouter = Router();
 
-// Only administrators can review audit logs
-auditRouter.get('/', requireAuth, requireRole('Administrator'), AuditController.getLogs);
+// Staff and administrators can review activity/audit logs
+auditRouter.get('/', requireAuth, requireRole('Municipal Staff', 'Administrator'), AuditController.getLogs);
 

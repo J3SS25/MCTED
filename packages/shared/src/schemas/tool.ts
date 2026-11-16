@@ -15,6 +15,10 @@ export const ToolSchema = z.object({
   available_quantity: z.number().int().nonnegative(),
   serial_number: z.string().nullable().optional(),
   image_url: z.string().nullable().optional(),
+  owner_id: z.string().uuid().nullable().optional(),
+  owner_name: z.string().nullable().optional(),
+  owner_role: z.string().nullable().optional(),
+  discount_percent: z.number().int().min(0).max(100).default(0).optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -33,6 +37,7 @@ export const CreateToolSchema = z.object({
   total_quantity: z.number().int().positive(),
   serial_number: z.string().optional(),
   image_url: z.string().optional(),
+  discount_percent: z.coerce.number().int().min(0).max(100).default(0).optional(),
 });
 
 export type CreateToolInput = z.infer<typeof CreateToolSchema>;
@@ -48,6 +53,8 @@ export const ToolFilterSchema = z.object({
   category: z.string().optional(),
   availability: ToolAvailabilityStatusSchema.optional(),
   condition: ToolConditionStatusSchema.optional(),
+  owner_id: z.string().optional(),
+  sort_by: z.enum(['name_asc', 'name_desc', 'price_asc', 'price_desc', 'newest', 'availability']).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(12),
 });

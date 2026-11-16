@@ -1,27 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { apiRequest } from '../../lib/api';
 import { Modal } from '../../components/ui/Modal';
 import { Input, Select } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
-import type { Tool, ToolAvailabilityStatus, ToolConditionStatus } from '@mcteb/shared';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { compressImageToDataUrl, getLocalToolImage, setLocalToolImage } from '../../lib/local-storage';
+import {
+  TOOL_CATEGORIES,
+  type Tool,
+  type ToolAvailabilityStatus,
+  type ToolConditionStatus,
+} from '@mcteb/shared';
 
-const CATEGORIES = [
-  { value: 'Agriculture', label: 'Agriculture' },
-  { value: 'Fishing', label: 'Fishing' },
-  { value: 'Carpentry', label: 'Carpentry' },
-  { value: 'Construction', label: 'Construction' },
-  { value: 'Electrical', label: 'Electrical' },
-  { value: 'Emergency Response', label: 'Emergency Response' },
-];
+const CATEGORIES = TOOL_CATEGORIES.map((c) => ({ value: c, label: c }));
 
 const AVAILABILITY_STATUSES: Array<{ value: ToolAvailabilityStatus; label: string }> = [
   { value: 'Available', label: 'Available' },
-  { value: 'Reserved', label: 'Reserved' },
   { value: 'Borrowed', label: 'Borrowed' },
-  { value: 'Returned', label: 'Returned' },
+  { value: 'Reserved', label: 'Reserved' },
   { value: 'Maintenance', label: 'Maintenance' },
-  { value: 'Damaged', label: 'Damaged' },
   { value: 'Archived', label: 'Archived' },
 ];
 
@@ -42,6 +40,7 @@ interface ToolFormModalProps {
 
 export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModalProps) {
   const isEditing = !!tool;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -50,28 +49,34 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
     specifications: '',
     rentalFeePesos: 50,
     depositFeePesos: 200,
+    discountPercent: 0,
     totalQuantity: 1,
     serialNumber: '',
     availabilityStatus: 'Available' as ToolAvailabilityStatus,
     conditionStatus: 'Good' as ToolConditionStatus,
+    imageUrl: '',
   });
 
+  const [imageUploading, setImageUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (tool) {
+      const localImg = getLocalToolImage(tool.id);
       setFormData({
         name: tool.name,
-        category: tool.category,
+        category: tool.category === 'Agricultural' ? 'Agriculture' : tool.category === 'Fishery' ? 'Fishing' : tool.category,
         description: tool.description,
         specifications: tool.specifications || '',
         rentalFeePesos: tool.rental_fee_centavos / 100,
         depositFeePesos: tool.deposit_fee_centavos / 100,
+        discountPercent: tool.discount_percent ?? 0,
         totalQuantity: tool.total_quantity,
         serialNumber: tool.serial_number || '',
         availabilityStatus: tool.availability_status,
         conditionStatus: tool.condition_status,
+        imageUrl: localImg || tool.image_url || '',
       });
     } else {
       setFormData({
@@ -81,13 +86,37 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
         specifications: '',
         rentalFeePesos: 50,
         depositFeePesos: 200,
+        discountPercent: 0,
         totalQuantity: 1,
         serialNumber: '',
         availabilityStatus: 'Available',
         conditionStatus: 'Good',
+        imageUrl: '',
       });
     }
+    setError(null);
   }, [tool, isOpen]);
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file (PNG, JPG, WebP, or SVG).');
+      return;
+    }
+
+    setError(null);
+    setImageUploading(true);
+    try {
+      const dataUrl = await compressImageToDataUrl(file, 640, 0.82);
+      setFormData((prev) => ({ ...prev, imageUrl: dataUrl }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to process selected image');
+    } finally {
+      setImageUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,22 +131,29 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
         specifications: formData.specifications || undefined,
         rental_fee_centavos: Math.round(formData.rentalFeePesos * 100),
         deposit_fee_centavos: Math.round(formData.depositFeePesos * 100),
+        discount_percent: Math.min(100, Math.max(0, Number(formData.discountPercent) || 0)),
         total_quantity: Number(formData.totalQuantity),
         serial_number: formData.serialNumber || undefined,
         availability_status: formData.availabilityStatus,
         condition_status: formData.conditionStatus,
+        image_url: formData.imageUrl || undefined,
       };
 
+      let savedTool: Tool;
       if (isEditing && tool) {
-        await apiRequest(`/tools/${tool.id}`, {
+        savedTool = await apiRequest<Tool>(`/tools/${tool.id}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
         });
       } else {
-        await apiRequest('/tools', {
+        savedTool = await apiRequest<Tool>('/tools', {
           method: 'POST',
           body: JSON.stringify(payload),
         });
+      }
+
+      if (savedTool?.id) {
+        setLocalToolImage(savedTool.id, formData.imageUrl || null);
       }
 
       onSuccess();
@@ -133,12 +169,72 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? `Edit Equipment: ${tool.name}` : 'Add New Equipment to Catalog'}
+      title={isEditing ? `Edit Equipment: ${tool.name}` : 'Add New Tool / Equipment'}
       maxWidth="lg"
     >
       {error && <Alert variant="error" className="mb-4">{error}</Alert>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Photo Upload & Preview */}
+        <div className="p-3.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+            Tool / Equipment Photo
+          </label>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="w-24 h-24 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {formData.imageUrl ? (
+                <img
+                  src={formData.imageUrl}
+                  alt="Equipment preview"
+                  className="w-full h-full object-contain p-1"
+                />
+              ) : (
+                <ImageIcon className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+              )}
+            </div>
+
+            <div className="flex-1 space-y-2 w-full">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileChange}
+                className="hidden"
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  isLoading={imageUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="gap-1.5"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  {formData.imageUrl ? 'Change Photo' : 'Upload Photo'}
+                </Button>
+                {formData.imageUrl && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 gap-1"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, imageUrl: '' }));
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5" /> Remove
+                  </Button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Upload a photo (JPG, PNG, WebP) to display in catalog listings and inventory records.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <Input
           label="Equipment Name"
           required
@@ -147,7 +243,7 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
           placeholder="e.g. Inverter Silent Generator 3.5 kVA"
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select
             label="Category"
             options={CATEGORIES}
@@ -178,7 +274,7 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
           placeholder="Dimensions, voltage, accessories included"
         />
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Input
             label="Rental Fee / Day (₱)"
             type="number"
@@ -198,6 +294,15 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
           />
 
           <Input
+            label="Discount (%)"
+            type="number"
+            min="0"
+            max="100"
+            value={formData.discountPercent}
+            onChange={(e) => setFormData({ ...formData, discountPercent: Number(e.target.value) })}
+          />
+
+          <Input
             label="Total Quantity"
             type="number"
             min="1"
@@ -207,7 +312,7 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select
             label="Availability Status"
             options={AVAILABILITY_STATUSES}
@@ -231,12 +336,11 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
           <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={submitting}>
-            {isEditing ? 'Save Changes' : 'Create Equipment Entry'}
+          <Button type="submit" isLoading={submitting || imageUploading}>
+            {isEditing ? 'Save Changes' : 'Add Equipment'}
           </Button>
         </div>
       </form>
     </Modal>
   );
 }
-
