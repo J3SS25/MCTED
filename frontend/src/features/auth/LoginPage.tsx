@@ -100,7 +100,7 @@ export function LoginPage() {
               </p>
             </div>
 
-            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs text-slate-500 dark:text-slate-400">
+            {/* <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs text-slate-500 dark:text-slate-400">
               <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Demo Credentials:
               </p>
@@ -119,7 +119,7 @@ export function LoginPage() {
                 <code className="text-slate-700 dark:text-slate-300">admin@basco.gov.ph</code> /{' '}
                 <code className="text-slate-700 dark:text-slate-300">Basco@2026!</code>
               </p>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
       </div>
