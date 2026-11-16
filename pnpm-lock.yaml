@@ -197,11 +197,11 @@ importers:
         specifier: ^8.72.2
         version: 8.72.2(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.8.3)
 
-  apps/api:
+  backend:
     dependencies:
       '@mcteb/shared':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../packages/shared
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -258,11 +258,11 @@ importers:
         specifier: ^3.0.5
         version: 3.2.7(@types/node@22.20.5)(jiti@2.6.1)(jsdom@31.0.1(@noble/hashes@1.8.0))(supports-color@7.2.0)(tsx@4.23.15)(yaml@2.9.1)
 
-  apps/web:
+  frontend:
     dependencies:
       '@mcteb/shared':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../packages/shared
       '@tanstack/react-query':
         specifier: ^5.66.0
         version: 5.105.3(@types/react@19.3.0)(react@19.3.1)

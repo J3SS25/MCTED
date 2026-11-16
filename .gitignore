@@ -13,11 +13,14 @@ coverage/
 !.env.example
 
 # Database (never commit)
-data/*.db
-data/*.db-wal
-data/*.db-shm
-data/*.sqlite*
-backups/
+Database/*.db
+Database/*.db-wal
+Database/*.db-shm
+Database/*.sqlite*
+Database/backups/*.db
+Database/backups/*.db-wal
+Database/backups/*.db-shm
+!Database/.gitkeep
 
 # Logs
 *.log

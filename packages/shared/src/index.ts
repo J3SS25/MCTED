@@ -1,4 +1,5 @@
-export * from './enums.js';
+export * from './enums/index.js';
+export * from './types/index.js';
 export * from './permissions.js';
 export * from './money.js';
 export * from './dates.js';

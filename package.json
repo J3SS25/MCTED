@@ -2,14 +2,14 @@
   "name": "mcteb",
   "private": true,
   "version": "0.1.0",
-  "description": "Municipal Community Tool and Equipment Bank — Municipality of Basco, Batanes",
+  "description": "Municipal Community Tool and Equipment Bank – Municipality of Basco, Batanes",
   "packageManager": "pnpm@12.15.0",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @mcteb/web --filter @mcteb/api dev",
-    "build": "pnpm --filter @mcteb/shared build && pnpm --filter @mcteb/api build && pnpm --filter @mcteb/web build",
+    "dev": "pnpm --parallel --filter @mcteb/frontend --filter @mcteb/backend dev",
+    "build": "pnpm --filter @mcteb/shared build && pnpm --filter @mcteb/backend build && pnpm --filter @mcteb/frontend build",
     "typecheck": "pnpm --filter @mcteb/shared build && pnpm -r typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -17,11 +17,11 @@
     "format:check": "prettier --check .",
     "test": "pnpm -r test",
     "setup": "pnpm install && pnpm run db:init && pnpm run db:migrate && pnpm run db:seed",
-    "db:init": "pnpm --filter @mcteb/api db:init",
-    "db:migrate": "pnpm --filter @mcteb/api db:migrate",
-    "db:seed": "pnpm --filter @mcteb/api db:seed",
-    "db:reset-demo": "pnpm --filter @mcteb/api db:reset-demo",
-    "db:backup": "tsx scripts/backup-db.ts",
+    "db:init": "pnpm --filter @mcteb/backend db:init",
+    "db:migrate": "pnpm --filter @mcteb/backend db:migrate",
+    "db:seed": "pnpm --filter @mcteb/backend db:seed",
+    "db:reset-demo": "pnpm --filter @mcteb/backend db:reset-demo",
+    "db:backup": "tsx development/scripts/database/backup.ts",
     "audit": "pnpm audit --prod"
   },
   "devDependencies": {

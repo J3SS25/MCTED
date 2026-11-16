@@ -8,14 +8,14 @@ export default tseslint.config(
       '**/dist/**',
       '**/build/**',
       '**/node_modules/**',
-      'apps/api/data/**',
+      'Database/**',
       '**/*.d.ts',
       '**/*.d.ts.map',
       '**/*.js.map',
       '*.config.cjs',
       '*.config.mjs',
       '*.config.js',
-      'apps/web/postcss.config.js',
+      'frontend/postcss.config.js',
     ],
   },
   eslint.configs.recommended,
@@ -24,7 +24,13 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['scripts/*.ts', 'apps/*/*.config.ts'],
+          allowDefaultProject: [
+            'development/scripts/*.ts',
+            'development/scripts/database/*.ts',
+            'scripts/*.ts',
+            'backend/*.config.ts',
+            'frontend/*.config.ts',
+          ],
         },
         tsconfigRootDir: import.meta.dirname,
       },
