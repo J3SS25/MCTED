@@ -21,4 +21,3 @@ export function formatPHP(centavos: number): string {
     maximumFractionDigits: 2,
   }).format(pesos);
 }
-

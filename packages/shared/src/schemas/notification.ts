@@ -23,4 +23,3 @@ export const CreateNotificationSchema = z.object({
 });
 
 export type CreateNotificationInput = z.infer<typeof CreateNotificationSchema>;
-

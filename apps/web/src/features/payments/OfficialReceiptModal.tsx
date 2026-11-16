@@ -33,7 +33,10 @@ export function OfficialReceiptModal({ isOpen, onClose, payment }: OfficialRecei
             Municipal Community Tool and Equipment Bank (MCTEB)
           </p>
           <p className="text-xs font-mono text-slate-500 mt-2">
-            OFFICIAL RECEIPT REF: <strong className="text-slate-800 dark:text-slate-200">{payment.receipt_reference}</strong>
+            OFFICIAL RECEIPT REF:{' '}
+            <strong className="text-slate-800 dark:text-slate-200">
+              {payment.receipt_reference}
+            </strong>
           </p>
         </div>
 
@@ -42,15 +45,23 @@ export function OfficialReceiptModal({ isOpen, onClose, payment }: OfficialRecei
           <div className="grid grid-cols-2 gap-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <div>
               <p className="text-slate-500">Payer Name:</p>
-              <p className="font-semibold text-slate-800 dark:text-slate-200">{payment.payer_name}</p>
+              <p className="font-semibold text-slate-800 dark:text-slate-200">
+                {payment.payer_name}
+              </p>
               <p className="text-slate-500 mt-1">Barangay:</p>
-              <p className="font-semibold text-slate-800 dark:text-slate-200">{payment.payer_barangay}</p>
+              <p className="font-semibold text-slate-800 dark:text-slate-200">
+                {payment.payer_barangay}
+              </p>
             </div>
             <div>
               <p className="text-slate-500">Payment Date:</p>
-              <p className="font-semibold text-slate-800 dark:text-slate-200">{formatDate(payment.created_at)}</p>
+              <p className="font-semibold text-slate-800 dark:text-slate-200">
+                {formatDate(payment.created_at)}
+              </p>
               <p className="text-slate-500 mt-1">Payment Method:</p>
-              <p className="font-semibold text-slate-800 dark:text-slate-200">{payment.payment_method}</p>
+              <p className="font-semibold text-slate-800 dark:text-slate-200">
+                {payment.payment_method}
+              </p>
             </div>
           </div>
 
@@ -93,7 +104,13 @@ export function OfficialReceiptModal({ isOpen, onClose, payment }: OfficialRecei
 
         {/* Modal Controls */}
         <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-700">
-          <Button type="button" variant="outline" size="sm" onClick={handlePrint} className="gap-1.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handlePrint}
+            className="gap-1.5"
+          >
             <Printer className="h-4 w-4" /> Print Receipt
           </Button>
           <Button type="button" size="sm" onClick={onClose}>
@@ -104,4 +121,3 @@ export function OfficialReceiptModal({ isOpen, onClose, payment }: OfficialRecei
     </Modal>
   );
 }
-

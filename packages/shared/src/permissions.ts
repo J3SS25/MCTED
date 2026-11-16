@@ -41,4 +41,3 @@ export function hasPermission(role: UserRole | 'Guest', action: PermissionAction
   const allowedRoles = Permissions[action] as readonly string[];
   return allowedRoles.includes(role);
 }
-

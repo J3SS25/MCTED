@@ -22,7 +22,7 @@ const PAYMENT_METHODS = [
 export function MyPaymentsPage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
 
   // Submit payment modal state
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -92,7 +92,10 @@ export function MyPaymentsPage() {
           </p>
         </div>
 
-        <Button onClick={() => setIsSubmitModalOpen(true)} className="gap-2 self-start sm:self-auto">
+        <Button
+          onClick={() => setIsSubmitModalOpen(true)}
+          className="gap-2 self-start sm:self-auto"
+        >
           <PlusCircle className="h-4 w-4" /> Record New Payment
         </Button>
       </div>
@@ -148,7 +151,11 @@ export function MyPaymentsPage() {
         onClose={() => setIsSubmitModalOpen(false)}
         title="Record Fee Payment"
       >
-        {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+        {error && (
+          <Alert variant="error" className="mb-4">
+            {error}
+          </Alert>
+        )}
 
         <form onSubmit={handleRecordPayment} className="space-y-4">
           <Input
@@ -170,7 +177,8 @@ export function MyPaymentsPage() {
           />
 
           <p className="text-xs text-slate-500">
-            Note: Your payment reference will be submitted to the Municipal Treasury staff for verification.
+            Note: Your payment reference will be submitted to the Municipal Treasury staff for
+            verification.
           </p>
 
           <div className="flex justify-end gap-2 pt-2">
@@ -195,4 +203,3 @@ export function MyPaymentsPage() {
     </div>
   );
 }
-

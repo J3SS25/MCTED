@@ -31,12 +31,12 @@ The supplied database schema (`db/schema.sql`) is the domain baseline for the ne
 
 ## A3. Users and Permissions
 
-| Role | Main responsibilities | Access boundaries |
-|---|---|---|
-| Borrower | Browse equipment, reserve, review own reservations/rentals/payments, submit feedback, manage profile, receive notifications | Own personal and transaction records; public catalog and public feedback |
-| Municipal Staff | Review reservations, coordinate pickup/return, verify payments, manage equipment and maintenance, respond to feedback/issues | Operational records needed for municipal service; no administrator-only account controls |
-| Administrator | Staff capabilities plus user/account oversight and system audit review | Full municipal system administration; sensitive changes require confirmation and audit record |
-| Guest | Browse public catalog and public feedback | No personal data, reservations, payments, or protected operations |
+| Role            | Main responsibilities                                                                                                        | Access boundaries                                                                             |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Borrower        | Browse equipment, reserve, review own reservations/rentals/payments, submit feedback, manage profile, receive notifications  | Own personal and transaction records; public catalog and public feedback                      |
+| Municipal Staff | Review reservations, coordinate pickup/return, verify payments, manage equipment and maintenance, respond to feedback/issues | Operational records needed for municipal service; no administrator-only account controls      |
+| Administrator   | Staff capabilities plus user/account oversight and system audit review                                                       | Full municipal system administration; sensitive changes require confirmation and audit record |
+| Guest           | Browse public catalog and public feedback                                                                                    | No personal data, reservations, payments, or protected operations                             |
 
 Enforce access in the service layer for every request. Hiding a menu item is a convenience, not an authorization boundary.
 
@@ -44,17 +44,17 @@ Enforce access in the service layer for every request. Hiding a menu item is a c
 
 ### A4.1 Core entities
 
-| Entity | Purpose and important information |
-|---|---|
-| `users` | Identity, contact/address, barangay, account role/status, password hash, login lockout counters, timestamps |
-| `tools` | Catalog item, category, description/specifications, availability and condition, rental/deposit fees, quantity, image/serial number, acquisition and usage history |
-| `reservations` | Borrower/tool request, requested pickup and return dates, purpose, decision status, staff notes, reviewer and review timestamps |
-| `rentals` | Physical loan lifecycle, optional reservation link, borrower/tool, due/return dates, initial/returned condition, releasing/receiving staff, notes and penalties |
-| `payments` | Receipt/reference, payer, optional reservation/rental links, tool, amount, payment method/status, proof and verifier details |
-| `maintenance` | Tool issue, reporter, optional rental, severity/status, technician, cost, schedule/completion and resolution |
-| `feedback` | Borrower rating of overall experience, tool condition and service; comments and public visibility |
-| `notifications` | User-specific message, type, optional destination link, read state and timestamp |
-| `audit_logs` | Actor/name, action, target, details, IP address and timestamp for accountability |
+| Entity          | Purpose and important information                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`         | Identity, contact/address, barangay, account role/status, password hash, login lockout counters, timestamps                                                       |
+| `tools`         | Catalog item, category, description/specifications, availability and condition, rental/deposit fees, quantity, image/serial number, acquisition and usage history |
+| `reservations`  | Borrower/tool request, requested pickup and return dates, purpose, decision status, staff notes, reviewer and review timestamps                                   |
+| `rentals`       | Physical loan lifecycle, optional reservation link, borrower/tool, due/return dates, initial/returned condition, releasing/receiving staff, notes and penalties   |
+| `payments`      | Receipt/reference, payer, optional reservation/rental links, tool, amount, payment method/status, proof and verifier details                                      |
+| `maintenance`   | Tool issue, reporter, optional rental, severity/status, technician, cost, schedule/completion and resolution                                                      |
+| `feedback`      | Borrower rating of overall experience, tool condition and service; comments and public visibility                                                                 |
+| `notifications` | User-specific message, type, optional destination link, read state and timestamp                                                                                  |
+| `audit_logs`    | Actor/name, action, target, details, IP address and timestamp for accountability                                                                                  |
 
 ### A4.2 Relationship map
 
@@ -66,18 +66,18 @@ Enforce access in the service layer for every request. Hiding a menu item is a c
 
 ### A4.3 Statuses represented in the schema
 
-| Field | Allowed values |
-|---|---|
-| User role | `Administrator`, `Municipal Staff`, `Borrower` |
-| User status | `Active`, `Pending Verification`, `Suspended` |
-| Tool availability | `Available`, `Reserved`, `Borrowed`, `Returned`, `Maintenance`, `Damaged`, `Archived` |
-| Tool condition | `Excellent`, `Good`, `Fair`, `Needs Repair`, `Under Maintenance` |
-| Reservation | `Pending`, `Approved`, `Rejected`, `Cancelled`, `Completed` |
-| Rental | `Pending`, `Reserved`, `Borrowed`, `Returned`, `Completed` |
-| Payment | `Pending`, `Paid`, `Failed`, `Refunded` |
-| Maintenance severity | `Minor`, `Moderate`, `Severe`, `Critical` |
-| Maintenance status | `Reported`, `Scheduled`, `In Progress`, `Completed`, `Decommissioned` |
-| Notification type | `info`, `success`, `warning`, `danger` |
+| Field                | Allowed values                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| User role            | `Administrator`, `Municipal Staff`, `Borrower`                                        |
+| User status          | `Active`, `Pending Verification`, `Suspended`                                         |
+| Tool availability    | `Available`, `Reserved`, `Borrowed`, `Returned`, `Maintenance`, `Damaged`, `Archived` |
+| Tool condition       | `Excellent`, `Good`, `Fair`, `Needs Repair`, `Under Maintenance`                      |
+| Reservation          | `Pending`, `Approved`, `Rejected`, `Cancelled`, `Completed`                           |
+| Rental               | `Pending`, `Reserved`, `Borrowed`, `Returned`, `Completed`                            |
+| Payment              | `Pending`, `Paid`, `Failed`, `Refunded`                                               |
+| Maintenance severity | `Minor`, `Moderate`, `Severe`, `Critical`                                             |
+| Maintenance status   | `Reported`, `Scheduled`, `In Progress`, `Completed`, `Decommissioned`                 |
+| Notification type    | `info`, `success`, `warning`, `danger`                                                |
 
 Treat these as persisted values and map them to consistent display labels, colors, and allowed transitions. Do not invent extra status strings in screens or APIs without a corresponding domain/schema decision. Define them once as Zod enums in `packages/shared` (see Part B) so the API, database layer, and UI cannot drift.
 
@@ -106,7 +106,7 @@ Treat these as persisted values and map them to consistent display labels, color
 1. Staff verifies the approved reservation and borrower, records the item's initial condition, and releases it.
 2. A rental record captures due date, responsible staff, and inspection notes.
 3. Borrower sees current rental status, due date, fees, payment instructions, and receipt/reference information.
-4. Payment is recorded with supported method, amount, reference, status, and optional proof; staff verifies/declines it and the system records who did so. 
+4. Payment is recorded with supported method, amount, reference, status, and optional proof; staff verifies/declines it and the system records who did so.
 5. On return, staff records actual return time, returned condition, inspection notes, overdue penalty, and damage penalty if applicable.
 6. Update tool availability and quantity only after the relevant transaction succeeds. Make penalty/fee calculations visible before confirmation.
 7. Provide a printable/downloadable receipt or transaction summary from stored payment and rental details.
@@ -146,23 +146,23 @@ On desktop, use a persistent left navigation rail with a compact top bar for pag
 
 ### A6.3 Screen specifications
 
-| Screen | Primary content and actions | Important UX states |
-|---|---|---|
-| Sign in / registration | Login form; borrower registration; password visibility; barangay selection; account access help | Field validation, password mismatch/weakness, duplicate email, success, account pending/suspended, lockout |
-| Dashboard | Role-aware summary cards, next action, pending items, upcoming due dates, recent activity | First-use guidance, empty states, loading, actionable warnings |
-| Equipment catalog | Search, category/status filters, sort, paginated list/grid results, availability/fee badges | No results with clear-filter action, unavailable item, image fallback, loading/error |
-| Equipment detail | Photos, name, category, description/specs, condition, quantity, fee/deposit, reviews | Clear "Reserve" availability, sign-in prompt, dates unavailable |
-| Reservation form/detail | Date range, purpose, fee summary, status history, staff notes; cancel when eligible | Validation, conflict, unavailable stock, submission confirmation, rejected/cancelled/completed |
-| Staff reservation queue | Filterable table/cards, borrower/item/dates/status, review details and approve/reject actions | Pending count, stale request, conflict warning, decision confirmation, no requests |
-| Rental desk | Approved pickup list, borrower verification, initial condition, release action; active rentals and return inspection | Missing reservation, item mismatch, return condition and fee review, overdue callout |
-| Payments and receipts | Payment history, receipt/reference, amount/method/status; staff verification queue | Pending proof, verified/refunded/failed, invalid amount, receipt unavailable |
-| Inventory | Search/filter by category, status, condition; create/edit/archive; stock and image management | Quantity validation, archive confirmation, currently borrowed/maintained item, unsaved changes |
-| Maintenance | Open/scheduled/in-progress/completed work, severity, issue, item, assignee, costs and resolution | Critical issue warning, item unavailable, completion confirmation, empty queue |
-| Feedback | Public review list and ratings; borrower submission; staff moderation | Review eligibility, already submitted, hidden/public state, respectful-content guidance |
-| Notifications | Chronological feed, unread indicator, mark read, destination links | No notifications, unread/all filter, target no longer available |
-| Profile | Contact/address and account details; password change if in scope | Save success/failure, validation, sensitive-action confirmation |
-| Users | Searchable account list, role/status, account details and permitted changes | Privilege warning, suspend/restore confirmation, no users |
-| Audit log | Search/filterable chronological event list and detail drawer | No matching events, long details, date range and pagination |
+| Screen                  | Primary content and actions                                                                                          | Important UX states                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Sign in / registration  | Login form; borrower registration; password visibility; barangay selection; account access help                      | Field validation, password mismatch/weakness, duplicate email, success, account pending/suspended, lockout |
+| Dashboard               | Role-aware summary cards, next action, pending items, upcoming due dates, recent activity                            | First-use guidance, empty states, loading, actionable warnings                                             |
+| Equipment catalog       | Search, category/status filters, sort, paginated list/grid results, availability/fee badges                          | No results with clear-filter action, unavailable item, image fallback, loading/error                       |
+| Equipment detail        | Photos, name, category, description/specs, condition, quantity, fee/deposit, reviews                                 | Clear "Reserve" availability, sign-in prompt, dates unavailable                                            |
+| Reservation form/detail | Date range, purpose, fee summary, status history, staff notes; cancel when eligible                                  | Validation, conflict, unavailable stock, submission confirmation, rejected/cancelled/completed             |
+| Staff reservation queue | Filterable table/cards, borrower/item/dates/status, review details and approve/reject actions                        | Pending count, stale request, conflict warning, decision confirmation, no requests                         |
+| Rental desk             | Approved pickup list, borrower verification, initial condition, release action; active rentals and return inspection | Missing reservation, item mismatch, return condition and fee review, overdue callout                       |
+| Payments and receipts   | Payment history, receipt/reference, amount/method/status; staff verification queue                                   | Pending proof, verified/refunded/failed, invalid amount, receipt unavailable                               |
+| Inventory               | Search/filter by category, status, condition; create/edit/archive; stock and image management                        | Quantity validation, archive confirmation, currently borrowed/maintained item, unsaved changes             |
+| Maintenance             | Open/scheduled/in-progress/completed work, severity, issue, item, assignee, costs and resolution                     | Critical issue warning, item unavailable, completion confirmation, empty queue                             |
+| Feedback                | Public review list and ratings; borrower submission; staff moderation                                                | Review eligibility, already submitted, hidden/public state, respectful-content guidance                    |
+| Notifications           | Chronological feed, unread indicator, mark read, destination links                                                   | No notifications, unread/all filter, target no longer available                                            |
+| Profile                 | Contact/address and account details; password change if in scope                                                     | Save success/failure, validation, sensitive-action confirmation                                            |
+| Users                   | Searchable account list, role/status, account details and permitted changes                                          | Privilege warning, suspend/restore confirmation, no users                                                  |
+| Audit log               | Search/filterable chronological event list and detail drawer                                                         | No matching events, long details, date range and pagination                                                |
 
 ### A6.4 Shared interaction patterns
 
@@ -208,6 +208,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 ## A8. Implementation Phases
 
 ### Phase 0 — Product and data decisions
+
 - Confirm that `db/schema.sql` is the authoritative schema for the new project.
 - Decide whether account verification/ID evidence and profile-change requests are required: they exist in current product behavior but are not represented by dedicated fields/tables in the supplied schema.
 - Decide reservation-to-rental/payment rules, quantity semantics, fee and penalty policy, cancellation cutoffs, and stock conflict rules.
@@ -217,6 +218,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 **Exit:** agreed data dictionary, status transitions, role matrix, and MVP scope.
 
 ### Phase 1 — Foundation and visual system
+
 - Define design tokens, typography, spacing, responsive breakpoints, forms, buttons, cards, status badges, dialogs, tables, toast messages, and empty states.
 - Implement the authenticated/guest application shell and role-aware navigation.
 - Establish environment configuration, database connectivity, health visibility, validation/error conventions, and safe session handling.
@@ -225,6 +227,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 **Exit:** usable responsive shell, reliable local startup, schema initialized, and basic operational diagnostics.
 
 ### Phase 2 — Accounts and equipment catalog
+
 - Implement borrower registration, sign-in/out, profile, account status, and server-enforced permissions.
 - Implement searchable/filterable catalog and detailed equipment views.
 - Implement staff inventory create/edit/availability/condition/archive operations with validation and history.
@@ -232,6 +235,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 **Exit:** guest can browse; authenticated borrower can access their profile; authorized staff can manage the catalog.
 
 ### Phase 3 — Reservation and rental operations
+
 - Implement date/quantity conflict checks and reservation lifecycle.
 - Build borrower reservation history and staff review queue.
 - Implement approved pickup, equipment condition capture, checkout, return inspection, and inventory adjustment.
@@ -240,6 +244,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 **Exit:** an end-to-end reservation-to-return flow passes concurrent/conflict, authorization, and inventory consistency tests.
 
 ### Phase 4 — Payments and receipts
+
 - Implement payment record submission and staff verification.
 - Link payments correctly to reservations/rentals and preserve transaction references.
 - Calculate/display authorized fees, deposits, late penalties, and damage penalties with a confirmation step.
@@ -248,6 +253,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 **Exit:** payment state changes are attributable, amount handling is tested, and receipts match stored records.
 
 ### Phase 5 — Maintenance, feedback, and administration
+
 - Implement maintenance reports, assignment, scheduling, completion, and equipment return-to-service.
 - Implement rental-linked feedback, public visibility, and moderation.
 - Add user oversight, audit search, and administrator workflows.
@@ -256,6 +262,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 **Exit:** operational exceptions, moderation, and sensitive account actions have complete audit coverage.
 
 ### Phase 6 — Quality, launch, and operations
+
 - Run security/accessibility, usability, responsive, performance, and data integrity checks.
 - Test migration/restore, backup, monitoring, error alerts, retention, and recovery procedures.
 - Prepare staff training, resident help text, release checklist, and rollback plan.
@@ -278,6 +285,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 ## A10. Verification and Acceptance Checklist
 
 ### Data
+
 - [ ] A clean database can be initialized and validated against the agreed schema.
 - [ ] Seed execution is idempotent and preserves non-fixture data.
 - [ ] Foreign keys and transaction rollback prevent orphaned or partial records.
@@ -285,6 +293,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 - [ ] Audit rows identify the actor and action for all sensitive operations.
 
 ### Workflow
+
 - [ ] Guest catalog access does not expose protected information.
 - [ ] Borrower cannot view or change another borrower's reservations, rentals, payments, profile, or notifications.
 - [ ] Staff cannot grant administrator access or bypass authorization.
@@ -295,6 +304,7 @@ Validate that each reservation, rental, and payment points to the same intended 
 - [ ] Notifications point to the correct in-scope record.
 
 ### UX
+
 - [ ] Every screen has loading, empty, success, validation, and error states where applicable.
 - [ ] Core resident journeys work comfortably on small screens.
 - [ ] Status is understandable without relying on color.
@@ -303,16 +313,16 @@ Validate that each reservation, rental, and payment points to the same intended 
 
 ## A11. Known Risks and Decisions
 
-| # | Risk / open decision | Action |
-|---|---|---|
-| 1 | **Schema/application mismatch:** the existing active API was built against different table names, columns, and ID assumptions | Implement against the supplied schema or approve a versioned migration; do not copy old controllers unchanged |
-| 2 | **Verification data is absent:** no ID-verification fields/tables in the nine-table schema | Confirm whether verification is needed; design explicit fields/tables before building it |
-| 3 | **Reservation-to-rental relationship:** `rentals.reservation_id` is nullable with no declared foreign key | Decide whether to add the constraint and whether walk-in rentals are allowed |
-| 4 | **Payment references:** no declared foreign keys for reservation, rental, tool, verifier, or receipt relationships | Add integrity rules after confirming optional-payment behavior |
-| 5 | **Maintenance attribution:** `reported_by` and `rental_id` not declared as foreign keys | Confirm whether non-users may report; add relationships |
-| 6 | **Inventory state semantics:** availability stored alongside total and available quantity | Define the authoritative source; make all transitions update consistently |
-| 7 | **Demo credentials and PII in fixtures** | Keep accounts non-production; never copy real resident data into demos |
-| 8 | **Payment scope:** simulated, in-person, or provider-integrated? | Decide early; design and proof-of-payment handling differ substantially |
+| #   | Risk / open decision                                                                                                          | Action                                                                                                        |
+| --- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1   | **Schema/application mismatch:** the existing active API was built against different table names, columns, and ID assumptions | Implement against the supplied schema or approve a versioned migration; do not copy old controllers unchanged |
+| 2   | **Verification data is absent:** no ID-verification fields/tables in the nine-table schema                                    | Confirm whether verification is needed; design explicit fields/tables before building it                      |
+| 3   | **Reservation-to-rental relationship:** `rentals.reservation_id` is nullable with no declared foreign key                     | Decide whether to add the constraint and whether walk-in rentals are allowed                                  |
+| 4   | **Payment references:** no declared foreign keys for reservation, rental, tool, verifier, or receipt relationships            | Add integrity rules after confirming optional-payment behavior                                                |
+| 5   | **Maintenance attribution:** `reported_by` and `rental_id` not declared as foreign keys                                       | Confirm whether non-users may report; add relationships                                                       |
+| 6   | **Inventory state semantics:** availability stored alongside total and available quantity                                     | Define the authoritative source; make all transitions update consistently                                     |
+| 7   | **Demo credentials and PII in fixtures**                                                                                      | Keep accounts non-production; never copy real resident data into demos                                        |
+| 8   | **Payment scope:** simulated, in-person, or provider-integrated?                                                              | Decide early; design and proof-of-payment handling differ substantially                                       |
 
 ## A12. Suggested MVP
 
@@ -336,15 +346,15 @@ A scalable, maintainable full-stack TypeScript project: React + Tailwind fronten
 
 ## B1. Tech Stack
 
-| Layer | Choice | Notes |
-|---|---|---|
-| Package manager | **pnpm** (workspaces) | Strict, fast, disk-efficient; one lockfile |
-| Frontend | TypeScript, **React + Vite**, **Tailwind CSS** | React Router, TanStack Query for server state |
-| Backend | TypeScript, **Express** | Layered modules, run with `tsx` (dev) / `tsc` (build) |
-| Database | **SQLite** (one `.db` file) | `better-sqlite3`; `db/schema.sql` is the authoritative baseline (A1). Use it as migration `0001` and keep later changes as reviewed SQL migrations; Drizzle (introspected from the schema) or Kysely may be used for typed queries |
-| Validation | **Zod** | Schemas shared between frontend and backend |
-| Testing | **Vitest** (+ Supertest for API, Testing Library for UI) | |
-| Quality | ESLint, Prettier, `tsc --noEmit` | Enforced via Husky + lint-staged + CI |
+| Layer           | Choice                                                   | Notes                                                                                                                                                                                                                              |
+| --------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package manager | **pnpm** (workspaces)                                    | Strict, fast, disk-efficient; one lockfile                                                                                                                                                                                         |
+| Frontend        | TypeScript, **React + Vite**, **Tailwind CSS**           | React Router, TanStack Query for server state                                                                                                                                                                                      |
+| Backend         | TypeScript, **Express**                                  | Layered modules, run with `tsx` (dev) / `tsc` (build)                                                                                                                                                                              |
+| Database        | **SQLite** (one `.db` file)                              | `better-sqlite3`; `db/schema.sql` is the authoritative baseline (A1). Use it as migration `0001` and keep later changes as reviewed SQL migrations; Drizzle (introspected from the schema) or Kysely may be used for typed queries |
+| Validation      | **Zod**                                                  | Schemas shared between frontend and backend                                                                                                                                                                                        |
+| Testing         | **Vitest** (+ Supertest for API, Testing Library for UI) |                                                                                                                                                                                                                                    |
+| Quality         | ESLint, Prettier, `tsc --noEmit`                         | Enforced via Husky + lint-staged + CI                                                                                                                                                                                              |
 
 ---
 
@@ -430,22 +440,23 @@ A scalable, maintainable full-stack TypeScript project: React + Tailwind fronten
 
 **Backend modules (`apps/api/src/modules/`)** — one per schema entity, plus auth:
 
-| Module | Entity / scope | Notes |
-|---|---|---|
-| `auth` | `users` (login, register, session, lockout) | Server decides role; never trusts a client-supplied role |
-| `users` | `users` (profile, admin oversight) | Admin-only role/status changes; self-lockout guard |
-| `tools` | `tools` | Catalog search/filter, inventory CRUD, archive, return-to-service |
-| `reservations` | `reservations` | Conflict checks, approve/reject/cancel/complete (transactional) |
-| `rentals` | `rentals` | Checkout, return inspection, penalties; updates tool quantity/status |
-| `payments` | `payments` | Record, verify/decline, receipt view |
-| `maintenance` | `maintenance` | Report, schedule, complete, return to service |
-| `feedback` | `feedback` | Submit (rental-linked), moderation (public/hidden) |
-| `notifications` | `notifications` | List, mark read, deep links |
-| `audit` | `audit_logs` | Written via a shared `audit.record()` service; read-only API for admins |
+| Module          | Entity / scope                              | Notes                                                                   |
+| --------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
+| `auth`          | `users` (login, register, session, lockout) | Server decides role; never trusts a client-supplied role                |
+| `users`         | `users` (profile, admin oversight)          | Admin-only role/status changes; self-lockout guard                      |
+| `tools`         | `tools`                                     | Catalog search/filter, inventory CRUD, archive, return-to-service       |
+| `reservations`  | `reservations`                              | Conflict checks, approve/reject/cancel/complete (transactional)         |
+| `rentals`       | `rentals`                                   | Checkout, return inspection, penalties; updates tool quantity/status    |
+| `payments`      | `payments`                                  | Record, verify/decline, receipt view                                    |
+| `maintenance`   | `maintenance`                               | Report, schedule, complete, return to service                           |
+| `feedback`      | `feedback`                                  | Submit (rental-linked), moderation (public/hidden)                      |
+| `notifications` | `notifications`                             | List, mark read, deep links                                             |
+| `audit`         | `audit_logs`                                | Written via a shared `audit.record()` service; read-only API for admins |
 
 Cross-module rules: workflows that touch several tables (approve reservation, checkout, return, verify payment) live in the owning service and run inside a single DB transaction, calling `audit.record()` and `notifications.create()` within it.
 
 **Shared package (`packages/shared/src/`)**
+
 - `enums.ts` — every status/role value from A4.3 as Zod enums.
 - `schemas/<entity>.ts` — request/response schemas per entity.
 - `permissions.ts` — role → allowed-action matrix used by API middleware and UI navigation.
@@ -453,22 +464,23 @@ Cross-module rules: workflows that touch several tables (approve reservation, ch
 
 **Frontend routes (`apps/web/src/features/`)**
 
-| Feature folder | Pages (see A6.3) | Roles |
-|---|---|---|
-| `auth` | Sign in, registration | Guest |
-| `catalog` | Catalog, equipment detail | Guest, Borrower |
-| `reservations` | Reservation form/detail, My reservations, staff queue | Borrower, Staff |
-| `rentals` | My rentals, rental desk (checkout/return) | Borrower, Staff |
-| `payments` | History, receipts, verification queue | Borrower, Staff |
-| `inventory` | Inventory management | Staff, Admin |
-| `maintenance` | Maintenance board | Staff, Admin |
-| `feedback` | Reviews, submit, moderation | Guest, Borrower, Staff |
-| `notifications` | Feed | All signed-in |
-| `profile` | Profile/settings | All signed-in |
-| `admin` | Users, audit log | Admin |
-| `dashboard` | Role-aware dashboard | All signed-in |
+| Feature folder  | Pages (see A6.3)                                      | Roles                  |
+| --------------- | ----------------------------------------------------- | ---------------------- |
+| `auth`          | Sign in, registration                                 | Guest                  |
+| `catalog`       | Catalog, equipment detail                             | Guest, Borrower        |
+| `reservations`  | Reservation form/detail, My reservations, staff queue | Borrower, Staff        |
+| `rentals`       | My rentals, rental desk (checkout/return)             | Borrower, Staff        |
+| `payments`      | History, receipts, verification queue                 | Borrower, Staff        |
+| `inventory`     | Inventory management                                  | Staff, Admin           |
+| `maintenance`   | Maintenance board                                     | Staff, Admin           |
+| `feedback`      | Reviews, submit, moderation                           | Guest, Borrower, Staff |
+| `notifications` | Feed                                                  | All signed-in          |
+| `profile`       | Profile/settings                                      | All signed-in          |
+| `admin`         | Users, audit log                                      | Admin                  |
+| `dashboard`     | Role-aware dashboard                                  | All signed-in          |
 
 **Seed (`apps/api/src/db/seed/`)**
+
 - `fixtures/` — demo users, tools, reservations, rentals, payments, maintenance, feedback, notifications, audit (A7.1), including the added edge cases.
 - `seed.ts` — refuses to run unless `NODE_ENV` is `development`/`demo` and `ALLOW_DEMO_SEED=true`; inserts parents before children in one transaction; reports inserted/skipped/invalid; idempotent (never overwrites user data).
 - `validate-fixtures.ts` — checks borrower/tool consistency and chronology (A7.3) before any insert.
@@ -481,13 +493,15 @@ Cross-module rules: workflows that touch several tables (approve reservation, ch
 ## B3. pnpm Setup
 
 **`pnpm-workspace.yaml`**
+
 ```yaml
 packages:
-  - "apps/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'packages/*'
 ```
 
 **`.npmrc`**
+
 ```
 engine-strict=true
 auto-install-peers=true
@@ -495,6 +509,7 @@ save-exact=true
 ```
 
 **Root `package.json` scripts**
+
 ```json
 {
   "scripts": {
@@ -514,6 +529,7 @@ save-exact=true
 ```
 
 Conventions:
+
 - Internal packages referenced with `workspace:*` (e.g. `"@app/shared": "workspace:*"`).
 - Always commit `pnpm-lock.yaml`; CI installs with `pnpm install --frozen-lockfile`.
 - Pin Node via `.nvmrc` and the `packageManager` field (Corepack).
@@ -533,6 +549,7 @@ Conventions:
 9. **Docs as code:** significant decisions recorded in `docs/adr/`.
 
 ### SQLite specifics
+
 - Open with: `journal_mode = WAL`, `foreign_keys = ON`, `busy_timeout = 5000`, `synchronous = NORMAL`.
 - One connection per process (better-sqlite3 is synchronous and fast); keep transactions short.
 - DB path from env: `DATABASE_PATH=./data/app.db`.
@@ -544,20 +561,22 @@ Conventions:
 ## B5. Recommended Security Protocols
 
 ### Application
-| Area | Protocol |
-|---|---|
-| HTTP headers | `helmet` (CSP, HSTS, X-Content-Type-Options, frame-ancestors) |
-| CORS | `cors` with an explicit origin allowlist from env, never `*` with credentials |
-| Rate limiting | `express-rate-limit` globally; much stricter on `/auth/*` |
-| Input validation | Zod on every `body`, `query`, `params`; reject unknown keys (`.strict()`) |
-| SQL injection | Parameterized queries only (Drizzle / prepared statements); never string-concatenate SQL |
-| XSS | React escapes by default; avoid `dangerouslySetInnerHTML`; sanitize any rich text (DOMPurify); strict CSP |
-| CSRF | Use `SameSite=Lax/Strict` cookies; add CSRF tokens if using cookie auth with cross-site possibilities |
-| Body limits | `express.json({ limit: '100kb' })`; limit upload size/type if uploads exist |
-| Error handling | No stack traces or SQL errors to clients in production; log details server-side |
-| `x-powered-by` | Disabled (`app.disable('x-powered-by')`, also covered by helmet) |
+
+| Area             | Protocol                                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| HTTP headers     | `helmet` (CSP, HSTS, X-Content-Type-Options, frame-ancestors)                                             |
+| CORS             | `cors` with an explicit origin allowlist from env, never `*` with credentials                             |
+| Rate limiting    | `express-rate-limit` globally; much stricter on `/auth/*`                                                 |
+| Input validation | Zod on every `body`, `query`, `params`; reject unknown keys (`.strict()`)                                 |
+| SQL injection    | Parameterized queries only (Drizzle / prepared statements); never string-concatenate SQL                  |
+| XSS              | React escapes by default; avoid `dangerouslySetInnerHTML`; sanitize any rich text (DOMPurify); strict CSP |
+| CSRF             | Use `SameSite=Lax/Strict` cookies; add CSRF tokens if using cookie auth with cross-site possibilities     |
+| Body limits      | `express.json({ limit: '100kb' })`; limit upload size/type if uploads exist                               |
+| Error handling   | No stack traces or SQL errors to clients in production; log details server-side                           |
+| `x-powered-by`   | Disabled (`app.disable('x-powered-by')`, also covered by helmet)                                          |
 
 ### Authentication & Authorization
+
 - Hash passwords with **argon2id** (or bcrypt cost ≥ 12). Never store plaintext or reversible hashes.
 - Prefer **server sessions or short-lived JWT access tokens in `HttpOnly; Secure; SameSite` cookies**; avoid storing tokens in `localStorage`.
 - Role-based access control enforced in **middleware on the server**; never trust frontend role checks.
@@ -565,34 +584,40 @@ Conventions:
 - Login throttling, generic "invalid credentials" messages, and optional account lockout.
 
 ### Secrets & Configuration
+
 - `.env` is gitignored; only `.env.example` is committed.
 - Validate required secrets at startup (min length for JWT/session secret).
 - Different secrets per environment; rotate on suspected exposure.
 - Consider a pre-commit secret scanner (e.g. gitleaks).
 
 ### Data & Database
+
 - The `.db`, `-wal`, and `-shm` files are gitignored and live outside any publicly served folder.
 - Restrict file permissions (`chmod 600`) and run the process as a non-root user.
 - Encrypted, tested backups stored off the machine; document restore steps.
 - Store only the personal data you need; consider encrypting sensitive columns.
 
 ### Dependencies & Supply Chain
+
 - `pnpm audit --prod` in CI; enable Dependabot or Renovate.
 - Commit the lockfile and install with `--frozen-lockfile`.
 - Review new dependencies (maintenance, downloads, license) before adding.
 - Keep Node LTS and update regularly.
 
 ### Transport & Deployment
+
 - HTTPS everywhere (TLS at reverse proxy such as Nginx/Caddy); redirect HTTP→HTTPS; set `trust proxy` correctly.
 - Run behind a reverse proxy; do not expose Node directly.
 - Separate dev, staging, and production configs.
 
 ### Logging & Monitoring
+
 - Structured logging (`pino`); redact passwords, tokens, and cookies.
 - Log auth events (login, failure, permission denied) and admin actions (audit trail table).
 - Health endpoint (`/health`) that exposes no sensitive info.
 
 ### MCTEB-specific controls
+
 - **Ownership checks (IDOR):** every borrower query is scoped by `user_id` from the session, never from the request, for reservations, rentals, payments, feedback, and notifications.
 - **Role escalation:** only Administrators change `role`/`status`; staff cannot grant admin; block self-demotion and self-suspension of the last active admin.
 - **Account lockout:** use the schema's login counters; generic error messages; lockout guidance shown without revealing whether the email exists.
@@ -604,6 +629,7 @@ Conventions:
 - **Data hygiene:** never copy real resident data into demo/dev databases; encrypt backups since they contain PII.
 
 ### Process
+
 - Branch protection with required CI checks and code review.
 - Security checklist in `docs/security.md`, reviewed before each release.
 - A `SECURITY.md` explaining how to report vulnerabilities.
@@ -623,6 +649,7 @@ Conventions:
 ## B7. Documentation Files
 
 ### `README.md` outline
+
 1. Project overview and purpose
 2. Tech stack
 3. Prerequisites (Node, pnpm via Corepack)
@@ -635,22 +662,31 @@ Conventions:
 10. Contributing (branching, commit convention) and link to `docs/`
 
 ### `CHANGELOG.md`
+
 Follow **Keep a Changelog** + **Semantic Versioning**.
+
 ```md
 # Changelog
+
 All notable changes to this project are documented here.
 
 ## [Unreleased]
+
 ### Added
+
 - Initial project structure.
 
 ## [0.1.0] - YYYY-MM-DD
+
 ### Added
+
 - ...
 ```
+
 Use Conventional Commits (`feat:`, `fix:`, `chore:`) so entries are easy to generate; optionally automate with Changesets.
 
 ### `.gitignore`
+
 ```gitignore
 # Dependencies
 node_modules/
@@ -692,6 +728,7 @@ Thumbs.db
 ```
 
 ### `.env.example`
+
 ```
 NODE_ENV=development
 PORT=3000
@@ -707,19 +744,20 @@ LOG_LEVEL=info
 
 Technical tasks mapped onto the product phases in A8.
 
-| Product phase (A8) | Technical tasks |
-|---|---|
-| **0. Decisions** | Write `docs/data-dictionary.md`, `status-transitions.md`, `role-matrix.md`; decide on schema extensions (FKs in A11 items 3–5); record choices as ADRs |
-| **1. Foundation** | Init repo and pnpm workspace, tsconfig base, ESLint/Prettier, Husky, CI; Express app/server split, env validation, logger, error handler, helmet/CORS/rate limit, `/health`; SQLite client + pragmas, apply `schema.sql` as migration `0001`; Vite + Tailwind, design tokens, app shell, role-aware nav; `packages/shared` enums |
-| **2. Accounts and catalog** | `auth`, `users`, `tools` modules; session cookies, RBAC middleware; catalog and inventory UI |
-| **3. Reservations and rentals** | `reservations`, `rentals`, `notifications` modules; transactional conflict checks and inventory updates; concurrency tests |
-| **4. Payments** | `payments` module; money helpers; proof upload handling; receipt/print view |
-| **5. Maintenance, feedback, admin** | `maintenance`, `feedback`, `audit`, admin UI; audit coverage tests |
-| **6. Quality and launch** | Security/accessibility/performance checks; backup + restore drill; remove demo access; `pnpm audit`; production build, reverse proxy + HTTPS; tag `v1.0.0` and update CHANGELOG |
+| Product phase (A8)                  | Technical tasks                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0. Decisions**                    | Write `docs/data-dictionary.md`, `status-transitions.md`, `role-matrix.md`; decide on schema extensions (FKs in A11 items 3–5); record choices as ADRs                                                                                                                                                                           |
+| **1. Foundation**                   | Init repo and pnpm workspace, tsconfig base, ESLint/Prettier, Husky, CI; Express app/server split, env validation, logger, error handler, helmet/CORS/rate limit, `/health`; SQLite client + pragmas, apply `schema.sql` as migration `0001`; Vite + Tailwind, design tokens, app shell, role-aware nav; `packages/shared` enums |
+| **2. Accounts and catalog**         | `auth`, `users`, `tools` modules; session cookies, RBAC middleware; catalog and inventory UI                                                                                                                                                                                                                                     |
+| **3. Reservations and rentals**     | `reservations`, `rentals`, `notifications` modules; transactional conflict checks and inventory updates; concurrency tests                                                                                                                                                                                                       |
+| **4. Payments**                     | `payments` module; money helpers; proof upload handling; receipt/print view                                                                                                                                                                                                                                                      |
+| **5. Maintenance, feedback, admin** | `maintenance`, `feedback`, `audit`, admin UI; audit coverage tests                                                                                                                                                                                                                                                               |
+| **6. Quality and launch**           | Security/accessibility/performance checks; backup + restore drill; remove demo access; `pnpm audit`; production build, reverse proxy + HTTPS; tag `v1.0.0` and update CHANGELOG                                                                                                                                                  |
 
 ---
 
 ## B9. Definition of Done (per feature)
+
 - [ ] Zod schema in `packages/shared`
 - [ ] Migration written and committed (schema changes reviewed per A1)
 - [ ] Multi-row operations run in a transaction and write an audit row where required

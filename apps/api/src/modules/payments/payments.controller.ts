@@ -45,11 +45,7 @@ export class PaymentsController {
     try {
       if (!req.user) throw AppError.unauthorized();
       const validated = CreatePaymentSchema.parse(req.body);
-      const payment = PaymentsService.recordPayment(
-        req.user.id,
-        req.user.full_name,
-        validated,
-      );
+      const payment = PaymentsService.recordPayment(req.user.id, req.user.full_name, validated);
       res.status(201).json(payment);
     } catch (error) {
       next(error);
@@ -74,4 +70,3 @@ export class PaymentsController {
     }
   }
 }
-

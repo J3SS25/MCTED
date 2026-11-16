@@ -74,4 +74,3 @@ export const BarangaySchema = z.enum([
   'San Joaquin',
 ]);
 export type Barangay = z.infer<typeof BarangaySchema>;
-

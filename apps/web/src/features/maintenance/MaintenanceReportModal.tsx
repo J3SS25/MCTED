@@ -19,7 +19,11 @@ interface MaintenanceReportModalProps {
   onSuccess: () => void;
 }
 
-export function MaintenanceReportModal({ isOpen, onClose, onSuccess }: MaintenanceReportModalProps) {
+export function MaintenanceReportModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: MaintenanceReportModalProps) {
   const [tools, setTools] = useState<Tool[]>([]);
   const [selectedToolId, setSelectedToolId] = useState('');
   const [severity, setSeverity] = useState<MaintenanceSeverity>('Moderate');
@@ -77,7 +81,11 @@ export function MaintenanceReportModal({ isOpen, onClose, onSuccess }: Maintenan
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Report Tool Issue / Maintenance">
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Select
@@ -127,7 +135,8 @@ export function MaintenanceReportModal({ isOpen, onClose, onSuccess }: Maintenan
         />
 
         <p className="text-xs text-amber-600 dark:text-amber-400">
-          Note: If severity is Severe or Critical, the item will automatically be taken out of public catalog availability.
+          Note: If severity is Severe or Critical, the item will automatically be taken out of
+          public catalog availability.
         </p>
 
         <div className="pt-2 flex justify-end gap-2">
@@ -142,4 +151,3 @@ export function MaintenanceReportModal({ isOpen, onClose, onSuccess }: Maintenan
     </Modal>
   );
 }
-

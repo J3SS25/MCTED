@@ -43,4 +43,3 @@ export const ReturnRentalSchema = z.object({
 });
 
 export type ReturnRentalInput = z.infer<typeof ReturnRentalSchema>;
-

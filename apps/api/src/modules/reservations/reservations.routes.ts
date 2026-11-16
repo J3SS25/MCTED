@@ -12,5 +12,8 @@ reservationsRouter.get('/:id', ReservationsController.getById);
 reservationsRouter.post('/:id/cancel', ReservationsController.cancel);
 
 // Staff review
-reservationsRouter.patch('/:id/review', requireRole('Municipal Staff', 'Administrator'), ReservationsController.review);
-
+reservationsRouter.patch(
+  '/:id/review',
+  requireRole('Municipal Staff', 'Administrator'),
+  ReservationsController.review,
+);

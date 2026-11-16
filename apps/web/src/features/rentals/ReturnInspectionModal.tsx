@@ -22,7 +22,12 @@ interface ReturnInspectionModalProps {
   onSuccess: () => void;
 }
 
-export function ReturnInspectionModal({ isOpen, onClose, rental, onSuccess }: ReturnInspectionModalProps) {
+export function ReturnInspectionModal({
+  isOpen,
+  onClose,
+  rental,
+  onSuccess,
+}: ReturnInspectionModalProps) {
   const [returnedCondition, setReturnedCondition] = useState<ToolConditionStatus>('Good');
   const [inspectionNotes, setInspectionNotes] = useState('');
   const [damagePenaltyPesos, setDamagePenaltyPesos] = useState<number>(0);
@@ -61,7 +66,11 @@ export function ReturnInspectionModal({ isOpen, onClose, rental, onSuccess }: Re
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Inspect Return: ${rental?.tool_name}`}>
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -115,4 +124,3 @@ export function ReturnInspectionModal({ isOpen, onClose, rental, onSuccess }: Re
     </Modal>
   );
 }
-

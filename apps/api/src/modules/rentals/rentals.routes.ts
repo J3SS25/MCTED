@@ -10,6 +10,13 @@ rentalsRouter.get('/', RentalsController.list);
 rentalsRouter.get('/:id', RentalsController.getById);
 
 // Staff rental desk operations
-rentalsRouter.post('/checkout', requireRole('Municipal Staff', 'Administrator'), RentalsController.checkout);
-rentalsRouter.post('/:id/return', requireRole('Municipal Staff', 'Administrator'), RentalsController.processReturn);
-
+rentalsRouter.post(
+  '/checkout',
+  requireRole('Municipal Staff', 'Administrator'),
+  RentalsController.checkout,
+);
+rentalsRouter.post(
+  '/:id/return',
+  requireRole('Municipal Staff', 'Administrator'),
+  RentalsController.processReturn,
+);

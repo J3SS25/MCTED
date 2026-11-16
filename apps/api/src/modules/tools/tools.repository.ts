@@ -100,7 +100,7 @@ export class ToolsRepository {
     for (const key of allowedKeys) {
       if (input[key] !== undefined) {
         fields.push(`${key} = ?`);
-        values.push((input[key] as string | number | null) ?? null);
+        values.push(input[key] ?? null);
       }
     }
 
@@ -138,4 +138,3 @@ export class ToolsRepository {
     return (stmt.get(delta, delta, id) as Tool) || null;
   }
 }
-

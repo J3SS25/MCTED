@@ -47,11 +47,15 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
     return next();
   }
 
-  const userRow = db.prepare(`
+  const userRow = db
+    .prepare(
+      `
     SELECT id, email, full_name, role, status, barangay, lockout_until
     FROM users
     WHERE id = ?
-  `).get(session.user_id) as (AuthenticatedUser & { lockout_until: string | null }) | undefined;
+  `,
+    )
+    .get(session.user_id) as (AuthenticatedUser & { lockout_until: string | null }) | undefined;
 
   if (!userRow) {
     SessionRepository.delete(token);
@@ -113,4 +117,3 @@ export function requirePermission(action: PermissionAction) {
     next();
   };
 }
-

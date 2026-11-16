@@ -18,4 +18,3 @@ export class NotificationsService {
     return NotificationsRepository.markAllAsRead(userId);
   }
 }
-

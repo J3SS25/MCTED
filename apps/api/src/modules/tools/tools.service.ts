@@ -65,7 +65,9 @@ export class ToolsService {
     const tool = this.getToolById(id);
 
     if (tool.available_quantity < tool.total_quantity) {
-      throw AppError.badRequest('Cannot archive tool while units are currently borrowed or reserved');
+      throw AppError.badRequest(
+        'Cannot archive tool while units are currently borrowed or reserved',
+      );
     }
 
     const updated = ToolsRepository.update(id, { availability_status: 'Archived' });
@@ -85,4 +87,3 @@ export class ToolsService {
     return updated;
   }
 }
-

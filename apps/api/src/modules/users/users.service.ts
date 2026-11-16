@@ -2,7 +2,12 @@ import { UsersRepository } from './users.repository.js';
 import { AuditService } from '../audit/audit.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { AppError } from '../../utils/errors.js';
-import type { User, UpdateProfileInput, UpdateUserStatusInput, UpdateUserRoleInput } from '@mcteb/shared';
+import type {
+  User,
+  UpdateProfileInput,
+  UpdateUserStatusInput,
+  UpdateUserRoleInput,
+} from '@mcteb/shared';
 
 export class UsersService {
   static getAllUsers(): User[] {
@@ -17,7 +22,11 @@ export class UsersService {
     return user;
   }
 
-  static updateProfile(id: string, input: UpdateProfileInput, actor: { id: string; name: string }): User {
+  static updateProfile(
+    id: string,
+    input: UpdateProfileInput,
+    actor: { id: string; name: string },
+  ): User {
     const updated = UsersRepository.updateProfile(id, input);
     if (!updated) {
       throw AppError.notFound('User not found');
@@ -35,7 +44,11 @@ export class UsersService {
     return updated;
   }
 
-  static updateUserStatus(id: string, input: UpdateUserStatusInput, actor: { id: string; name: string }): User {
+  static updateUserStatus(
+    id: string,
+    input: UpdateUserStatusInput,
+    actor: { id: string; name: string },
+  ): User {
     const targetUser = this.getUserById(id);
 
     // Safeguard 1: Prevent self-suspension
@@ -75,7 +88,11 @@ export class UsersService {
     return updated;
   }
 
-  static updateUserRole(id: string, input: UpdateUserRoleInput, actor: { id: string; name: string }): User {
+  static updateUserRole(
+    id: string,
+    input: UpdateUserRoleInput,
+    actor: { id: string; name: string },
+  ): User {
     const targetUser = this.getUserById(id);
 
     // Safeguard: Demoting the last active administrator
@@ -110,4 +127,3 @@ export class UsersService {
     return updated;
   }
 }
-

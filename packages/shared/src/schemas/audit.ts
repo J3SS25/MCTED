@@ -36,4 +36,3 @@ export const AuditLogFilterSchema = z.object({
 });
 
 export type AuditLogFilterInput = z.infer<typeof AuditLogFilterSchema>;
-

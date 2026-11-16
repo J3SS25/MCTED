@@ -4,19 +4,59 @@ All notable changes to this project are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+---
+
+## [0.2.0] - 2026-11-16
 
 ### Added
-- Initial project structure (pnpm monorepo with apps/web, apps/api, packages/shared).
-- SQLite database schema (db/schema.sql) with nine core entities: users, tools, reservations, rentals, payments, maintenance, feedback, notifications, audit_logs.
+
+- **Automated Development Setup Scripts**:
+  - `scripts/setup.ps1`: Automated PowerShell development bootstrapper for Windows.
+  - `setup.bat`: One-click Windows batch wrapper.
+  - `scripts/setup.sh`: POSIX-compliant automated shell bootstrapper for Linux and macOS.
+- **Dedicated Database Lifecycle Commands**:
+  - `pnpm run db:init`: Non-destructive SQLite database initialization and connectivity verification.
+  - `pnpm run db:reset-demo`: Foreign-key safe demo record reset command with environment safeguards against production execution.
+  - `pnpm run db:backup`: Atomic hot database snapshot backup via SQLite `VACUUM INTO`.
+- **Automated Test Suites**:
+  - Vitest component testing in `apps/web/src/components/ui/Button.test.tsx` using `@testing-library/react` and `jsdom`.
+  - Vitest unit testing in `packages/shared/src/money.test.ts` for integer centavos financial conversions.
+- **Centralized Documentation System (21 Comprehensive Documents)**:
+  - `docs/architecture/`: `SYSTEM_ARCHITECTURE.md`, `PROJECT_STRUCTURE.md`, `ARCHITECTURE_DECISIONS.md`, `DATA_FLOW.md`.
+  - `docs/technical/`: `DATABASE.md`, `API_DOCUMENTATION.md`, `AUTHENTICATION.md`, `SECURITY.md`, `CONFIGURATION.md`.
+  - `docs/development/`: `INSTALLATION.md`, `DEVELOPMENT_GUIDELINES.md`, `CODING_STANDARDS.md`, `TYPESCRIPT_STANDARDS.md`, `TESTING_GUIDELINES.md`, `DEMO_ACCOUNTS.md`.
+  - `docs/maintenance/`: `DEVELOPMENT_STATUS.md`, `KNOWN_ISSUES.md`, `TECHNICAL_DEBT.md`, `FUTURE_IMPROVEMENTS.md`.
+  - `docs/audits/`: `DEVELOPMENT_AUDIT.md`, `SECURITY_AUDIT.md`, `UI_UX_AUDIT.md`.
+
+### Changed
+
+- **TypeScript Standardization**:
+  - Eliminated 156 emitted `.d.ts`, `.js`, `.js.map`, and `.d.ts.map` compiler artifacts accidentally committed in `apps/web/src/`.
+  - Standardized application source code to 100% TypeScript (`.ts` and `.tsx`).
+  - Restated compiler strictness across all workspaces (`strict: true`, `noImplicitAny: true`, `strictNullChecks: true`, `noUncheckedIndexedAccess: true`).
+- **ESLint & Prettier Modernization**:
+  - Installed missing `@eslint/js` and `typescript-eslint` packages.
+  - Updated ESLint Flat Config (`eslint.config.mjs`) with global ignores, type-checked TypeScript parser options, Express declaration augmentations, and React event handler rules.
+  - Added `.prettierignore` and formatted all 230+ repository files with Prettier.
+- **Root Monorepo Scripts (`package.json`)**:
+  - Added unified `dev`, `build`, `typecheck`, `lint`, `lint:fix`, `format`, `format:check`, `test`, `setup`, `db:init`, `db:reset-demo`, and `db:backup`.
+
+### Fixed
+
+- Fixed ESLint error caused by redundant union type constituents (`useState<any | null>(null)`) in React screens.
+- Fixed Vitest exit error in `apps/web` by installing `jsdom` and adding a component test suite.
+- Fixed reverse foreign-key dependency ordering in demo reset script to eliminate SQLite constraint failures.
+
+---
+
+## [0.1.0] - 2026-11-05
+
+### Added
+
+- Initial project structure (pnpm monorepo with `apps/web`, `apps/api`, `packages/shared`).
+- SQLite database schema (`db/schema.sql`) with nine core entities: `users`, `tools`, `reservations`, `rentals`, `payments`, `maintenance`, `feedback`, `notifications`, `audit_logs`.
 - Shared package with Zod enums, schemas, permissions matrix, money and date helpers.
 - Backend API with all ten modules: auth, users, tools, reservations, rentals, payments, maintenance, feedback, notifications, audit.
 - Frontend React application with all eleven feature modules.
 - Role-aware navigation shell with light/dark theme support.
 - Demo seed data with safeguards against production exposure.
-
-## [0.1.0] - 2026-11-05
-
-### Added
-- Project plan and architecture documentation.
-

@@ -46,4 +46,3 @@ export class SessionRepository {
     db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
   }
 }
-

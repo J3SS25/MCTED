@@ -6,8 +6,20 @@ export interface FixtureValidationReport {
 export function validateFixtures(data: {
   users: Array<{ id: string; email: string }>;
   tools: Array<{ id: string; name: string }>;
-  reservations: Array<{ id: string; user_id: string; tool_id: string; pickup_date: string; return_date: string }>;
-  rentals: Array<{ id: string; user_id: string; tool_id: string; due_date: string; returned_at?: string | null }>;
+  reservations: Array<{
+    id: string;
+    user_id: string;
+    tool_id: string;
+    pickup_date: string;
+    return_date: string;
+  }>;
+  rentals: Array<{
+    id: string;
+    user_id: string;
+    tool_id: string;
+    due_date: string;
+    returned_at?: string | null;
+  }>;
   payments: Array<{ id: string; user_id: string; amount_centavos: number }>;
 }): FixtureValidationReport {
   const errors: string[] = [];
@@ -52,4 +64,3 @@ export function validateFixtures(data: {
     errors,
   };
 }
-

@@ -63,7 +63,10 @@ export function ToolDetailPage() {
         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
           Equipment item not found
         </h3>
-        <Link to="/catalog" className="text-civic-deep dark:text-civic-light hover:underline mt-2 inline-block">
+        <Link
+          to="/catalog"
+          className="text-civic-deep dark:text-civic-light hover:underline mt-2 inline-block"
+        >
           Return to catalog
         </Link>
       </div>
@@ -105,9 +108,7 @@ export function ToolDetailPage() {
               <Badge status={tool.condition_status} />
             </div>
 
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              {tool.name}
-            </h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{tool.name}</h1>
             {tool.serial_number && (
               <p className="text-xs font-mono text-slate-400 mt-1">
                 Serial No: {tool.serial_number}
@@ -152,7 +153,9 @@ export function ToolDetailPage() {
               <div className="space-y-2">
                 <Button
                   className="w-full"
-                  onClick={() => navigate('/login', { state: { from: { pathname: `/catalog/${tool.id}` } } })}
+                  onClick={() =>
+                    navigate('/login', { state: { from: { pathname: `/catalog/${tool.id}` } } })
+                  }
                 >
                   Sign In to Reserve Equipment
                 </Button>
@@ -207,9 +210,7 @@ export function ToolDetailPage() {
                       <span className="ml-1 font-bold">{rev.overall_rating}/5</span>
                     </div>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-300 italic">
-                    "{rev.comments}"
-                  </p>
+                  <p className="text-slate-600 dark:text-slate-300 italic">"{rev.comments}"</p>
                 </CardContent>
               </Card>
             ))}
@@ -228,4 +229,3 @@ export function ToolDetailPage() {
     </div>
   );
 }
-

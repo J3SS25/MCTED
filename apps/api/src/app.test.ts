@@ -46,12 +46,10 @@ describe('MCTEB API Integration Tests', () => {
   });
 
   it('POST /api/v1/auth/login succeeds with seeded demo borrower', async () => {
-    const res = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'borrower@basco.gov.ph',
-        password: 'Basco@2026!',
-      });
+    const res = await request(app).post('/api/v1/auth/login').send({
+      email: 'borrower@basco.gov.ph',
+      password: 'Basco@2026!',
+    });
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('user');
@@ -62,12 +60,10 @@ describe('MCTEB API Integration Tests', () => {
 
   it('Borrower cannot access admin-only users list (RBAC test)', async () => {
     // Login as Ana (Borrower)
-    const loginRes = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'borrower@basco.gov.ph',
-        password: 'Basco@2026!',
-      });
+    const loginRes = await request(app).post('/api/v1/auth/login').send({
+      email: 'borrower@basco.gov.ph',
+      password: 'Basco@2026!',
+    });
 
     const token = loginRes.body.token;
 
@@ -81,12 +77,10 @@ describe('MCTEB API Integration Tests', () => {
 
   it('Administrator can access admin users list', async () => {
     // Login as Admin
-    const loginRes = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'admin@basco.gov.ph',
-        password: 'Basco@2026!',
-      });
+    const loginRes = await request(app).post('/api/v1/auth/login').send({
+      email: 'admin@basco.gov.ph',
+      password: 'Basco@2026!',
+    });
 
     const token = loginRes.body.token;
 
@@ -103,4 +97,3 @@ describe('MCTEB API Integration Tests', () => {
     expect(res.status).toBe(404);
   });
 });
-

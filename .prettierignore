@@ -1,0 +1,24 @@
+# Dependency directories
+node_modules/
+.pnpm-store/
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Database files
+data/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+backups/
+
+# Package manager lockfiles
+pnpm-lock.yaml
+
+# System / IDE
+.git/
+.vscode/
+.idea/

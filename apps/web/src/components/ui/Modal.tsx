@@ -54,7 +54,10 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }: Mod
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-6 py-4">
-            <h3 id="modal-title" className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            <h3
+              id="modal-title"
+              className="text-base font-semibold text-slate-900 dark:text-slate-100"
+            >
               {title}
             </h3>
             <button
@@ -73,4 +76,3 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }: Mod
     </div>
   );
 }
-

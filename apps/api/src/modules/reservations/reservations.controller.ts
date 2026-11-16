@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import { ReservationsService } from './reservations.service.js';
-import { CreateReservationSchema, ReviewReservationSchema, ReservationStatusSchema } from '@mcteb/shared';
+import {
+  CreateReservationSchema,
+  ReviewReservationSchema,
+  ReservationStatusSchema,
+} from '@mcteb/shared';
 import { AppError } from '../../utils/errors.js';
 
 export class ReservationsController {
@@ -14,7 +18,9 @@ export class ReservationsController {
         res.json(reservations);
       } else {
         // Staff and Admin can view queue with optional status filter
-        const status = req.query.status ? ReservationStatusSchema.parse(req.query.status) : undefined;
+        const status = req.query.status
+          ? ReservationStatusSchema.parse(req.query.status)
+          : undefined;
         const reservations = ReservationsService.getAllReservations(status);
         res.json(reservations);
       }
@@ -93,4 +99,3 @@ export class ReservationsController {
     }
   }
 }
-

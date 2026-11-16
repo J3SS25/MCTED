@@ -17,7 +17,7 @@ export function ReservationQueuePage() {
   const [filterStatus, setFilterStatus] = useState<string>('Pending');
 
   // Review modal state
-  const [selectedRes, setSelectedRes] = useState<any | null>(null);
+  const [selectedRes, setSelectedRes] = useState<any>(null);
   const [decision, setDecision] = useState<'Approved' | 'Rejected'>('Approved');
   const [staffNotes, setStaffNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -118,15 +118,22 @@ export function ReservationQueuePage() {
                       {res.tool_name}
                     </h3>
                     <Badge status={res.status} />
-                    <span className="text-xs text-slate-400 font-mono">ID: {res.id.slice(0, 8)}</span>
+                    <span className="text-xs text-slate-400 font-mono">
+                      ID: {res.id.slice(0, 8)}
+                    </span>
                   </div>
 
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                    Borrower: <span className="font-semibold text-civic-deep dark:text-civic-light">{res.borrower_name}</span> &bull; Brgy. {res.borrower_barangay} &bull; {res.borrower_phone}
+                    Borrower:{' '}
+                    <span className="font-semibold text-civic-deep dark:text-civic-light">
+                      {res.borrower_name}
+                    </span>{' '}
+                    &bull; Brgy. {res.borrower_barangay} &bull; {res.borrower_phone}
                   </p>
 
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Dates: <strong>{formatDate(res.pickup_date)}</strong> to <strong>{formatDate(res.return_date)}</strong> ({res.quantity} unit)
+                    Dates: <strong>{formatDate(res.pickup_date)}</strong> to{' '}
+                    <strong>{formatDate(res.return_date)}</strong> ({res.quantity} unit)
                   </p>
 
                   {res.purpose && (
@@ -185,12 +192,17 @@ export function ReservationQueuePage() {
         >
           <form onSubmit={handleReviewSubmit} className="space-y-4">
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              You are about to mark this request for <strong>{selectedRes.tool_name}</strong> by <strong>{selectedRes.borrower_name}</strong> as <Badge status={decision} />.
+              You are about to mark this request for <strong>{selectedRes.tool_name}</strong> by{' '}
+              <strong>{selectedRes.borrower_name}</strong> as <Badge status={decision} />.
             </p>
 
             <Input
               label="Staff Decision Notes / Reason"
-              placeholder={decision === 'Approved' ? 'Verified ID and safety equipment' : 'Reason for rejection (e.g. maintenance conflict)'}
+              placeholder={
+                decision === 'Approved'
+                  ? 'Verified ID and safety equipment'
+                  : 'Reason for rejection (e.g. maintenance conflict)'
+              }
               value={staffNotes}
               onChange={(e) => setStaffNotes(e.target.value)}
               required={decision === 'Rejected'}
@@ -214,4 +226,3 @@ export function ReservationQueuePage() {
     </div>
   );
 }
-

@@ -89,4 +89,3 @@ export class UsersRepository {
     return (stmt.get(role, id) as User) || null;
   }
 }
-

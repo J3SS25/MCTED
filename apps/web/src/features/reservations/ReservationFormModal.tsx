@@ -35,7 +35,9 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
   // Calculate estimated days & fee
   const days = Math.max(
     1,
-    Math.ceil((new Date(returnDate).getTime() - new Date(pickupDate).getTime()) / (1000 * 60 * 60 * 24)) + 1,
+    Math.ceil(
+      (new Date(returnDate).getTime() - new Date(pickupDate).getTime()) / (1000 * 60 * 60 * 24),
+    ) + 1,
   );
   const estimatedRentalTotal = tool.rental_fee_centavos * days * quantity;
 
@@ -71,7 +73,11 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Reserve ${tool.name}`}>
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -119,11 +125,15 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
           </div>
           <div className="flex justify-between text-slate-600 dark:text-slate-400">
             <span>Estimated Rental Fee:</span>
-            <span className="font-semibold text-slate-800 dark:text-slate-200">{formatPHP(estimatedRentalTotal)}</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
+              {formatPHP(estimatedRentalTotal)}
+            </span>
           </div>
           <div className="flex justify-between text-slate-600 dark:text-slate-400">
             <span>Refundable Deposit:</span>
-            <span className="font-semibold text-slate-800 dark:text-slate-200">{formatPHP(tool.deposit_fee_centavos * quantity)}</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
+              {formatPHP(tool.deposit_fee_centavos * quantity)}
+            </span>
           </div>
         </div>
 
@@ -139,4 +149,3 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
     </Modal>
   );
 }
-

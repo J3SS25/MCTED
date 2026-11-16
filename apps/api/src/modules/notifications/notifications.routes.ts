@@ -9,4 +9,3 @@ notificationsRouter.use(requireAuth);
 notificationsRouter.get('/', NotificationsController.list);
 notificationsRouter.patch('/:id/read', NotificationsController.markRead);
 notificationsRouter.post('/mark-all-read', NotificationsController.markAllRead);
-

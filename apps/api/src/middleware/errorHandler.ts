@@ -3,12 +3,7 @@ import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
 import { ZodError } from 'zod';
 
-export function errorHandler(
-  err: unknown,
-  req: Request,
-  res: Response,
-  _next: NextFunction,
-): void {
+export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction): void {
   if (err instanceof AppError) {
     logger.warn({ err, path: req.path }, `AppError: ${err.message}`);
     res.status(err.statusCode).json({
@@ -41,4 +36,3 @@ export function errorHandler(
     },
   });
 }
-

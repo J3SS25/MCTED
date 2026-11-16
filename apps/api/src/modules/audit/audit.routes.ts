@@ -6,4 +6,3 @@ export const auditRouter = Router();
 
 // Only administrators can review audit logs
 auditRouter.get('/', requireAuth, requireRole('Administrator'), AuditController.getLogs);
-

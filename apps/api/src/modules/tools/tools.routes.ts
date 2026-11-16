@@ -9,7 +9,21 @@ toolsRouter.get('/', ToolsController.list);
 toolsRouter.get('/:id', ToolsController.getById);
 
 // Staff and Admin inventory management
-toolsRouter.post('/', requireAuth, requireRole('Municipal Staff', 'Administrator'), ToolsController.create);
-toolsRouter.patch('/:id', requireAuth, requireRole('Municipal Staff', 'Administrator'), ToolsController.update);
-toolsRouter.post('/:id/archive', requireAuth, requireRole('Municipal Staff', 'Administrator'), ToolsController.archive);
-
+toolsRouter.post(
+  '/',
+  requireAuth,
+  requireRole('Municipal Staff', 'Administrator'),
+  ToolsController.create,
+);
+toolsRouter.patch(
+  '/:id',
+  requireAuth,
+  requireRole('Municipal Staff', 'Administrator'),
+  ToolsController.update,
+);
+toolsRouter.post(
+  '/:id/archive',
+  requireAuth,
+  requireRole('Municipal Staff', 'Administrator'),
+  ToolsController.archive,
+);

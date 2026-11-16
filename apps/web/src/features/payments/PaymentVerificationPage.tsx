@@ -18,14 +18,14 @@ export function PaymentVerificationPage() {
   const [filterStatus, setFilterStatus] = useState<string>('Pending');
 
   // Verification modal state
-  const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [decisionStatus, setDecisionStatus] = useState<'Paid' | 'Failed'>('Paid');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   // Receipt modal state
-  const [viewReceipt, setViewReceipt] = useState<any | null>(null);
+  const [viewReceipt, setViewReceipt] = useState<any>(null);
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -225,4 +225,3 @@ export function PaymentVerificationPage() {
     </div>
   );
 }
-

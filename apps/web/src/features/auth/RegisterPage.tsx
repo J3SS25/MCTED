@@ -70,7 +70,11 @@ export function RegisterPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-lg">
         <Card>
           <CardContent>
-            {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+            {error && (
+              <Alert variant="error" className="mb-4">
+                {error}
+              </Alert>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
@@ -115,7 +119,9 @@ export function RegisterPage() {
                   label="Barangay (Basco)"
                   options={BARANGAYS}
                   value={formData.barangay}
-                  onChange={(e) => setFormData({ ...formData, barangay: e.target.value as Barangay })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, barangay: e.target.value as Barangay })
+                  }
                 />
               </div>
 
@@ -146,7 +152,10 @@ export function RegisterPage() {
             <div className="mt-6 border-t border-slate-100 dark:border-slate-700/60 pt-4 text-center">
               <p className="text-xs text-slate-600 dark:text-slate-400">
                 Already registered?{' '}
-                <Link to="/login" className="font-semibold text-civic-deep dark:text-civic-light hover:underline">
+                <Link
+                  to="/login"
+                  className="font-semibold text-civic-deep dark:text-civic-light hover:underline"
+                >
                   Sign in here
                 </Link>
               </p>
@@ -157,4 +166,3 @@ export function RegisterPage() {
     </div>
   );
 }
-

@@ -9,22 +9,31 @@
   },
   "scripts": {
     "dev": "pnpm --parallel --filter @mcteb/web --filter @mcteb/api dev",
-    "build": "pnpm -r build",
-    "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm --filter @mcteb/shared build && pnpm --filter @mcteb/api build && pnpm --filter @mcteb/web build",
+    "typecheck": "pnpm --filter @mcteb/shared build && pnpm -r typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "pnpm -r test",
+    "setup": "pnpm install && pnpm run db:init && pnpm run db:migrate && pnpm run db:seed",
+    "db:init": "pnpm --filter @mcteb/api db:init",
     "db:migrate": "pnpm --filter @mcteb/api db:migrate",
     "db:seed": "pnpm --filter @mcteb/api db:seed",
+    "db:reset-demo": "pnpm --filter @mcteb/api db:reset-demo",
+    "db:backup": "tsx scripts/backup-db.ts",
     "audit": "pnpm audit --prod"
   },
   "devDependencies": {
     "@commitlint/cli": "19.8.1",
     "@commitlint/config-conventional": "19.8.1",
+    "@eslint/js": "9.27.0",
     "eslint": "9.27.0",
     "husky": "9.1.7",
     "lint-staged": "15.5.2",
     "prettier": "3.5.3",
-    "typescript": "5.8.3"
+    "tsx": "^4.23.15",
+    "typescript": "5.8.3",
+    "typescript-eslint": "^8.72.2"
   }
 }
-

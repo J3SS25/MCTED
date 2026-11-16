@@ -75,7 +75,7 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 50000,  // PHP 500.00
+    rental_fee_centavos: 50000, // PHP 500.00
     deposit_fee_centavos: 200000, // PHP 2,000.00
     total_quantity: 2,
     available_quantity: 2,
@@ -97,7 +97,7 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Excellent',
-    rental_fee_centavos: 80000,   // PHP 800.00
+    rental_fee_centavos: 80000, // PHP 800.00
     deposit_fee_centavos: 500000, // PHP 5,000.00
     total_quantity: 3,
     available_quantity: 2,
@@ -118,7 +118,7 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 60000,   // PHP 600.00
+    rental_fee_centavos: 60000, // PHP 600.00
     deposit_fee_centavos: 300000, // PHP 3,000.00
     total_quantity: 2,
     available_quantity: 2,
@@ -129,8 +129,7 @@ export const SEED_TOOLS = [
     id: 'b0000000-0000-4000-8000-000000000004',
     name: 'Water Pump 2-inch',
     category: 'Agricultural',
-    description:
-      'Gasoline-powered centrifugal pump for irrigation, drainage, and water transfer.',
+    description: 'Gasoline-powered centrifugal pump for irrigation, drainage, and water transfer.',
     specifications: JSON.stringify({
       discharge_diameter: '2 inch',
       max_flow: '500 L/min',
@@ -140,7 +139,7 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 40000,   // PHP 400.00
+    rental_fee_centavos: 40000, // PHP 400.00
     deposit_fee_centavos: 150000, // PHP 1,500.00
     total_quantity: 4,
     available_quantity: 4,
@@ -151,8 +150,7 @@ export const SEED_TOOLS = [
     id: 'b0000000-0000-4000-8000-000000000005',
     name: 'Circular Saw 7-1/4"',
     category: 'Construction',
-    description:
-      'Corded circular saw for cutting lumber, plywood, and roofing materials.',
+    description: 'Corded circular saw for cutting lumber, plywood, and roofing materials.',
     specifications: JSON.stringify({
       blade_diameter: '7-1/4 inch',
       no_load_speed: '5800 rpm',
@@ -162,7 +160,7 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 25000,  // PHP 250.00
+    rental_fee_centavos: 25000, // PHP 250.00
     deposit_fee_centavos: 100000, // PHP 1,000.00
     total_quantity: 3,
     available_quantity: 3,
@@ -173,8 +171,7 @@ export const SEED_TOOLS = [
     id: 'b0000000-0000-4000-8000-000000000006',
     name: 'Backpack Sprayer 20L',
     category: 'Agricultural',
-    description:
-      'Manual lever-action backpack sprayer for pesticide and fertilizer application.',
+    description: 'Manual lever-action backpack sprayer for pesticide and fertilizer application.',
     specifications: JSON.stringify({
       tank_capacity: '20 L',
       pressure_range: '2–4 bar',
@@ -183,7 +180,7 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 10000,  // PHP 100.00
+    rental_fee_centavos: 10000, // PHP 100.00
     deposit_fee_centavos: 50000, // PHP 500.00
     total_quantity: 10,
     available_quantity: 9,
@@ -194,8 +191,7 @@ export const SEED_TOOLS = [
     id: 'b0000000-0000-4000-8000-000000000007',
     name: 'Marine GPS Handheld',
     category: 'Fishery',
-    description:
-      'Waterproof handheld GPS unit for fishing boat navigation and sea route plotting.',
+    description: 'Waterproof handheld GPS unit for fishing boat navigation and sea route plotting.',
     specifications: JSON.stringify({
       screen: '2.6" sunlight-readable',
       battery: 'AA ×2 — 20 hrs',
@@ -205,7 +201,7 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Excellent',
-    rental_fee_centavos: 20000,  // PHP 200.00
+    rental_fee_centavos: 20000, // PHP 200.00
     deposit_fee_centavos: 80000, // PHP 800.00
     total_quantity: 5,
     available_quantity: 5,
@@ -302,4 +298,3 @@ export const SEED_FEEDBACK = [
     is_public: 1,
   },
 ];
-

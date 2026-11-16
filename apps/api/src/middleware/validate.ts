@@ -12,4 +12,3 @@ export function validate(schema: AnyZodObject, source: 'body' | 'query' | 'param
     }
   };
 }
-

@@ -2,7 +2,11 @@ import { MaintenanceRepository, type MaintenanceWithDetails } from './maintenanc
 import { ToolsRepository } from '../tools/tools.repository.js';
 import { AuditService } from '../audit/audit.service.js';
 import { AppError } from '../../utils/errors.js';
-import type { CreateMaintenanceInput, UpdateMaintenanceInput, MaintenanceStatus } from '@mcteb/shared';
+import type {
+  CreateMaintenanceInput,
+  UpdateMaintenanceInput,
+  MaintenanceStatus,
+} from '@mcteb/shared';
 import db from '../../db/client.js';
 
 export class MaintenanceService {
@@ -101,4 +105,3 @@ export class MaintenanceService {
     return this.getById(id);
   }
 }
-

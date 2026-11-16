@@ -13,7 +13,7 @@ export function runMigrations(): void {
     path.resolve(import.meta.dirname, '../../../../db/schema.sql'),
   ];
 
-  let schemaPath = schemaCandidates.find((p) => fs.existsSync(p));
+  const schemaPath = schemaCandidates.find((p) => fs.existsSync(p));
   if (!schemaPath) {
     throw new Error('Could not find db/schema.sql');
   }
@@ -33,4 +33,3 @@ if (process.argv[1]?.endsWith('migrate.ts') || process.argv[1]?.endsWith('migrat
     process.exit(1);
   }
 }
-

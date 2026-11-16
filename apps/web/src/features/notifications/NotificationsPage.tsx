@@ -31,9 +31,7 @@ export function NotificationsPage() {
   const handleMarkAsRead = async (id: string) => {
     try {
       await apiRequest(`/notifications/${id}/read`, { method: 'PATCH' });
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: 1 } : n)),
-      );
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: 1 } : n)));
     } catch (err) {
       console.error('Failed to mark notification read', err);
     }
@@ -108,27 +106,17 @@ export function NotificationsPage() {
                     <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                       {n.title}
                     </h4>
-                    {!n.is_read && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    )}
+                    {!n.is_read && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
-                    {n.message}
-                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">{n.message}</p>
 
-                  <p className="text-[11px] text-slate-400">
-                    {formatDateTime(n.created_at)}
-                  </p>
+                  <p className="text-[11px] text-slate-400">{formatDateTime(n.created_at)}</p>
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-center">
                   {!n.is_read && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleMarkAsRead(n.id)}
-                    >
+                    <Button size="sm" variant="ghost" onClick={() => handleMarkAsRead(n.id)}>
                       Mark Read
                     </Button>
                   )}
@@ -148,4 +136,3 @@ export function NotificationsPage() {
     </div>
   );
 }
-

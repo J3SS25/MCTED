@@ -198,10 +198,12 @@ export async function runSeed(): Promise<void> {
     }
 
     // 7. Seed System Audit Log
-    db.prepare(`
+    db.prepare(
+      `
       INSERT OR IGNORE INTO audit_logs (id, actor_name, action, target_type, target_id, details)
       VALUES (?, 'System Initializer', 'SEED_COMPLETED', 'system', 'basco-batanes', 'Initialized demo fixtures and municipal catalog')
-    `).run('f7000000-0000-4000-8000-000000000001');
+    `,
+    ).run('f7000000-0000-4000-8000-000000000001');
 
     logger.info('Database seeding completed successfully.');
   });
@@ -217,4 +219,3 @@ if (process.argv[1]?.endsWith('seed.ts') || process.argv[1]?.endsWith('seed.js')
       process.exit(1);
     });
 }
-

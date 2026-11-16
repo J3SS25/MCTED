@@ -90,7 +90,8 @@ export function MyRentalsPage() {
                       </div>
 
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Quantity: {rental.quantity} unit(s) &bull; Due Date: <strong>{formatDate(rental.due_date)}</strong>
+                        Quantity: {rental.quantity} unit(s) &bull; Due Date:{' '}
+                        <strong>{formatDate(rental.due_date)}</strong>
                       </p>
 
                       <p className="text-xs text-slate-600 dark:text-slate-300">
@@ -104,9 +105,13 @@ export function MyRentalsPage() {
                         </p>
                       )}
 
-                      {(rental.overdue_penalty_centavos > 0 || rental.damage_penalty_centavos > 0) && (
+                      {(rental.overdue_penalty_centavos > 0 ||
+                        rental.damage_penalty_centavos > 0) && (
                         <p className="text-xs font-semibold text-red-600">
-                          Total Penalties: {formatPHP(rental.overdue_penalty_centavos + rental.damage_penalty_centavos)}
+                          Total Penalties:{' '}
+                          {formatPHP(
+                            rental.overdue_penalty_centavos + rental.damage_penalty_centavos,
+                          )}
                         </p>
                       )}
                     </div>
@@ -127,4 +132,3 @@ export function MyRentalsPage() {
     </div>
   );
 }
-

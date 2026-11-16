@@ -11,6 +11,15 @@ feedbackRouter.get('/public', FeedbackController.listPublic);
 feedbackRouter.post('/', requireAuth, FeedbackController.create);
 
 // Staff and Admin moderation
-feedbackRouter.get('/all', requireAuth, requireRole('Municipal Staff', 'Administrator'), FeedbackController.listAll);
-feedbackRouter.patch('/:id/moderate', requireAuth, requireRole('Municipal Staff', 'Administrator'), FeedbackController.moderate);
-
+feedbackRouter.get(
+  '/all',
+  requireAuth,
+  requireRole('Municipal Staff', 'Administrator'),
+  FeedbackController.listAll,
+);
+feedbackRouter.patch(
+  '/:id/moderate',
+  requireAuth,
+  requireRole('Municipal Staff', 'Administrator'),
+  FeedbackController.moderate,
+);

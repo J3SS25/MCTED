@@ -98,4 +98,3 @@ export class FeedbackRepository {
     return (stmt.get(input.is_public ? 1 : 0, id) as Feedback) || null;
   }
 }
-

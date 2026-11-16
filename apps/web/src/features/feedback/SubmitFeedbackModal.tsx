@@ -75,7 +75,11 @@ export function SubmitFeedbackModal({ isOpen, onClose, onSuccess }: SubmitFeedba
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Share Community Tool Experience">
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Select
@@ -117,7 +121,8 @@ export function SubmitFeedbackModal({ isOpen, onClose, onSuccess }: SubmitFeedba
         />
 
         <p className="text-xs text-slate-500">
-          Your feedback will be publicly visible to help fellow residents, with your last name abbreviated for privacy.
+          Your feedback will be publicly visible to help fellow residents, with your last name
+          abbreviated for privacy.
         </p>
 
         <div className="pt-2 flex justify-end gap-2">
@@ -132,4 +137,3 @@ export function SubmitFeedbackModal({ isOpen, onClose, onSuccess }: SubmitFeedba
     </Modal>
   );
 }
-

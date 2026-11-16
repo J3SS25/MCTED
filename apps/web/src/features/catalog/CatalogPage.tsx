@@ -60,7 +60,8 @@ export function CatalogPage() {
           Shared Equipment Catalog
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Municipal shared tools available for agricultural, carpentry, marine, and community project loans.
+          Municipal shared tools available for agricultural, carpentry, marine, and community
+          project loans.
         </p>
       </div>
 
@@ -112,7 +113,8 @@ export function CatalogPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {tools.map((tool) => {
-            const isAvailable = tool.availability_status === 'Available' && tool.available_quantity > 0;
+            const isAvailable =
+              tool.availability_status === 'Available' && tool.available_quantity > 0;
 
             return (
               <Card key={tool.id} className="flex flex-col hover:shadow-md transition-shadow">
@@ -176,4 +178,3 @@ export function CatalogPage() {
     </div>
   );
 }
-

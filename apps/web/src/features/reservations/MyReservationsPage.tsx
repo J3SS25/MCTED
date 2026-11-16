@@ -106,7 +106,9 @@ export function MyReservationsPage() {
                         <Badge status={res.status} />
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {res.quantity} unit(s) &bull; Pickup: <strong>{formatDate(res.pickup_date)}</strong> &bull; Due: <strong>{formatDate(res.return_date)}</strong>
+                        {res.quantity} unit(s) &bull; Pickup:{' '}
+                        <strong>{formatDate(res.pickup_date)}</strong> &bull; Due:{' '}
+                        <strong>{formatDate(res.return_date)}</strong>
                       </p>
                       {res.purpose && (
                         <p className="text-xs text-slate-600 dark:text-slate-300 italic">
@@ -148,4 +150,3 @@ export function MyReservationsPage() {
     </div>
   );
 }
-

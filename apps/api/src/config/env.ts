@@ -12,7 +12,9 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
   SESSION_SECRET: z.string().min(16).default('mcteb-default-session-secret-batanes-32char'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
-  ALLOW_DEMO_SEED: z.preprocess((val) => val === 'true' || val === true, z.boolean()).default(false),
+  ALLOW_DEMO_SEED: z
+    .preprocess((val) => val === 'true' || val === true, z.boolean())
+    .default(false),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -26,4 +28,3 @@ export const env = {
   ...parsedEnv.data,
   DATABASE_PATH_RESOLVED: path.resolve(process.cwd(), parsedEnv.data.DATABASE_PATH),
 };
-

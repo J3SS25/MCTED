@@ -136,28 +136,27 @@ export function UsersPage() {
                     <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
                       <td className="px-4 py-3">
                         <div className="font-semibold text-slate-900 dark:text-slate-100">
-                          {u.full_name} {isSelf && <span className="text-[10px] text-emerald-600 font-bold">(You)</span>}
+                          {u.full_name}{' '}
+                          {isSelf && (
+                            <span className="text-[10px] text-emerald-600 font-bold">(You)</span>
+                          )}
                         </div>
-                        <div className="text-[11px] text-slate-500">{u.email} &bull; {u.phone}</div>
+                        <div className="text-[11px] text-slate-500">
+                          {u.email} &bull; {u.phone}
+                        </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                        {u.barangay}
-                      </td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.barangay}</td>
                       <td className="px-4 py-3">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{u.role}</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {u.role}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <Badge status={u.status} />
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
-                        {formatDate(u.created_at)}
-                      </td>
+                      <td className="px-4 py-3 text-slate-500">{formatDate(u.created_at)}</td>
                       <td className="px-4 py-3 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditModal(u)}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => openEditModal(u)}>
                           Manage
                         </Button>
                       </td>
@@ -177,7 +176,11 @@ export function UsersPage() {
           onClose={() => setTargetUser(null)}
           title={`Manage Account: ${targetUser.full_name}`}
         >
-          {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+          {error && (
+            <Alert variant="error" className="mb-4">
+              {error}
+            </Alert>
+          )}
 
           <form onSubmit={handleUpdate} className="space-y-4">
             <Select
@@ -204,7 +207,8 @@ export function UsersPage() {
 
             <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-lg text-xs text-amber-800 dark:text-amber-300">
               <ShieldAlert className="h-4 w-4 inline mr-1" />
-              Administrative safeguards prohibit suspending your own active account or demoting the sole remaining Administrator.
+              Administrative safeguards prohibit suspending your own active account or demoting the
+              sole remaining Administrator.
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
@@ -221,4 +225,3 @@ export function UsersPage() {
     </div>
   );
 }
-

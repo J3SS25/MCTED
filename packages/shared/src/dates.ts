@@ -34,4 +34,3 @@ export function isValidDateRange(startDateStr: string, endDateStr: string): bool
   const end = new Date(endDateStr).getTime();
   return !isNaN(start) && !isNaN(end) && start <= end;
 }
-

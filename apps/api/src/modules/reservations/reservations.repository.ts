@@ -89,7 +89,11 @@ export class ReservationsRepository {
     return stmt.all(...params) as ReservationWithDetails[];
   }
 
-  static getActiveReservedQuantityForDates(toolId: string, pickupDate: string, returnDate: string): number {
+  static getActiveReservedQuantityForDates(
+    toolId: string,
+    pickupDate: string,
+    returnDate: string,
+  ): number {
     const stmt = db.prepare(`
       SELECT COALESCE(SUM(quantity), 0) as total_reserved
       FROM reservations
@@ -122,7 +126,12 @@ export class ReservationsRepository {
     ) as Reservation;
   }
 
-  static updateDecision(id: string, decision: 'Approved' | 'Rejected', reviewerId: string, notes?: string): Reservation | null {
+  static updateDecision(
+    id: string,
+    decision: 'Approved' | 'Rejected',
+    reviewerId: string,
+    notes?: string,
+  ): Reservation | null {
     const stmt = db.prepare(`
       UPDATE reservations
       SET
@@ -148,4 +157,3 @@ export class ReservationsRepository {
     return (stmt.get(status, id) as Reservation) || null;
   }
 }
-

@@ -24,7 +24,9 @@ export function AuditLogPage() {
       if (actionFilter) params.append('action', actionFilter);
       params.append('limit', '50');
 
-      const data = await apiRequest<{ items: AuditLog[]; total: number }>(`/audit?${params.toString()}`);
+      const data = await apiRequest<{ items: AuditLog[]; total: number }>(
+        `/audit?${params.toString()}`,
+      );
       setLogs(data.items);
     } catch (err) {
       console.error('Failed to load audit logs', err);
@@ -49,7 +51,8 @@ export function AuditLogPage() {
           Municipal System Audit Log
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Immutable audit trail of all administrative actions, approvals, inventory changes, and logins.
+          Immutable audit trail of all administrative actions, approvals, inventory changes, and
+          logins.
         </p>
       </div>
 
@@ -116,11 +119,7 @@ export function AuditLogPage() {
                       {log.details || '—'}
                     </td>
                     <td className="px-4 py-3 text-right font-sans">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setSelectedLog(log)}
-                      >
+                      <Button size="sm" variant="ghost" onClick={() => setSelectedLog(log)}>
                         Details
                       </Button>
                     </td>
@@ -141,17 +140,34 @@ export function AuditLogPage() {
         >
           <div className="space-y-3 text-xs">
             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-1 font-mono">
-              <p><strong>Log ID:</strong> {selectedLog.id}</p>
-              <p><strong>Actor:</strong> {selectedLog.actor_name} ({selectedLog.actor_id || 'System'})</p>
-              <p><strong>Action:</strong> {selectedLog.action}</p>
-              <p><strong>Target Type:</strong> {selectedLog.target_type}</p>
-              <p><strong>Target ID:</strong> {selectedLog.target_id}</p>
-              <p><strong>IP Address:</strong> {selectedLog.ip_address || 'Internal'}</p>
-              <p><strong>Recorded At:</strong> {formatDateTime(selectedLog.created_at)}</p>
+              <p>
+                <strong>Log ID:</strong> {selectedLog.id}
+              </p>
+              <p>
+                <strong>Actor:</strong> {selectedLog.actor_name} ({selectedLog.actor_id || 'System'}
+                )
+              </p>
+              <p>
+                <strong>Action:</strong> {selectedLog.action}
+              </p>
+              <p>
+                <strong>Target Type:</strong> {selectedLog.target_type}
+              </p>
+              <p>
+                <strong>Target ID:</strong> {selectedLog.target_id}
+              </p>
+              <p>
+                <strong>IP Address:</strong> {selectedLog.ip_address || 'Internal'}
+              </p>
+              <p>
+                <strong>Recorded At:</strong> {formatDateTime(selectedLog.created_at)}
+              </p>
             </div>
 
             <div>
-              <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1">Details & Remarks:</h4>
+              <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Details & Remarks:
+              </h4>
               <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
                 {selectedLog.details || 'No additional details provided.'}
               </p>
@@ -168,4 +184,3 @@ export function AuditLogPage() {
     </div>
   );
 }
-

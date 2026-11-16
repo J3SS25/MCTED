@@ -49,16 +49,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Guest Navigation
     navItems = [
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
-      { label: 'Community Feedback', href: '/feedback', icon: <MessageSquare className="h-5 w-5" /> },
+      {
+        label: 'Community Feedback',
+        href: '/feedback',
+        icon: <MessageSquare className="h-5 w-5" />,
+      },
     ];
   } else if (user.role === 'Borrower') {
     // Borrower Navigation
     navItems = [
       { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
-      { label: 'My Reservations', href: '/my-reservations', icon: <CalendarCheck className="h-5 w-5" /> },
+      {
+        label: 'My Reservations',
+        href: '/my-reservations',
+        icon: <CalendarCheck className="h-5 w-5" />,
+      },
       { label: 'My Rentals', href: '/my-rentals', icon: <ShoppingBag className="h-5 w-5" /> },
-      { label: 'Payments & Receipts', href: '/my-payments', icon: <CreditCard className="h-5 w-5" /> },
+      {
+        label: 'Payments & Receipts',
+        href: '/my-payments',
+        icon: <CreditCard className="h-5 w-5" />,
+      },
       { label: 'Feedback', href: '/feedback', icon: <MessageSquare className="h-5 w-5" /> },
       { label: 'Notifications', href: '/notifications', icon: <Bell className="h-5 w-5" /> },
       { label: 'Profile & Settings', href: '/profile', icon: <User className="h-5 w-5" /> },
@@ -66,30 +78,82 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   } else if (user.role === 'Municipal Staff') {
     // Municipal Staff Navigation
     navItems = [
-      { label: 'Staff Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
+      {
+        label: 'Staff Dashboard',
+        href: '/dashboard',
+        icon: <LayoutDashboard className="h-5 w-5" />,
+      },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
-      { label: 'Reservation Queue', href: '/staff/reservations', icon: <CalendarCheck className="h-5 w-5" /> },
+      {
+        label: 'Reservation Queue',
+        href: '/staff/reservations',
+        icon: <CalendarCheck className="h-5 w-5" />,
+      },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
-      { label: 'Inventory Management', href: '/staff/inventory', icon: <SlidersHorizontal className="h-5 w-5" /> },
-      { label: 'Payment Verification', href: '/staff/payments', icon: <CreditCard className="h-5 w-5" /> },
-      { label: 'Maintenance Board', href: '/staff/maintenance', icon: <ClipboardList className="h-5 w-5" /> },
-      { label: 'Feedback Moderation', href: '/staff/feedback', icon: <MessageSquare className="h-5 w-5" /> },
+      {
+        label: 'Inventory Management',
+        href: '/staff/inventory',
+        icon: <SlidersHorizontal className="h-5 w-5" />,
+      },
+      {
+        label: 'Payment Verification',
+        href: '/staff/payments',
+        icon: <CreditCard className="h-5 w-5" />,
+      },
+      {
+        label: 'Maintenance Board',
+        href: '/staff/maintenance',
+        icon: <ClipboardList className="h-5 w-5" />,
+      },
+      {
+        label: 'Feedback Moderation',
+        href: '/staff/feedback',
+        icon: <MessageSquare className="h-5 w-5" />,
+      },
       { label: 'Notifications', href: '/notifications', icon: <Bell className="h-5 w-5" /> },
       { label: 'Profile', href: '/profile', icon: <User className="h-5 w-5" /> },
     ];
   } else if (user.role === 'Administrator') {
     // Administrator Navigation
     navItems = [
-      { label: 'Admin Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
+      {
+        label: 'Admin Dashboard',
+        href: '/dashboard',
+        icon: <LayoutDashboard className="h-5 w-5" />,
+      },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
-      { label: 'Reservation Queue', href: '/staff/reservations', icon: <CalendarCheck className="h-5 w-5" /> },
+      {
+        label: 'Reservation Queue',
+        href: '/staff/reservations',
+        icon: <CalendarCheck className="h-5 w-5" />,
+      },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
-      { label: 'Inventory Management', href: '/staff/inventory', icon: <SlidersHorizontal className="h-5 w-5" /> },
-      { label: 'Payment Verification', href: '/staff/payments', icon: <CreditCard className="h-5 w-5" /> },
-      { label: 'Maintenance Board', href: '/staff/maintenance', icon: <ClipboardList className="h-5 w-5" /> },
-      { label: 'Feedback Moderation', href: '/staff/feedback', icon: <MessageSquare className="h-5 w-5" /> },
+      {
+        label: 'Inventory Management',
+        href: '/staff/inventory',
+        icon: <SlidersHorizontal className="h-5 w-5" />,
+      },
+      {
+        label: 'Payment Verification',
+        href: '/staff/payments',
+        icon: <CreditCard className="h-5 w-5" />,
+      },
+      {
+        label: 'Maintenance Board',
+        href: '/staff/maintenance',
+        icon: <ClipboardList className="h-5 w-5" />,
+      },
+      {
+        label: 'Feedback Moderation',
+        href: '/staff/feedback',
+        icon: <MessageSquare className="h-5 w-5" />,
+      },
       { label: 'User Oversight', href: '/admin/users', icon: <Users className="h-5 w-5" /> },
-      { label: 'System Audit Log', href: '/admin/audit', icon: <ShieldAlert className="h-5 w-5" /> },
+      {
+        label: 'System Audit Log',
+        href: '/admin/audit',
+        icon: <ShieldAlert className="h-5 w-5" />,
+      },
       { label: 'Notifications', href: '/notifications', icon: <Bell className="h-5 w-5" /> },
       { label: 'Profile', href: '/profile', icon: <User className="h-5 w-5" /> },
     ];
@@ -156,7 +220,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
             </Link>
             <Link to="/register" className="block w-full">
-              <Button size="sm" variant="outline" className="w-full border-emerald-400 text-white hover:bg-civic-deep">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full border-emerald-400 text-white hover:bg-civic-deep"
+              >
                 Register
               </Button>
             </Link>
@@ -229,7 +297,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Wrench className="h-5 w-5 text-civic-light" />
                   <span className="font-bold text-sm">MCTEB BASCO</span>
                 </div>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-lg hover:bg-civic-deep">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1 rounded-lg hover:bg-civic-deep"
+                >
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -266,7 +337,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </Button>
                   </Link>
                   <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                    <Button size="sm" variant="outline" className="w-full text-white border-emerald-400">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full text-white border-emerald-400"
+                    >
                       Register
                     </Button>
                   </Link>
@@ -284,4 +359,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

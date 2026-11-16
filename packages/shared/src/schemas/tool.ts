@@ -53,4 +53,3 @@ export const ToolFilterSchema = z.object({
 });
 
 export type ToolFilterInput = z.infer<typeof ToolFilterSchema>;
-

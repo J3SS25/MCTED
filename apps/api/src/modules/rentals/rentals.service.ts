@@ -24,7 +24,10 @@ export class RentalsService {
     return RentalsRepository.findAll(status);
   }
 
-  static checkout(input: CheckoutRentalInput, staff: { id: string; name: string }): RentalWithDetails {
+  static checkout(
+    input: CheckoutRentalInput,
+    staff: { id: string; name: string },
+  ): RentalWithDetails {
     const tool = ToolsRepository.findById(input.tool_id);
     if (!tool) {
       throw AppError.notFound('Tool not found');
@@ -75,10 +78,16 @@ export class RentalsService {
     return this.getById(res.id);
   }
 
-  static processReturn(id: string, input: ReturnRentalInput, staff: { id: string; name: string }): RentalWithDetails {
+  static processReturn(
+    id: string,
+    input: ReturnRentalInput,
+    staff: { id: string; name: string },
+  ): RentalWithDetails {
     const existing = this.getById(id);
     if (existing.status !== 'Borrowed') {
-      throw AppError.badRequest(`Cannot process return for rental with status "${existing.status}"`);
+      throw AppError.badRequest(
+        `Cannot process return for rental with status "${existing.status}"`,
+      );
     }
 
     // Atomic Return Transaction
@@ -93,7 +102,10 @@ export class RentalsService {
       ToolsRepository.adjustAvailableQuantity(existing.tool_id, existing.quantity);
 
       // 3. Update tool condition status if damaged or needs repair
-      if (input.returned_condition === 'Needs Repair' || input.returned_condition === 'Under Maintenance') {
+      if (
+        input.returned_condition === 'Needs Repair' ||
+        input.returned_condition === 'Under Maintenance'
+      ) {
         ToolsRepository.update(existing.tool_id, {
           condition_status: input.returned_condition,
           availability_status: 'Maintenance',
@@ -127,4 +139,3 @@ export class RentalsService {
     return this.getById(id);
   }
 }
-

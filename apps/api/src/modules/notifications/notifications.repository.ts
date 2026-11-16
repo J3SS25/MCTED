@@ -50,4 +50,3 @@ export class NotificationsRepository {
     return Number(result.changes);
   }
 }
-

@@ -100,4 +100,3 @@ export class PaymentsService {
     return this.getById(id);
   }
 }
-

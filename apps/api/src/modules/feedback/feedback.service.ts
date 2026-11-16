@@ -11,7 +11,8 @@ export class FeedbackService {
     return list.map((item) => {
       const parts = item.reviewer_name.trim().split(' ');
       const firstName = parts[0] ?? 'Resident';
-      const lastInitial = parts.length > 1 && parts[parts.length - 1] ? `${parts[parts.length - 1]![0]}.` : '';
+      const lastInitial =
+        parts.length > 1 && parts[parts.length - 1] ? `${parts[parts.length - 1]![0]}.` : '';
       return {
         ...item,
         reviewer_name: `${firstName} ${lastInitial}`.trim(),
@@ -82,4 +83,3 @@ export class FeedbackService {
     return item;
   }
 }
-

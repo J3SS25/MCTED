@@ -129,14 +129,15 @@ export class RentalsRepository {
       RETURNING *
     `);
 
-    return (stmt.get(
-      input.returned_condition,
-      input.inspection_notes ?? null,
-      input.overdue_penalty_centavos,
-      input.damage_penalty_centavos,
-      receiverId,
-      id,
-    ) as Rental) || null;
+    return (
+      (stmt.get(
+        input.returned_condition,
+        input.inspection_notes ?? null,
+        input.overdue_penalty_centavos,
+        input.damage_penalty_centavos,
+        receiverId,
+        id,
+      ) as Rental) || null
+    );
   }
 }
-

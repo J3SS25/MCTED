@@ -7,7 +7,10 @@ import { hashPassword, verifyPassword, generateSessionToken } from '../../utils/
 import type { RegisterUserInput, LoginInput, User } from '@mcteb/shared';
 
 export class AuthService {
-  static async register(input: RegisterUserInput, ipAddress?: string): Promise<{ user: User; token: string }> {
+  static async register(
+    input: RegisterUserInput,
+    ipAddress?: string,
+  ): Promise<{ user: User; token: string }> {
     // 1. Check duplicate email
     const existing = AuthRepository.findByEmail(input.email);
     if (existing) {
@@ -51,7 +54,8 @@ export class AuthService {
     NotificationsService.create({
       user_id: user.id,
       title: 'Welcome to MCTEB',
-      message: 'Mabuhay! Your municipal tool bank account has been created. You can now browse and reserve equipment.',
+      message:
+        'Mabuhay! Your municipal tool bank account has been created. You can now browse and reserve equipment.',
       type: 'success',
       link_url: '/catalog',
     });
@@ -59,7 +63,10 @@ export class AuthService {
     return { user, token };
   }
 
-  static async login(input: LoginInput, ipAddress?: string): Promise<{ user: User; token: string }> {
+  static async login(
+    input: LoginInput,
+    ipAddress?: string,
+  ): Promise<{ user: User; token: string }> {
     const userWithPassword = AuthRepository.findByEmail(input.email);
 
     // Defensive check: Do not reveal whether user exists
@@ -81,7 +88,10 @@ export class AuthService {
     // Verify password
     const isValid = await verifyPassword(input.password, userWithPassword.password_hash);
     if (!isValid) {
-      AuthRepository.incrementFailedAttempts(userWithPassword.id, userWithPassword.failed_login_attempts);
+      AuthRepository.incrementFailedAttempts(
+        userWithPassword.id,
+        userWithPassword.failed_login_attempts,
+      );
       throw AppError.unauthorized('Invalid email or password');
     }
 
@@ -124,4 +134,3 @@ export class AuthService {
     return user;
   }
 }
-

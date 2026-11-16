@@ -45,4 +45,3 @@ export function generateSessionToken(): string {
 export function generateUUID(): string {
   return crypto.randomUUID();
 }
-

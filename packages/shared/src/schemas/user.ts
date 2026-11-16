@@ -60,4 +60,3 @@ export const UpdateUserRoleSchema = z.object({
 });
 
 export type UpdateUserRoleInput = z.infer<typeof UpdateUserRoleSchema>;
-

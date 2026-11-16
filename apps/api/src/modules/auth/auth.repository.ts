@@ -14,7 +14,9 @@ export class AuthRepository {
   }
 
   static findById(id: string): User | null {
-    const stmt = db.prepare('SELECT id, full_name, email, phone, birth_date, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at FROM users WHERE id = ?');
+    const stmt = db.prepare(
+      'SELECT id, full_name, email, phone, birth_date, barangay, address, role, status, failed_login_attempts, lockout_until, created_at, updated_at FROM users WHERE id = ?',
+    );
     const row = stmt.get(id);
     return (row as User) || null;
   }
@@ -41,7 +43,11 @@ export class AuthRepository {
     ) as User;
   }
 
-  static incrementFailedAttempts(userId: string, currentAttempts: number, lockoutMinutes = 15): void {
+  static incrementFailedAttempts(
+    userId: string,
+    currentAttempts: number,
+    lockoutMinutes = 15,
+  ): void {
     const newAttempts = currentAttempts + 1;
     let lockoutUntil: string | null = null;
 
@@ -50,19 +56,22 @@ export class AuthRepository {
       lockoutUntil = new Date(Date.now() + lockoutMinutes * 60 * 1000).toISOString();
     }
 
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE users
       SET failed_login_attempts = ?, lockout_until = ?, updated_at = DATETIME('now')
       WHERE id = ?
-    `).run(newAttempts, lockoutUntil, userId);
+    `,
+    ).run(newAttempts, lockoutUntil, userId);
   }
 
   static resetFailedAttempts(userId: string): void {
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE users
       SET failed_login_attempts = 0, lockout_until = NULL, updated_at = DATETIME('now')
       WHERE id = ?
-    `).run(userId);
+    `,
+    ).run(userId);
   }
 }
-

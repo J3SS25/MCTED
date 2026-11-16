@@ -1,5 +1,10 @@
 import db from '../../db/client.js';
-import type { Maintenance, CreateMaintenanceInput, UpdateMaintenanceInput, MaintenanceStatus } from '@mcteb/shared';
+import type {
+  Maintenance,
+  CreateMaintenanceInput,
+  UpdateMaintenanceInput,
+  MaintenanceStatus,
+} from '@mcteb/shared';
 import { generateUUID } from '../../utils/crypto.js';
 
 export interface MaintenanceWithDetails extends Maintenance {
@@ -114,4 +119,3 @@ export class MaintenanceRepository {
     return (stmt.get(...values) as Maintenance) || null;
   }
 }
-

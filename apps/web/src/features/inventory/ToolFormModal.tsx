@@ -136,7 +136,11 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
       title={isEditing ? `Edit Equipment: ${tool.name}` : 'Add New Equipment to Catalog'}
       maxWidth="lg"
     >
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -213,7 +217,10 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
             options={AVAILABILITY_STATUSES}
             value={formData.availabilityStatus}
             onChange={(e) =>
-              setFormData({ ...formData, availabilityStatus: e.target.value as ToolAvailabilityStatus })
+              setFormData({
+                ...formData,
+                availabilityStatus: e.target.value as ToolAvailabilityStatus,
+              })
             }
           />
 
@@ -239,4 +246,3 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
     </Modal>
   );
 }
-

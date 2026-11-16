@@ -18,4 +18,3 @@ usersRouter.patch('/:id/profile', UsersController.updateProfile);
 // Admin-only account status and role management
 usersRouter.patch('/:id/status', requireRole('Administrator'), UsersController.updateStatus);
 usersRouter.patch('/:id/role', requireRole('Administrator'), UsersController.updateRole);
-

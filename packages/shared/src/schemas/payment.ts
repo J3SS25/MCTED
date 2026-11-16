@@ -37,4 +37,3 @@ export const VerifyPaymentSchema = z.object({
 });
 
 export type VerifyPaymentInput = z.infer<typeof VerifyPaymentSchema>;
-

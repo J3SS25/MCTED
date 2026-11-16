@@ -60,7 +60,10 @@ export function FeedbackPage() {
         </div>
 
         {user?.role === 'Borrower' && (
-          <Button onClick={() => setIsSubmitModalOpen(true)} className="gap-2 self-start sm:self-auto">
+          <Button
+            onClick={() => setIsSubmitModalOpen(true)}
+            className="gap-2 self-start sm:self-auto"
+          >
             <PlusCircle className="h-4 w-4" /> Share Your Experience
           </Button>
         )}
@@ -88,7 +91,8 @@ export function FeedbackPage() {
                       {rev.tool_name}
                     </h4>
                     <p className="text-xs text-slate-500">
-                      {rev.reviewer_name} &bull; Brgy. {rev.reviewer_barangay} &bull; {formatDate(rev.created_at)}
+                      {rev.reviewer_name} &bull; Brgy. {rev.reviewer_barangay} &bull;{' '}
+                      {formatDate(rev.created_at)}
                     </p>
                   </div>
 
@@ -101,10 +105,19 @@ export function FeedbackPage() {
                 </div>
 
                 <div className="flex gap-4 text-[11px] text-slate-500 border-y border-slate-100 dark:border-slate-700/60 py-2">
-                  <span>Condition: <strong>{rev.tool_condition_rating}/5</strong></span>
-                  <span>Service: <strong>{rev.service_rating}/5</strong></span>
+                  <span>
+                    Condition: <strong>{rev.tool_condition_rating}/5</strong>
+                  </span>
+                  <span>
+                    Service: <strong>{rev.service_rating}/5</strong>
+                  </span>
                   {isStaffOrAdmin && (
-                    <span>Status: <Badge status={rev.is_public ? 'Available' : 'Archived'}>{rev.is_public ? 'Public' : 'Hidden'}</Badge></span>
+                    <span>
+                      Status:{' '}
+                      <Badge status={rev.is_public ? 'Available' : 'Archived'}>
+                        {rev.is_public ? 'Public' : 'Hidden'}
+                      </Badge>
+                    </span>
                   )}
                 </div>
 
@@ -147,4 +160,3 @@ export function FeedbackPage() {
     </div>
   );
 }
-

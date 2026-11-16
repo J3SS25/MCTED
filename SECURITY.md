@@ -11,4 +11,3 @@ Instead, please report it privately by emailing the project maintainer or the Mu
 We aim to acknowledge reports within 72 hours and to provide a resolution timeline within 7 days.
 
 Thank you for helping keep this municipal service secure.
-

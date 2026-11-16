@@ -104,9 +104,7 @@ export function DashboardPage() {
       {/* Welcome banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-civic-forest to-civic-deep text-white p-6 rounded-2xl shadow-sm">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">
-            Mabuhay, {user?.full_name}!
-          </h2>
+          <h2 className="text-xl sm:text-2xl font-bold">Mabuhay, {user?.full_name}!</h2>
           <p className="text-emerald-100 text-sm mt-1">
             {isStaffOrAdmin
               ? 'Basco Municipal Community Tool and Equipment Bank — Staff Operations Console'
@@ -236,7 +234,8 @@ export function DashboardPage() {
                           {item.tool_name}
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {item.borrower_name} &bull; {formatDate(item.pickup_date)} to {formatDate(item.return_date)}
+                          {item.borrower_name} &bull; {formatDate(item.pickup_date)} to{' '}
+                          {formatDate(item.return_date)}
                         </p>
                       </div>
                     </div>
@@ -266,19 +265,22 @@ export function DashboardPage() {
               <div className="flex gap-2">
                 <CheckCircle className="h-4 w-4 text-civic-accent flex-shrink-0 mt-0.5" />
                 <p>
-                  <strong>Basco Residency:</strong> Equipment lending is available to verified residents across all 6 barangays.
+                  <strong>Basco Residency:</strong> Equipment lending is available to verified
+                  residents across all 6 barangays.
                 </p>
               </div>
               <div className="flex gap-2">
                 <CheckCircle className="h-4 w-4 text-civic-accent flex-shrink-0 mt-0.5" />
                 <p>
-                  <strong>Inspection on Handover:</strong> Tools are inspected for working condition both at pickup and return.
+                  <strong>Inspection on Handover:</strong> Tools are inspected for working condition
+                  both at pickup and return.
                 </p>
               </div>
               <div className="flex gap-2">
                 <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
                 <p>
-                  <strong>Typhoon Preparedness:</strong> Emergency dewatering pumps and generators are prioritized during storm alerts.
+                  <strong>Typhoon Preparedness:</strong> Emergency dewatering pumps and generators
+                  are prioritized during storm alerts.
                 </p>
               </div>
             </CardContent>
@@ -288,4 +290,3 @@ export function DashboardPage() {
     </div>
   );
 }
-

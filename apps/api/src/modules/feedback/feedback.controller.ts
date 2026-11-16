@@ -27,11 +27,7 @@ export class FeedbackController {
     try {
       if (!req.user) throw AppError.unauthorized();
       const validated = CreateFeedbackSchema.parse(req.body);
-      const feedback = FeedbackService.submitFeedback(
-        req.user.id,
-        req.user.full_name,
-        validated,
-      );
+      const feedback = FeedbackService.submitFeedback(req.user.id, req.user.full_name, validated);
       res.status(201).json(feedback);
     } catch (error) {
       next(error);
@@ -56,4 +52,3 @@ export class FeedbackController {
     }
   }
 }
-

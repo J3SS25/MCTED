@@ -121,4 +121,3 @@ export class PaymentsRepository {
     return `BASCO-PAY-${year}-${randomSuffix}`;
   }
 }
-

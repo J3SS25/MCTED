@@ -54,7 +54,11 @@ export function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Card>
           <CardContent>
-            {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+            {error && (
+              <Alert variant="error" className="mb-4">
+                {error}
+              </Alert>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
@@ -87,17 +91,34 @@ export function LoginPage() {
             <div className="mt-6 border-t border-slate-100 dark:border-slate-700/60 pt-4 text-center">
               <p className="text-xs text-slate-600 dark:text-slate-400">
                 New to MCTEB?{' '}
-                <Link to="/register" className="font-semibold text-civic-deep dark:text-civic-light hover:underline">
+                <Link
+                  to="/register"
+                  className="font-semibold text-civic-deep dark:text-civic-light hover:underline"
+                >
                   Register as a borrower
                 </Link>
               </p>
             </div>
 
             <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs text-slate-500 dark:text-slate-400">
-              <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Demo Credentials:</p>
-              <p>Borrower: <code className="text-slate-700 dark:text-slate-300">maria.c@basco.net</code> / <code className="text-slate-700 dark:text-slate-300">Basco@2026!</code></p>
-              <p>Staff: <code className="text-slate-700 dark:text-slate-300">staff@basco.gov.ph</code> / <code className="text-slate-700 dark:text-slate-300">Basco@2026!</code></p>
-              <p>Admin: <code className="text-slate-700 dark:text-slate-300">admin@basco.gov.ph</code> / <code className="text-slate-700 dark:text-slate-300">Basco@2026!</code></p>
+              <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Demo Credentials:
+              </p>
+              <p>
+                Borrower:{' '}
+                <code className="text-slate-700 dark:text-slate-300">maria.c@basco.net</code> /{' '}
+                <code className="text-slate-700 dark:text-slate-300">Basco@2026!</code>
+              </p>
+              <p>
+                Staff:{' '}
+                <code className="text-slate-700 dark:text-slate-300">staff@basco.gov.ph</code> /{' '}
+                <code className="text-slate-700 dark:text-slate-300">Basco@2026!</code>
+              </p>
+              <p>
+                Admin:{' '}
+                <code className="text-slate-700 dark:text-slate-300">admin@basco.gov.ph</code> /{' '}
+                <code className="text-slate-700 dark:text-slate-300">Basco@2026!</code>
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -105,4 +126,3 @@ export function LoginPage() {
     </div>
   );
 }
-

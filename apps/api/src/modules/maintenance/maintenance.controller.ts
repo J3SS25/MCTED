@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import { MaintenanceService } from './maintenance.service.js';
-import { CreateMaintenanceSchema, UpdateMaintenanceSchema, MaintenanceStatusSchema } from '@mcteb/shared';
+import {
+  CreateMaintenanceSchema,
+  UpdateMaintenanceSchema,
+  MaintenanceStatusSchema,
+} from '@mcteb/shared';
 import { AppError } from '../../utils/errors.js';
 
 export class MaintenanceController {
@@ -30,11 +34,7 @@ export class MaintenanceController {
     try {
       if (!req.user) throw AppError.unauthorized();
       const validated = CreateMaintenanceSchema.parse(req.body);
-      const record = MaintenanceService.createReport(
-        req.user.id,
-        req.user.full_name,
-        validated,
-      );
+      const record = MaintenanceService.createReport(req.user.id, req.user.full_name, validated);
       res.status(201).json(record);
     } catch (error) {
       next(error);
@@ -59,4 +59,3 @@ export class MaintenanceController {
     }
   }
 }
-

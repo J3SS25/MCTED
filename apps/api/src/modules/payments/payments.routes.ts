@@ -11,5 +11,8 @@ paymentsRouter.post('/', PaymentsController.create);
 paymentsRouter.get('/:id', PaymentsController.getById);
 
 // Staff and Admin payment verification
-paymentsRouter.patch('/:id/verify', requireRole('Municipal Staff', 'Administrator'), PaymentsController.verify);
-
+paymentsRouter.patch(
+  '/:id/verify',
+  requireRole('Municipal Staff', 'Administrator'),
+  PaymentsController.verify,
+);

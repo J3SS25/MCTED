@@ -44,7 +44,11 @@ export function InventoryPage() {
   };
 
   const handleArchive = async (tool: Tool) => {
-    if (!confirm(`Are you sure you want to archive "${tool.name}"? It will no longer appear in the public catalog.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to archive "${tool.name}"? It will no longer appear in the public catalog.`,
+      )
+    ) {
       return;
     }
 
@@ -130,7 +134,9 @@ export function InventoryPage() {
                       <div className="font-semibold text-slate-900 dark:text-slate-100">
                         {tool.name}
                       </div>
-                      <div className="text-[11px] text-slate-500">{tool.category} {tool.serial_number && `• ${tool.serial_number}`}</div>
+                      <div className="text-[11px] text-slate-500">
+                        {tool.category} {tool.serial_number && `• ${tool.serial_number}`}
+                      </div>
                     </td>
                     <td className="px-4 py-3.5">
                       <Badge status={tool.availability_status} />
@@ -187,4 +193,3 @@ export function InventoryPage() {
     </div>
   );
 }
-

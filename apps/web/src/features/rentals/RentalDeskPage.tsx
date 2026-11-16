@@ -14,7 +14,7 @@ export function RentalDeskPage() {
   const [rentals, setRentals] = useState<any[]>([]);
   const [approvedReservations, setApprovedReservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [inspectRental, setInspectRental] = useState<any | null>(null);
+  const [inspectRental, setInspectRental] = useState<any>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const fetchData = async () => {
@@ -38,7 +38,11 @@ export function RentalDeskPage() {
   }, []);
 
   const handleHandoverCheckout = async (reservation: any) => {
-    if (!confirm(`Release ${reservation.quantity} unit(s) of "${reservation.tool_name}" to ${reservation.borrower_name}?`)) {
+    if (
+      !confirm(
+        `Release ${reservation.quantity} unit(s) of "${reservation.tool_name}" to ${reservation.borrower_name}?`,
+      )
+    ) {
       return;
     }
 
@@ -102,7 +106,8 @@ export function RentalDeskPage() {
                         {res.tool_name}
                       </h4>
                       <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Borrower: <strong>{res.borrower_name}</strong> (Brgy. {res.borrower_barangay})
+                        Borrower: <strong>{res.borrower_name}</strong> (Brgy.{' '}
+                        {res.borrower_barangay})
                       </p>
                     </div>
                     <Badge status="Approved" />
@@ -133,7 +138,8 @@ export function RentalDeskPage() {
         <div className="flex items-center gap-2">
           <ArrowUpRight className="h-5 w-5 text-blue-500" />
           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            Active Loans & Return Inspection ({rentals.filter((r) => r.status === 'Borrowed').length} Active)
+            Active Loans & Return Inspection (
+            {rentals.filter((r) => r.status === 'Borrowed').length} Active)
           </h3>
         </div>
 
@@ -156,7 +162,8 @@ export function RentalDeskPage() {
                     </div>
 
                     <p className="text-xs text-slate-600 dark:text-slate-400">
-                      Borrower: <strong>{rental.borrower_name}</strong> &bull; Due: <strong>{formatDate(rental.due_date)}</strong>
+                      Borrower: <strong>{rental.borrower_name}</strong> &bull; Due:{' '}
+                      <strong>{formatDate(rental.due_date)}</strong>
                     </p>
 
                     <p className="text-xs text-slate-500">
@@ -194,4 +201,3 @@ export function RentalDeskPage() {
     </div>
   );
 }
-

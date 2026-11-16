@@ -27,7 +27,7 @@ export function MaintenancePage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // Update modal state
-  const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [newStatus, setNewStatus] = useState<MaintenanceStatus>('Completed');
   const [actualCostPesos, setActualCostPesos] = useState<number>(0);
   const [resolutionNotes, setResolutionNotes] = useState('');
@@ -89,7 +89,10 @@ export function MaintenancePage() {
           </p>
         </div>
 
-        <Button onClick={() => setIsReportModalOpen(true)} className="gap-2 self-start sm:self-auto">
+        <Button
+          onClick={() => setIsReportModalOpen(true)}
+          className="gap-2 self-start sm:self-auto"
+        >
           <PlusCircle className="h-4 w-4" /> Report Tool Defect
         </Button>
       </div>
@@ -126,7 +129,8 @@ export function MaintenancePage() {
                   </p>
 
                   <p className="text-xs text-slate-500">
-                    Reported by: {m.reporter_name} &bull; Scheduled: {m.scheduled_date ? formatDate(m.scheduled_date) : 'Unscheduled'}
+                    Reported by: {m.reporter_name} &bull; Scheduled:{' '}
+                    {m.scheduled_date ? formatDate(m.scheduled_date) : 'Unscheduled'}
                     {m.technician_name && ` • Technician: ${m.technician_name}`}
                   </p>
 
@@ -205,7 +209,10 @@ export function MaintenancePage() {
                   onChange={(e) => setReturnToService(e.target.checked)}
                   className="rounded text-civic-forest focus:ring-civic-accent h-4 w-4"
                 />
-                <label htmlFor="returnToService" className="text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+                <label
+                  htmlFor="returnToService"
+                  className="text-xs font-semibold text-emerald-900 dark:text-emerald-200"
+                >
                   Return item to service (Restore to "Available" status in Catalog)
                 </label>
               </div>
@@ -225,4 +232,3 @@ export function MaintenancePage() {
     </div>
   );
 }
-

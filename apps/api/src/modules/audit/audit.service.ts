@@ -10,4 +10,3 @@ export class AuditService {
     return AuditRepository.findMany(filters);
   }
 }
-

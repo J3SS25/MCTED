@@ -20,10 +20,7 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {},
-): Promise<T> {
+export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('mcteb_token');
   const headers = new Headers(options.headers || {});
 
@@ -35,7 +32,9 @@ export async function apiRequest<T>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const url = endpoint.startsWith('http') ? endpoint : `/api/v1${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  const url = endpoint.startsWith('http')
+    ? endpoint
+    : `/api/v1${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
   const response = await fetch(url, {
     ...options,
@@ -58,4 +57,3 @@ export async function apiRequest<T>(
 
   return data as T;
 }
-

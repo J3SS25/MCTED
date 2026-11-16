@@ -3,7 +3,11 @@ import { ToolsRepository } from '../tools/tools.repository.js';
 import { AuditService } from '../audit/audit.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { AppError } from '../../utils/errors.js';
-import type { CreateReservationInput, ReviewReservationInput, ReservationStatus } from '@mcteb/shared';
+import type {
+  CreateReservationInput,
+  ReviewReservationInput,
+  ReservationStatus,
+} from '@mcteb/shared';
 import db from '../../db/client.js';
 
 export class ReservationsService {
@@ -34,7 +38,9 @@ export class ReservationsService {
     }
 
     if (tool.availability_status === 'Archived' || tool.availability_status === 'Damaged') {
-      throw AppError.badRequest(`This tool is currently ${tool.availability_status.toLowerCase()} and cannot be reserved`);
+      throw AppError.badRequest(
+        `This tool is currently ${tool.availability_status.toLowerCase()} and cannot be reserved`,
+      );
     }
 
     // Check date conflict & active stock limits
@@ -128,7 +134,10 @@ export class ReservationsService {
     return this.getById(id);
   }
 
-  static cancelReservation(id: string, user: { id: string; name: string; role: string }): ReservationWithDetails {
+  static cancelReservation(
+    id: string,
+    user: { id: string; name: string; role: string },
+  ): ReservationWithDetails {
     const reservation = this.getById(id);
 
     // Borrower IDOR check
@@ -170,4 +179,3 @@ export class ReservationsService {
     return this.getById(id);
   }
 }
-

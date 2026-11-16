@@ -28,7 +28,10 @@ export const CreateMaintenanceSchema = z.object({
   severity: MaintenanceSeveritySchema,
   technician_name: z.string().optional(),
   estimated_cost_centavos: z.number().int().nonnegative().default(0),
-  scheduled_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  scheduled_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 export type CreateMaintenanceInput = z.infer<typeof CreateMaintenanceSchema>;
@@ -42,4 +45,3 @@ export const UpdateMaintenanceSchema = z.object({
 });
 
 export type UpdateMaintenanceInput = z.infer<typeof UpdateMaintenanceSchema>;
-
