@@ -73,10 +73,10 @@ MCTEB enforces Conventional Commits via Husky and Commitlint (`commitlint.config
 ### Example Commit Messages
 
 ```bash
-git commit -m "feat(api): add minimum 18-year age validation for borrower registration"
-git commit -m "fix(web): prevent duplicate reservation modal submission"
-git commit -m "docs(technical): add database schema and indexing reference"
-git commit -m "test(api): add RBAC forbidden access integration test"
+git commit -m "feat(backend): add minimum 18-year age validation for borrower registration"
+git commit -m "fix(frontend): prevent duplicate reservation modal submission"
+git commit -m "docs(architecture): add database schema and indexing reference"
+git commit -m "test(backend): add RBAC forbidden access integration test"
 ```
 
 ---
@@ -89,5 +89,5 @@ Before submitting a Pull Request for review, verify all four quality gates:
 - [ ] **Lint**: `pnpm run lint` completes with zero errors.
 - [ ] **Formatting**: `pnpm run format:check` reports all files matching Prettier styling.
 - [ ] **Tests**: `pnpm run test` executes successfully across all workspace packages.
-- [ ] **Documentation**: If architecture, APIs, or database schemas changed, corresponding docs in `docs/` are updated.
+- [ ] **Documentation**: If architecture, APIs, or database schemas changed, corresponding docs in `development/Documentation/` are updated.
 - [ ] **No Generated Artifacts**: No compiled `.js`, `.d.ts`, or `.map` files are committed inside `src/` directories.

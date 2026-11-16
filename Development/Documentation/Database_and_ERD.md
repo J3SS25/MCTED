@@ -3,14 +3,14 @@
 ## Municipal Community Tool and Equipment Bank (MCTEB)
 
 **Database Engine**: SQLite 3 via Node.js Native Engine (`node:sqlite DatabaseSync`)  
-**File Location**: `apps/api/data/app.db`  
-**Authoritative DDL**: `db/schema.sql`
+**File Location**: `Database/app.db`  
+**Authoritative DDL**: `backend/db/schema.sql`
 
 ---
 
 ## 1. Engine Configuration & Pragmas
 
-The application establishes its database connection in `apps/api/src/db/client.ts` with the following performance and integrity pragmas:
+The application establishes its database connection in `backend/db/client.ts` with the following performance and integrity pragmas:
 
 ```sql
 PRAGMA journal_mode = WAL;
@@ -237,16 +237,16 @@ MCTEB supports online hot database backups without terminating the server proces
 pnpm run db:backup
 ```
 
-This writes an atomic, defragmented snapshot into `backups/mcteb-backup-<timestamp>.db`.
+This writes an atomic, defragmented snapshot into `Database/backups/mcteb-backup-<timestamp>.db`.
 
 ### Database Restoration
 
 To restore from a backup:
 
-1. Stop the application server (`Ctrl+C`).
-2. Copy the desired backup snapshot over `apps/api/data/app.db`:
+1. Stop the application server (`Development/scripts/stop.bat` or `Ctrl+C`).
+2. Copy the desired backup snapshot over `Database/app.db`:
    ```powershell
-   Copy-Item backups/mcteb-backup-YYYY-MM-DD.db apps/api/data/app.db -Force
+   Copy-Item Database/backups/mcteb-backup-YYYY-MM-DD.db Database/app.db -Force
    ```
 3. Restart the application:
    ```bash

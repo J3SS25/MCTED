@@ -10,7 +10,7 @@
 
 | Threat Category             | Potential Attack Vector                             | MCTEB Defensive Implementation                                                                           | Finding  |
 | --------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | :------: |
-| **Authentication Bypass**   | Timing attacks on password comparison               | `crypto.timingSafeEqual` used in `apps/api/src/utils/crypto.ts`                                          | **PASS** |
+| **Authentication Bypass**   | Timing attacks on password comparison               | `crypto.timingSafeEqual` used in `backend/src/utils/crypto.ts`                                           | **PASS** |
 | **Credential Stuffing**     | Automated brute-force guessing                      | 15-minute account lockout after 5 consecutive failed attempts; rate limited to 10 req / 15 min           | **PASS** |
 | **SQL Injection**           | Parameter tampering in query strings                | 100% of SQLite statements executed via parameterized queries (`db.prepare('... = ?')`)                   | **PASS** |
 | **Privilege Escalation**    | Borrowers accessing staff or admin endpoints        | Server-enforced `requireRole(['Administrator', 'Municipal Staff'])` middleware                           | **PASS** |
@@ -27,17 +27,17 @@
 ### 1. Cryptographic Key Derivation (Scrypt)
 
 - **Finding**: Passwords are saved with 16-byte cryptographically random salts using `node:crypto` scrypt with 64-byte derived keys.
-- **Verification**: Verified in `apps/api/src/utils/crypto.ts` and validated via automated login integration tests.
+- **Verification**: Verified in `backend/src/utils/crypto.ts` and validated via automated login integration tests.
 
 ### 2. Session Integrity & Revocation
 
 - **Finding**: Session tokens are 32-byte cryptographically random hex strings stored in SQLite. Tokens can be immediately invalidated on logout.
-- **Verification**: Validated in `apps/api/src/modules/auth/session.repository.ts`.
+- **Verification**: Validated in `backend/src/repositories/session.repository.ts`.
 
 ### 3. Privilege Boundaries & IDOR Mitigations
 
 - **Finding**: Integration tests specifically assert that a logged-in Borrower receives `403 Forbidden` when attempting to query administrative endpoints (`/api/v1/users`).
-- **Verification**: Validated in `apps/api/src/app.test.ts` (Test 5: "Borrower cannot access admin-only users list").
+- **Verification**: Validated in `backend/src/app.test.ts` (Test 5: "Borrower cannot access admin-only users list").
 
 ---
 

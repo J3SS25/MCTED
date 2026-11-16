@@ -8,7 +8,7 @@ This document details the security architecture, password hashing standards, bru
 
 Passwords are never stored in plaintext or with deprecated algorithms (MD5, SHA1, plain SHA256). MCTEB uses Node's native `node:crypto` **scrypt** key derivation function.
 
-### Cryptographic Parameters (`apps/api/src/utils/crypto.ts`)
+### Cryptographic Parameters (`backend/src/utils/crypto.ts`)
 
 - **Salt**: 16 cryptographically random bytes generated via `crypto.randomBytes(16)`.
 - **Derived Key Length**: 64 bytes (512 bits).

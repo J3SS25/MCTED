@@ -48,14 +48,14 @@ setup.bat
 Or directly in PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
+powershell -ExecutionPolicy Bypass -File development\scripts\setup.ps1
 ```
 
 ### Linux / macOS (Bash)
 
 ```bash
-chmod +x scripts/setup.sh
-./scripts/setup.sh
+chmod +x development/scripts/setup.sh
+./development/scripts/setup.sh
 ```
 
 ---
@@ -101,7 +101,7 @@ pnpm run db:init
 
 ### Step 6: Apply Database Schema Migrations
 
-Applies tables, check constraints, and performance indexes from `db/schema.sql`:
+Applies tables, check constraints, and performance indexes from `backend/db/schema.sql`:
 
 ```bash
 pnpm run db:migrate
@@ -131,7 +131,7 @@ pnpm run dev
 - **Backend API**: [http://localhost:3000/api/v1](http://localhost:3000/api/v1)
 - **API Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
 
-Log in using any of the documented development credentials (see [DEMO_ACCOUNTS.md](file:///c:/Web-Application/MCTED/docs/development/DEMO_ACCOUNTS.md)).
+Log in using any of the documented development credentials (see [User_Roles_and_Permissions.md](file:///c:/Web-Application/MCTED/Development/Documentation/User_Roles_and_Permissions.md)).
 
 ---
 
@@ -148,10 +148,10 @@ Log in using any of the documented development credentials (see [DEMO_ACCOUNTS.m
 | `pnpm run format:check`  | Checks formatting compliance against Prettier rules                                      |
 | `pnpm run test`          | Runs all Vitest and Node test suites across workspaces                                   |
 | `pnpm run db:init`       | Safely verifies or initializes the SQLite database file                                  |
-| `pnpm run db:migrate`    | Applies database DDL schema from `db/schema.sql`                                         |
+| `pnpm run db:migrate`    | Applies database DDL schema from `backend/db/schema.sql`                                 |
 | `pnpm run db:seed`       | Populates demo accounts, sample tools, and fixtures (idempotent)                         |
 | `pnpm run db:reset-demo` | Safely removes only designated demo records while preserving user data                   |
-| `pnpm run db:backup`     | Creates an atomic hot backup snapshot in `backups/` using `VACUUM INTO`                  |
+| `pnpm run db:backup`     | Creates an atomic hot backup snapshot in `Database/backups/` using `VACUUM INTO`         |
 
 ---
 
@@ -159,7 +159,7 @@ Log in using any of the documented development credentials (see [DEMO_ACCOUNTS.m
 
 ### Port 3000 or 5173 Already in Use
 
-Edit the `PORT` in `.env` (for backend) or pass `--port <new_port>` to Vite in `apps/web/package.json`.
+Edit the `PORT` in `.env` (for backend) or pass `--port <new_port>` to Vite in `frontend/package.json`.
 
 ### Node.js Version Error
 

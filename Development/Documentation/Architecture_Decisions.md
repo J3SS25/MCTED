@@ -63,8 +63,10 @@ The application consists of a backend API, a frontend web application, and share
 Standardize on a **pnpm workspace monorepo** with three packages:
 
 - `packages/shared`: Zero-dependency validation schemas, domain types, and utilities.
-- `apps/api`: Express.js backend.
-- `apps/web`: React 19 single-page application.
+- `backend`: Layered Express.js REST API backend (`@mcteb/backend`).
+- `frontend`: React 19 single-page application (`@mcteb/frontend`).
+- `Database/`: Dedicated persistent database directory housing `app.db` and backups.
+- `development/`: Consolidated developer ecosystem (documentation, scripts, audits, setup).
 
 ### Consequences
 
@@ -114,7 +116,7 @@ Validation must occur early to provide meaningful feedback to users, but the und
 Implement dual-level validation:
 
 1. **Application Level**: Incoming requests are validated against shared Zod schemas (`packages/shared/src/schemas/`) via `validate()` middleware before reaching controllers.
-2. **Database Level**: `db/schema.sql` enforces strict `CHECK` constraints on status enums, foreign keys with `ON DELETE RESTRICT`, and non-negative integer limits.
+2. **Database Level**: `backend/db/schema.sql` enforces strict `CHECK` constraints on status enums, foreign keys with `ON DELETE RESTRICT`, and non-negative integer limits.
 
 ### Consequences
 

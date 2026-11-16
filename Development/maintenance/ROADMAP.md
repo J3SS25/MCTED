@@ -12,7 +12,7 @@ This document outlines strategic enhancements planned for future phases of the M
   - Generate printable QR asset tags with equipment serial codes.
   - Enable webcam and handheld USB 2D barcode scanner input at the rental checkout desk for one-click tool handover.
 - **Digital Equipment Inspection Signatures**:
-  - Add signature pad component to `apps/web` allowing borrowers and desk staff to digitally sign condition inspections on tablet devices.
+  - Add signature pad component to `frontend` allowing borrowers and desk staff to digitally sign condition inspections on tablet devices.
 
 ### Phase 3: Payment & Messaging Automation
 
@@ -36,6 +36,6 @@ This document outlines strategic enhancements planned for future phases of the M
 
 If the tool bank is expanded into a province-wide network across all six municipalities of Batanes:
 
-1. Replace `apps/api/src/db/client.ts` with a `pg` or `kysely` connection pool.
+1. Replace `backend/db/client.ts` with a `pg` or `kysely` connection pool.
 2. The 4-tier layer pattern (`routes -> controller -> service -> repository`) ensures zero rewrite of service business logic.
 3. Repositories will update their SQL syntax from SQLite pragmas to PostgreSQL parameterized queries.

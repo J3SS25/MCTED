@@ -1,7 +1,7 @@
 # UI/UX & Accessibility Audit
 
 **Audit Date**: November 2026  
-**Audited Target**: MCTEB Frontend Single-Page Application (`apps/web`)  
+**Audited Target**: MCTEB Frontend Single-Page Application (`frontend`)  
 **Design System**: Tailwind CSS with Civic Green & Slate Palette  
 **Accessibility Level**: WCAG 2.1 AA Compliant
 
@@ -11,7 +11,7 @@
 
 The MCTEB user interface was designed to reflect the civic pride, island heritage, and natural landscapes of Basco, Batanes.
 
-### Core Color Palette (`apps/web/tailwind.config.ts`)
+### Core Color Palette (`frontend/tailwind.config.ts`)
 
 - **Civic Forest (`#1b4332`)**: Represents the rolling verdant pastures and hills of Batanes; used for primary buttons, active navigation, and branding.
 - **Civic Deep (`#081c15`)**: Deep sea tone for headers, high-contrast dark mode surfaces, and dark sidebars.

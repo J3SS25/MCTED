@@ -10,7 +10,7 @@ This document diagrams the primary operational workflows and data transitions in
 sequenceDiagram
     autonumber
     actor User as Resident / Staff
-    participant Web as apps/web (SPA)
+    participant Web as frontend (React SPA)
     participant Rate as rateLimit Middleware
     participant AuthCtrl as auth.controller
     participant AuthSvc as auth.service
@@ -56,7 +56,7 @@ sequenceDiagram
     autonumber
     actor Borrower as Resident Borrower
     actor Staff as Municipal Staff
-    participant Web as apps/web
+    participant Web as frontend (React SPA)
     participant ResSvc as reservations.service
     participant ToolRepo as tools.repository
     participant ResRepo as reservations.repository
@@ -95,7 +95,7 @@ sequenceDiagram
     autonumber
     actor Staff as Desk Staff
     actor Borrower as Resident Borrower
-    participant Web as apps/web
+    participant Web as frontend (React SPA)
     participant RentalSvc as rentals.service
     participant ToolRepo as tools.repository
     participant RentalRepo as rentals.repository
@@ -140,7 +140,7 @@ sequenceDiagram
     autonumber
     actor Borrower as Resident Borrower
     actor Staff as Treasury / Staff
-    participant Web as apps/web
+    participant Web as frontend (React SPA)
     participant PaySvc as payments.service
     participant PayRepo as payments.repository
     participant NotifSvc as notifications.service

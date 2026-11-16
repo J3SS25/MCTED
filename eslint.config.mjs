@@ -25,6 +25,8 @@ export default tseslint.config(
       parserOptions: {
         projectService: {
           allowDefaultProject: [
+            'Development/scripts/*.ts',
+            'Development/scripts/database/*.ts',
             'development/scripts/*.ts',
             'development/scripts/database/*.ts',
             'scripts/*.ts',

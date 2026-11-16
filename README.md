@@ -26,7 +26,7 @@ MCTEB provides local government autonomy and equipment preservation in an island
 | **Monorepo Management**                  | `pnpm` v12.15.0 workspaces, Corepack, Husky, Commitlint                                                                 |
 | **Backend API (`backend/`)**             | Node.js (>= 20), Express 4, TypeScript 5.8, native `node:sqlite`, Zod 3.23, Pino 9.6, Helmet, CORS, Rate Limit          |
 | **Frontend SPA (`frontend/`)**           | React 19, TypeScript 5.8, Vite 6, Tailwind CSS 3.4, TanStack Query 5, React Router 7, Lucide Icons                      |
-| **Database (`Database/`)**               | Native SQLite (`DatabaseSync`), Write-Ahead Logging (`WAL`), automated hot backups (`VACUUM INTO`)                     |
+| **Database (`Database/`)**               | Native SQLite (`DatabaseSync`), Write-Ahead Logging (`WAL`), automated hot backups (`VACUUM INTO`)                      |
 | **Shared Contracts (`packages/shared`)** | Zod schemas, domain enums, role-permission matrices, integer centavos currency helpers, Manila timezone date formatters |
 | **Code Quality & Testing**               | ESLint 9 (Flat Config), typescript-eslint 8, Prettier 3, Vitest 3, React Testing Library, Supertest                     |
 

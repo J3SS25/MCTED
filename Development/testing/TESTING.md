@@ -11,8 +11,8 @@ MCTEB implements a multi-tier automated test suite covering all three monorepo p
 ```mermaid
 flowchart TD
     subgraph TestingPyramid ["Test Coverage Distribution"]
-        Integration["Backend Integration Tests<br/>(apps/api: Vitest + Supertest + In-Memory SQLite)<br/>• Route handling & RBAC<br/>• Age verification<br/>• Multi-row transactions"]
-        Component["Frontend Component Tests<br/>(apps/web: Vitest + React Testing Library + jsdom)<br/>• UI state rendering<br/>• Accessibility and button actions"]
+        Integration["Backend Integration Tests<br/>(backend: Vitest + Supertest + In-Memory SQLite)<br/>• Route handling & RBAC<br/>• Age verification<br/>• Multi-row transactions"]
+        Component["Frontend Component Tests<br/>(frontend: Vitest + React Testing Library + jsdom)<br/>• UI state rendering<br/>• Accessibility and button actions"]
         Unit["Shared Utility Unit Tests<br/>(packages/shared: Vitest)<br/>• Integer centavos calculations<br/>• Date localization & timezone formatting"]
     end
 ```
@@ -34,15 +34,15 @@ pnpm run test
 pnpm --filter @mcteb/shared test
 
 # Backend API integration tests
-pnpm --filter @mcteb/api test
+pnpm --filter @mcteb/backend test
 
 # Frontend React component tests
-pnpm --filter @mcteb/web test
+pnpm --filter @mcteb/frontend test
 ```
 
 ---
 
-## 3. Backend Integration Testing (`apps/api/src/app.test.ts`)
+## 3. Backend Integration Testing (`backend/src/app.test.ts`)
 
 Backend integration tests execute against the full Express middleware stack, using an initialized SQLite database with migrations and demo fixtures.
 
@@ -58,7 +58,7 @@ Backend integration tests execute against the full Express middleware stack, usi
 
 ---
 
-## 4. Frontend Component Testing (`apps/web/src/**/*.test.tsx`)
+## 4. Frontend Component Testing (`frontend/src/**/*.test.tsx`)
 
 Frontend tests utilize Vitest configured with the `jsdom` environment and `@testing-library/react`.
 

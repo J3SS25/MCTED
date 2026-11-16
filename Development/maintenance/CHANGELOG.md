@@ -6,6 +6,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
 
 ---
 
+## [0.3.0] - 2026-11-17
+
+### Added
+
+- **Batanes Niche-Inspired Architectural Restructuring**:
+  - Restructured backend into top-level `backend/` (`@mcteb/backend`) with layered architecture (`controllers`, `services`, `repositories`, `routes`, `middleware`, `models`).
+  - Restructured frontend into top-level `frontend/` (`@mcteb/frontend`) with React 19, Vite, and Tailwind CSS.
+  - Established dedicated `Database/` directory for SQLite live database (`Database/app.db`) and hot backups (`Database/backups/`).
+  - Established centralized `development/` directory consolidating `Documentation/`, `Audit/`, `scripts/`, `setup/`, `testing/`, `maintenance/`, and `reference/`.
+- **Administrative Security Perimeter**:
+  - Introduced isolated `/api/v1/admin` subrouter (`backend/src/admin/`) gated strictly to the `Administrator` role.
+  - Added dashboard overview, system health diagnostics, user management, and audit log inspection.
+- **Cross-Platform Script Suite**:
+  - Centralized operational scripts in `development/scripts/` (`setup.bat`, `setup.ps1`, `setup.sh`, `start.bat`, `stop.bat`, `test.bat`, `database/backup.ts`).
+  - Preserved root-level `setup.bat` convenience launcher.
+
+### Changed
+
+- Updated `pnpm-workspace.yaml` and workspace package references for `@mcteb/backend` and `@mcteb/frontend`.
+- Updated all technical, architectural, setup, and audit documentation to reflect the new directory structure and database paths.
+- Configured ESLint, Prettier, and TypeScript project references to target the new workspace paths.
+
+---
+
 ## [0.2.0] - 2026-11-16
 
 ### Added

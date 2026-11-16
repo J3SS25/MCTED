@@ -110,7 +110,7 @@ fi
 write_step "6/7 Initializing development database and applying schema..."
 pnpm run db:init
 pnpm run db:migrate
-write_success "Database initialized and schema migrations applied (db/schema.sql)."
+write_success "Database initialized and schema migrations applied (backend/db/schema.sql)."
 
 # 7. Seed Demo Fixtures
 if [ "${1:-}" != "--skip-seed" ]; then

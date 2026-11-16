@@ -277,3 +277,42 @@ Toggles public visibility of feedback.
 ## 9. Security Audit (`/api/v1/audit`) _(Admin Only)_
 
 - `GET /audit`: Immutable security audit log feed with actor, action code, timestamp, and IP address.
+
+---
+
+## 10. Administrative Perimeter (`/api/v1/admin`) _(Administrator Only)_
+
+All endpoints under `/api/v1/admin` require an authenticated session with the `Administrator` role. Requests by `Borrower` or `Municipal Staff` receive `403 Forbidden`.
+
+### `GET /admin/overview`
+
+Returns high-level administrative operational statistics:
+
+- Total registered users and active borrowers.
+- Total inventory items, active loans, and overdue counts.
+- Open maintenance defect tickets.
+- Unverified payments pending treasury confirmation.
+
+### `GET /admin/health`
+
+Performs live system diagnostics:
+
+- SQLite database connectivity and integrity status.
+- Current active WAL journal mode and busy timeout configuration.
+- System uptime and process memory metrics.
+
+### `GET /admin/users`
+
+Lists all registered users with complete account metadata, lockout statuses, and barangay records.
+
+### `PATCH /admin/users/:id/status`
+
+Updates account status (`Active`, `Suspended`). Features self-lockout defense: administrators cannot suspend their own account.
+
+### `PATCH /admin/users/:id/role`
+
+Updates user authorization role (`Borrower`, `Municipal Staff`, `Administrator`). Features self-demotion defense: administrators cannot remove their own `Administrator` role.
+
+### `GET /admin/audit`
+
+Direct administrative access to immutable system audit trails.

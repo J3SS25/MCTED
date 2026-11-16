@@ -21,7 +21,7 @@
     "db:migrate": "pnpm --filter @mcteb/backend db:migrate",
     "db:seed": "pnpm --filter @mcteb/backend db:seed",
     "db:reset-demo": "pnpm --filter @mcteb/backend db:reset-demo",
-    "db:backup": "tsx development/scripts/database/backup.ts",
+    "db:backup": "tsx Development/scripts/database/backup.ts",
     "audit": "pnpm audit --prod"
   },
   "devDependencies": {

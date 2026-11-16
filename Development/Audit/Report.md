@@ -12,17 +12,17 @@
 
 During initial project inspection, the repository showed build artifact leakage:
 
-1. **Emitted Files in Source Tree**: `apps/web/src/` contained 156 emitted files (`39 .js`, `39 .d.ts`, `39 .js.map`, `39 .d.ts.map`) committed alongside their respective `.tsx` and `.ts` sources.
-2. **Configuration Root Cause**: An earlier TypeScript compilation had executed without `"noEmit": true` or without an `outDir` specified in `apps/web/tsconfig.json`, causing `tsc` to transpile `.tsx` files in-place.
+1. **Emitted Files in Source Tree**: `frontend/src/` contained 156 emitted files (`39 .js`, `39 .d.ts`, `39 .js.map`, `39 .d.ts.map`) committed alongside their respective `.tsx` and `.ts` sources.
+2. **Configuration Root Cause**: An earlier TypeScript compilation had executed without `"noEmit": true` or without an `outDir` specified in `frontend/tsconfig.json`, causing `tsc` to transpile `.tsx` files in-place.
 3. **Legitimate JavaScript**: The repository correctly contained three JavaScript configuration files required by Node tooling:
    - `commitlint.config.cjs`
    - `eslint.config.mjs`
-   - `apps/web/postcss.config.js`
+   - `frontend/postcss.config.js`
 
 ### Remediations Executed
 
-1. **Purged Duplicate Build Artifacts**: Removed all 156 emitted `.d.ts`, `.js`, and `.map` files from `apps/web/src/`.
-2. **Enforced Compiler Isolation**: Verified `"noEmit": true` in `apps/web/tsconfig.json` and ensured `apps/api` and `packages/shared` output exclusively to their respective `dist/` directories.
+1. **Purged Duplicate Build Artifacts**: Removed all 156 emitted `.d.ts`, `.js`, and `.map` files from `frontend/src/`.
+2. **Enforced Compiler Isolation**: Verified `"noEmit": true` in `frontend/tsconfig.json` and ensured `backend` and `packages/shared` output exclusively to their respective `dist/` directories.
 3. **100% Application TypeScript**: All application logic, React components, services, and schemas are strictly standardized on TypeScript (`.ts` and `.tsx`).
 
 ---
@@ -36,7 +36,7 @@ During initial project inspection, the repository showed build artifact leakage:
 | `@eslint/js@9.27.0`         | Root devDependencies              | Missing direct dependency required by `eslint.config.mjs`.                       |
 | `typescript-eslint@^8.72.2` | Root devDependencies              | Missing direct dependency required by `eslint.config.mjs`.                       |
 | `tsx@^4.23.15`              | Root devDependencies              | Required to execute root-level automation scripts (e.g., `db:backup`).           |
-| `jsdom@^26.0.0`             | `apps/web` devDependencies        | Required by Vitest in `apps/web/vitest.config.ts` for DOM environment emulation. |
+| `jsdom@^26.0.0`             | `frontend` devDependencies        | Required by Vitest in `frontend/vitest.config.ts` for DOM environment emulation. |
 | `vitest@^5.1.0`             | `packages/shared` devDependencies | Added to enable automated unit testing of financial and date conversion helpers. |
 
 ### Redundant / Conflicting Dependencies
@@ -63,7 +63,7 @@ During initial project inspection, the repository showed build artifact leakage:
 
 ## 4. Architectural Layer Compliance
 
-Each backend domain module in `apps/api/src/modules/` adheres strictly to:
+Each backend domain module in `backend/src/` adheres strictly to:
 `routes` → `controller` → `service` → `repository` → `db`
 
 - **Controllers**: Zero SQL statements or business transaction logic.

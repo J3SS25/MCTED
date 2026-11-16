@@ -21,7 +21,7 @@ JavaScript is strictly restricted to top-level configuration tooling where ecosy
 
 - `commitlint.config.cjs`: CommonJS configuration for commitlint.
 - `eslint.config.mjs`: ES Module configuration for flat ESLint.
-- `apps/web/postcss.config.js`: PostCSS plugin runner.
+- `frontend/postcss.config.js`: PostCSS plugin runner.
 
 No application code or domain business logic may be written in JavaScript.
 
@@ -62,13 +62,13 @@ MCTEB enforces modern strict compiler settings in `tsconfig.base.json`:
 
 ## 3. Emitted Artifact Discipline
 
-A previous build configuration error caused `tsc` to emit `.js`, `.d.ts`, `.js.map`, and `.d.ts.map` directly alongside `.tsx` source files in `apps/web/src`.
+A previous build configuration error caused `tsc` to emit `.js`, `.d.ts`, `.js.map`, and `.d.ts.map` directly alongside `.tsx` source files in `frontend/src`.
 
 ### Current Rules:
 
-1. `apps/web/tsconfig.json` has `"noEmit": true`. All TypeScript compilation for the web application is handled in-memory by Vite during `pnpm run build` and `pnpm run dev`.
+1. `frontend/tsconfig.json` has `"noEmit": true`. All TypeScript compilation for the web application is handled in-memory by Vite during `pnpm run build` and `pnpm run dev`.
 2. `packages/shared/tsconfig.json` explicitly outputs declarations to `packages/shared/dist/`.
-3. `apps/api/tsconfig.json` outputs compiled JavaScript to `apps/api/dist/`.
+3. `backend/tsconfig.json` outputs compiled JavaScript to `backend/dist/`.
 4. The `.gitignore` and `.prettierignore` files strictly prevent any `.d.ts` or `.js` build output inside `src/` from being tracked in git.
 
 ---

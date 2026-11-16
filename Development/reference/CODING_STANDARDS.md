@@ -6,30 +6,30 @@ This document outlines the mandatory programming patterns, error-handling conven
 
 ## 1. Architectural Boundaries
 
-### Backend Modules (`apps/api/src/modules/`)
+### Backend Architecture (`backend/src/`)
 
-Code must strictly respect the 4-tier layer pattern:
+Code must strictly respect the layered pattern:
 
-1. **Routes (`*.routes.ts`)**:
+1. **Routes (`backend/src/routes/*.routes.ts`, `backend/src/admin/*.routes.ts`)**:
 
    - Only responsible for registering HTTP method verbs, path strings, and applying middleware (`requireAuth`, `requireRole`, `validate`).
    - Must never execute database queries or construct custom domain responses directly.
 
-2. **Controllers (`*.controller.ts`)**:
+2. **Controllers (`backend/src/controllers/*.controller.ts`, `backend/src/admin/*.controller.ts`)**:
 
    - Parse route parameters (`req.params`), query strings (`req.query`), and validated bodies (`req.body`).
    - Call appropriate service methods.
    - Return appropriate HTTP status codes (`200 OK`, `201 Created`, `204 No Content`).
    - Never write SQL queries or orchestrate multiple database mutations.
 
-3. **Services (`*.service.ts`)**:
+3. **Services (`backend/src/services/*.service.ts`, `backend/src/admin/*.service.ts`)**:
 
    - Encapsulate all domain business rules.
    - Open and manage atomic database transactions (`db.transaction()`).
    - Trigger side-effects (e.g., dispatching notifications, recording audit log entries).
    - Never interact with Express `req` or `res` objects.
 
-4. **Repositories (`*.repository.ts`)**:
+4. **Repositories (`backend/src/repositories/*.repository.ts`)**:
    - Execute parameterized SQLite queries.
    - Never contain business policy checks (e.g., age checks, permission rules).
    - Return clean typed records.
@@ -38,7 +38,7 @@ Code must strictly respect the 4-tier layer pattern:
 
 ## 2. Error Handling & HTTP Status Codes
 
-Backend error handling is centralized in `apps/api/src/utils/errors.ts` and `apps/api/src/middleware/errorHandler.ts`.
+Backend error handling is centralized in `backend/src/utils/errors.ts` and `backend/src/middleware/errorHandler.ts`.
 
 ### Standard Error Hierarchy (`AppError`)
 
@@ -82,8 +82,8 @@ The centralized error middleware catches all thrown `AppError` instances, logs t
 
 ## 3. Logging Standards
 
-- **Never use `console.log`** in backend application code (`apps/api/src`).
-- Use the structured Pino logger from `apps/api/src/utils/logger.ts`:
+- **Never use `console.log`** in backend application code (`backend/src`).
+- Use the structured Pino logger from `backend/src/utils/logger.ts`:
 
   ```typescript
   import { logger } from '../../utils/logger.js';
