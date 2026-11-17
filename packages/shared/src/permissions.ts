@@ -15,6 +15,9 @@ export const Permissions = {
   FEEDBACK_SUBMIT: ['Borrower'] as const,
   PROFILE_VIEW_UPDATE_OWN: ['Borrower', 'Municipal Staff', 'Administrator'] as const,
   NOTIFICATIONS_VIEW_OWN: ['Borrower', 'Municipal Staff', 'Administrator'] as const,
+  TOOL_CREATE_OWN: ['Borrower', 'Municipal Staff', 'Administrator'] as const,
+  TOOL_EDIT_OWN: ['Borrower', 'Municipal Staff', 'Administrator'] as const,
+  TOOL_DELETE_OWN: ['Borrower', 'Municipal Staff', 'Administrator'] as const,
 
   // Staff Operations
   RESERVATION_VIEW_ALL: ['Municipal Staff', 'Administrator'] as const,
@@ -32,7 +35,7 @@ export const Permissions = {
   USER_VIEW_ALL: ['Administrator'] as const,
   USER_STATUS_UPDATE: ['Administrator'] as const,
   USER_ROLE_UPDATE: ['Administrator'] as const,
-  AUDIT_LOG_VIEW: ['Administrator'] as const,
+  AUDIT_LOG_VIEW: ['Municipal Staff', 'Administrator'] as const,
 } as const;
 
 export type PermissionAction = keyof typeof Permissions;

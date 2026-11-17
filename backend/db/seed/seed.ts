@@ -3,6 +3,7 @@ import { env } from '../../src/config/env.js';
 import { logger } from '../../src/utils/logger.js';
 import { hashPassword } from '../../src/utils/crypto.js';
 import { validateFixtures } from './validate-fixtures.js';
+import { calculateAgeFromBirthDate } from '@mcteb/shared';
 import {
   SEED_USERS,
   SEED_TOOLS,
@@ -46,8 +47,9 @@ export async function runSeed(): Promise<void> {
     // 1. Seed Users
     const userStmt = db.prepare(`
       INSERT OR IGNORE INTO users (
-        id, full_name, email, password_hash, phone, birth_date, barangay, address, role, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, full_name, email, password_hash, phone, birth_date, barangay, province, age, address, role, status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     for (const u of SEED_USERS) {
@@ -59,6 +61,8 @@ export async function runSeed(): Promise<void> {
         u.phone,
         u.birth_date,
         u.barangay,
+        'Batanes',
+        calculateAgeFromBirthDate(u.birth_date),
         u.address,
         u.role,
         u.status,

@@ -21,7 +21,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     res.status(400).json({
       error: {
         code: 'VALIDATION_ERROR',
-        message: 'Invalid request payload',
+        message: err.issues[0]?.message || 'Invalid request payload',
         details: err.flatten().fieldErrors,
       },
     });

@@ -64,7 +64,7 @@ export const SEED_TOOLS = [
   {
     id: 'b0000000-0000-4000-8000-000000000001',
     name: 'Agricultural Hand Tiller',
-    category: 'Agricultural',
+    category: 'Agriculture',
     description:
       'Gas-powered hand tiller suitable for small farm lots. Ideal for land preparation in Batanes terraced fields.',
     specifications: JSON.stringify({
@@ -128,7 +128,7 @@ export const SEED_TOOLS = [
   {
     id: 'b0000000-0000-4000-8000-000000000004',
     name: 'Water Pump 2-inch',
-    category: 'Agricultural',
+    category: 'Agriculture',
     description: 'Gasoline-powered centrifugal pump for irrigation, drainage, and water transfer.',
     specifications: JSON.stringify({
       discharge_diameter: '2 inch',
@@ -170,7 +170,7 @@ export const SEED_TOOLS = [
   {
     id: 'b0000000-0000-4000-8000-000000000006',
     name: 'Backpack Sprayer 20L',
-    category: 'Agricultural',
+    category: 'Agriculture',
     description: 'Manual lever-action backpack sprayer for pesticide and fertilizer application.',
     specifications: JSON.stringify({
       tank_capacity: '20 L',
@@ -190,7 +190,7 @@ export const SEED_TOOLS = [
   {
     id: 'b0000000-0000-4000-8000-000000000007',
     name: 'Marine GPS Handheld',
-    category: 'Fishery',
+    category: 'Fishing',
     description: 'Waterproof handheld GPS unit for fishing boat navigation and sea route plotting.',
     specifications: JSON.stringify({
       screen: '2.6" sunlight-readable',

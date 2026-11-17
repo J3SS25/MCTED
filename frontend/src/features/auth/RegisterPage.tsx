@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Wrench } from 'lucide-react';
-import type { Barangay } from '@mcteb/shared';
+import { calculateAgeFromBirthDate, getMaxAdultBirthDate, type Barangay } from '@mcteb/shared';
 
 const BARANGAYS: Array<{ value: Barangay; label: string }> = [
   { value: 'Chanarian', label: 'Chanarian' },
@@ -20,6 +20,7 @@ const BARANGAYS: Array<{ value: Barangay; label: string }> = [
 export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const maxAdultBirthDate = getMaxAdultBirthDate();
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -27,16 +28,36 @@ export function RegisterPage() {
     password: '',
     phone: '',
     birth_date: '1995-01-01',
+    age: calculateAgeFromBirthDate('1995-01-01'),
     barangay: 'San Antonio' as Barangay,
+    province: 'Batanes',
     address: '',
   });
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const computedAge = calculateAgeFromBirthDate(formData.birth_date);
+  const isUnderage = computedAge < 18 || formData.age < 18;
+
+  const handleBirthDateChange = (newBirthDate: string) => {
+    const nextAge = calculateAgeFromBirthDate(newBirthDate);
+    setFormData((prev) => ({
+      ...prev,
+      birth_date: newBirthDate,
+      age: nextAge >= 0 ? nextAge : prev.age,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (isUnderage) {
+      setError('Registration is restricted to users who are 18 years old and above.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -63,7 +84,7 @@ export function RegisterPage() {
           Register Borrower Account
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Municipality of Basco, Batanes — Residents must be at least 18 years old.
+          Municipality of Basco, Batanes — Open exclusively to residents 18 years old and above.
         </p>
       </div>
 
@@ -73,6 +94,11 @@ export function RegisterPage() {
             {error && (
               <Alert variant="error" className="mb-4">
                 {error}
+              </Alert>
+            )}
+            {!error && isUnderage && (
+              <Alert variant="warning" className="mb-4">
+                You must be at least 18 years old to register for an MCTEB borrower account.
               </Alert>
             )}
 
@@ -110,11 +136,27 @@ export function RegisterPage() {
                   label="Birth Date"
                   type="date"
                   required
+                  max={maxAdultBirthDate}
                   value={formData.birth_date}
-                  onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+                  onChange={(e) => handleBirthDateChange(e.target.value)}
+                  error={computedAge < 18 ? 'Must be 18 years old or above' : undefined}
                   helperText="Minimum 18 years old required"
                 />
 
+                <Input
+                  label="Age"
+                  type="number"
+                  min={18}
+                  max={120}
+                  required
+                  value={formData.age}
+                  onChange={(e) => setFormData({ ...formData, age: Number(e.target.value) })}
+                  error={formData.age < 18 ? 'Age must be 18+' : undefined}
+                  helperText="Auto-computed from birth date"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select
                   label="Barangay (Basco)"
                   options={BARANGAYS}
@@ -122,6 +164,14 @@ export function RegisterPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, barangay: e.target.value as Barangay })
                   }
+                />
+
+                <Input
+                  label="Province"
+                  required
+                  value={formData.province}
+                  onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                  placeholder="Batanes"
                 />
               </div>
 
@@ -143,7 +193,12 @@ export function RegisterPage() {
               />
 
               <div className="pt-2">
-                <Button type="submit" isLoading={isLoading} className="w-full">
+                <Button
+                  type="submit"
+                  isLoading={isLoading}
+                  disabled={isUnderage}
+                  className="w-full"
+                >
                   Create Account
                 </Button>
               </div>

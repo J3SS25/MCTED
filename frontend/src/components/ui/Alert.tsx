@@ -1,14 +1,22 @@
 import React from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'info' | 'success' | 'warning' | 'error';
   title?: string;
+  onClose?: () => void;
 }
 
-export function Alert({ variant = 'info', title, children, className, ...props }: AlertProps) {
+export function Alert({
+  variant = 'info',
+  title,
+  onClose,
+  children,
+  className,
+  ...props
+}: AlertProps) {
   const icons = {
     info: <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />,
     success: <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />,
@@ -39,6 +47,16 @@ export function Alert({ variant = 'info', title, children, className, ...props }
         {title && <h4 className="font-semibold mb-1">{title}</h4>}
         <div>{children}</div>
       </div>
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Dismiss alert"
+          className="p-0.5 rounded opacity-70 hover:opacity-100 self-start focus:outline-none"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 }

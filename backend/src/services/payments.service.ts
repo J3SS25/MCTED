@@ -42,15 +42,26 @@ export class PaymentsService {
         action: 'PAYMENT_SUBMITTED',
         target_type: 'payment',
         target_id: payment.id,
-        details: `Submitted payment of ${formatPHP(input.amount_centavos)} via ${input.payment_method}. Ref: ${receiptRef}`,
+        details: `Submitted payment of ${formatPHP(input.amount_centavos)} via ${input.payment_method} (Status: ${payment.status}). Ref: ${receiptRef}`,
       });
 
       NotificationsService.create({
         user_id: userId,
-        title: 'Payment Submitted',
-        message: `Your payment of ${formatPHP(input.amount_centavos)} (Ref: ${receiptRef}) has been submitted for municipal treasury verification.`,
-        type: 'info',
-        link_url: `/payments/${payment.id}`,
+        title:
+          payment.status === 'Paid'
+            ? 'Payment Completed (Demo)'
+            : payment.status === 'Failed'
+              ? 'Payment Declined (Demo)'
+              : 'Payment Submitted',
+        message:
+          payment.status === 'Paid'
+            ? `Your ${input.payment_method} payment of ${formatPHP(input.amount_centavos)} (Ref: ${receiptRef}) was processed. Official receipt is ready.`
+            : payment.status === 'Failed'
+              ? `Your simulated ${input.payment_method} payment of ${formatPHP(input.amount_centavos)} (Ref: ${receiptRef}) was marked as Failed.`
+              : `Your payment of ${formatPHP(input.amount_centavos)} via ${input.payment_method} (Ref: ${receiptRef}) has been submitted for treasury verification.`,
+        type:
+          payment.status === 'Paid' ? 'success' : payment.status === 'Failed' ? 'danger' : 'info',
+        link_url: '/my-payments',
       });
 
       return payment;

@@ -4,7 +4,12 @@ import { AuditService } from './audit.service.js';
 import { NotificationsService } from './notifications.service.js';
 import { AppError } from '../utils/errors.js';
 import { hashPassword, verifyPassword, generateSessionToken } from '../utils/crypto.js';
-import type { RegisterUserInput, LoginInput, User } from '@mcteb/shared';
+import {
+  calculateAgeFromBirthDate,
+  type RegisterUserInput,
+  type LoginInput,
+  type User,
+} from '@mcteb/shared';
 
 export class AuthService {
   static async register(
@@ -18,15 +23,9 @@ export class AuthService {
     }
 
     // 2. Validate municipal age policy (minimum 18 years old)
-    const birthDate = new Date(input.birth_date);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
+    const age = calculateAgeFromBirthDate(input.birth_date);
 
-    if (age < 18) {
+    if (age < 18 || (input.age !== undefined && input.age < 18)) {
       throw AppError.badRequest('Borrowers must be at least 18 years old under Municipal policies');
     }
 

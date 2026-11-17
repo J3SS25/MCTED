@@ -9,32 +9,53 @@ import { Alert } from '../../components/ui/Alert';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { OfficialReceiptModal } from './OfficialReceiptModal';
-import { CreditCard, Receipt, PlusCircle } from 'lucide-react';
-import { formatPHP, formatDate } from '@mcteb/shared';
+import { CreditCard, Receipt, PlusCircle, Download } from 'lucide-react';
+import { downloadReceiptPdf } from '../../lib/pdf-receipt';
+import {
+  DEMO_PAYMENT_METHODS,
+  formatPHP,
+  formatDate,
+  type PaymentStatus,
+  type Tool,
+} from '@mcteb/shared';
 
 const PAYMENT_METHODS = [
+  ...DEMO_PAYMENT_METHODS.map((m) => ({ value: m, label: `${m} (Demo)` })),
   { value: 'Cash', label: 'Cash (Municipal Hall Counter)' },
-  { value: 'GCash', label: 'GCash' },
-  { value: 'Bank Transfer', label: 'Land Bank Transfer' },
-  { value: 'Municipal Treasury', label: 'Municipal Treasury Assessment' },
 ];
 
 export function MyPaymentsPage() {
   const [payments, setPayments] = useState<any[]>([]);
+  const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
 
   // Submit payment modal state
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-  const [amountPesos, setAmountPesos] = useState('');
+  const [selectedToolId, setSelectedToolId] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [durationDays, setDurationDays] = useState(1);
+  const [amountPesos, setAmountPesos] = useState('150');
   const [paymentMethod, setPaymentMethod] = useState('GCash');
+  const [simulatedStatus, setSimulatedStatus] = useState<PaymentStatus>('Paid');
+  const [pickupDate, setPickupDate] = useState(() => new Date().toISOString().split('T')[0]!);
+  const [returnDate, setReturnDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d.toISOString().split('T')[0]!;
+  });
+  const [remarks, setRemarks] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPayments = async () => {
     try {
-      const data = await apiRequest<any[]>('/payments');
-      setPayments(data);
+      const [payData, toolRes] = await Promise.all([
+        apiRequest<any[]>('/payments'),
+        apiRequest<{ items: Tool[] }>('/tools?limit=100').catch(() => ({ items: [] })),
+      ]);
+      setPayments(payData);
+      setTools(toolRes.items || []);
     } catch (err) {
       console.error('Failed to load payments', err);
     } finally {
@@ -52,17 +73,42 @@ export function MyPaymentsPage() {
     setSubmitting(true);
 
     try {
-      await apiRequest('/payments', {
+      const selectedTool = tools.find((t) => t.id === selectedToolId);
+      const amountCentavos = Math.round(Number(amountPesos) * 100);
+      const itemsJson = selectedTool
+        ? JSON.stringify([
+            {
+              tool_id: selectedTool.id,
+              tool_name: selectedTool.name,
+              category: selectedTool.category,
+              quantity: Math.max(1, Number(quantity)),
+              unit_cost_centavos: selectedTool.rental_fee_centavos,
+              deposit_fee_centavos: selectedTool.deposit_fee_centavos,
+              duration_days: Math.max(1, Number(durationDays)),
+              subtotal_centavos: amountCentavos,
+            },
+          ])
+        : undefined;
+
+      const created = await apiRequest<any>('/payments', {
         method: 'POST',
         body: JSON.stringify({
-          amount_centavos: Math.round(Number(amountPesos) * 100),
+          tool_id: selectedToolId || undefined,
+          amount_centavos: amountCentavos,
           payment_method: paymentMethod,
+          status: simulatedStatus,
+          items_json: itemsJson,
+          pickup_date: pickupDate || undefined,
+          return_date: returnDate || undefined,
+          duration_days: Math.max(1, Number(durationDays)),
+          remarks: remarks.trim() || `Demo transaction via ${paymentMethod}`,
         }),
       });
 
       setIsSubmitModalOpen(false);
-      setAmountPesos('');
+      setRemarks('');
       await fetchPayments();
+      setSelectedReceipt(created);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to record payment');
     } finally {
@@ -88,7 +134,8 @@ export function MyPaymentsPage() {
             Payments & Official Receipts
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Track rental fee payments and download municipal receipts.
+            Track transactions, simulate demo payments (GCash, LANDBANK, Maya, BDO), and print or
+            download PDF receipts.
           </p>
         </div>
 
@@ -96,7 +143,7 @@ export function MyPaymentsPage() {
           onClick={() => setIsSubmitModalOpen(true)}
           className="gap-2 self-start sm:self-auto"
         >
-          <PlusCircle className="h-4 w-4" /> Record New Payment
+          <PlusCircle className="h-4 w-4" /> Simulate Demo Payment
         </Button>
       </div>
 
@@ -112,7 +159,7 @@ export function MyPaymentsPage() {
             <Card key={payment.id}>
               <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {payment.receipt_reference}
                     </span>
@@ -121,15 +168,29 @@ export function MyPaymentsPage() {
 
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                     {formatPHP(payment.amount_centavos)} &bull; {payment.payment_method}
+                    {payment.tool_name && (
+                      <span className="font-normal text-slate-600 dark:text-slate-300">
+                        {' '}
+                        &bull; {payment.tool_name}
+                      </span>
+                    )}
                   </p>
 
                   <p className="text-xs text-slate-500">
                     Submitted: {formatDate(payment.created_at)}
-                    {payment.verified_at && ` | Verified on ${formatDate(payment.verified_at)}`}
+                    {payment.verified_at && ` | Processed: ${formatDate(payment.verified_at)}`}
                   </p>
                 </div>
 
-                <div className="self-end sm:self-center">
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1.5"
+                    onClick={() => downloadReceiptPdf(payment)}
+                  >
+                    <Download className="h-4 w-4" /> PDF
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -145,11 +206,12 @@ export function MyPaymentsPage() {
         </div>
       )}
 
-      {/* Record Payment Modal */}
+      {/* Record / Simulate Demo Payment Modal */}
       <Modal
         isOpen={isSubmitModalOpen}
         onClose={() => setIsSubmitModalOpen(false)}
-        title="Record Fee Payment"
+        title="Demo Payment Transaction"
+        maxWidth="lg"
       >
         {error && (
           <Alert variant="error" className="mb-4">
@@ -157,36 +219,109 @@ export function MyPaymentsPage() {
           </Alert>
         )}
 
+        <Alert variant="info" className="mb-4">
+          For testing/demo purposes only — simulates payment method selection and status without
+          real payment gateway integration.
+        </Alert>
+
         <form onSubmit={handleRecordPayment} className="space-y-4">
-          <Input
-            label="Payment Amount (₱)"
-            type="number"
-            min="1"
-            step="0.01"
-            required
-            value={amountPesos}
-            onChange={(e) => setAmountPesos(e.target.value)}
-            placeholder="150.00"
-          />
-
           <Select
-            label="Payment Method"
-            options={PAYMENT_METHODS}
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
+            label="Equipment Item (Optional)"
+            options={[
+              { value: '', label: 'General Municipal Equipment Fee' },
+              ...tools.map((t) => ({
+                value: t.id,
+                label: `${t.name} (${formatPHP(t.rental_fee_centavos)}/day)`,
+              })),
+            ]}
+            value={selectedToolId}
+            onChange={(e) => {
+              const id = e.target.value;
+              setSelectedToolId(id);
+              const found = tools.find((t) => t.id === id);
+              if (found) {
+                const totalCentavos =
+                  found.rental_fee_centavos * quantity * durationDays +
+                  found.deposit_fee_centavos * quantity;
+                setAmountPesos(String(Math.max(1, totalCentavos / 100)));
+              }
+            }}
           />
 
-          <p className="text-xs text-slate-500">
-            Note: Your payment reference will be submitted to the Municipal Treasury staff for
-            verification.
-          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Input
+              label="Amount (₱)"
+              type="number"
+              min="1"
+              step="0.01"
+              required
+              value={amountPesos}
+              onChange={(e) => setAmountPesos(e.target.value)}
+            />
+            <Input
+              label="Quantity"
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+            />
+            <Input
+              label="Duration (Days)"
+              type="number"
+              min="1"
+              value={durationDays}
+              onChange={(e) => setDurationDays(Number(e.target.value))}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Select
+              label="Payment Method (Demo)"
+              options={PAYMENT_METHODS}
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            />
+
+            <Select
+              label="Simulated Status"
+              options={[
+                { value: 'Paid', label: 'Paid (Demo Approved)' },
+                { value: 'Pending', label: 'Pending (For Staff Verification)' },
+                { value: 'Failed', label: 'Failed (Simulate Declined)' },
+              ]}
+              value={simulatedStatus}
+              onChange={(e) => setSimulatedStatus(e.target.value as PaymentStatus)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Pickup Date"
+              type="date"
+              value={pickupDate}
+              onChange={(e) => setPickupDate(e.target.value)}
+            />
+            <Input
+              label="Return Schedule Date"
+              type="date"
+              value={returnDate}
+              onChange={(e) => setReturnDate(e.target.value)}
+            />
+          </div>
+
+          <Input
+            label="Remarks / Notes"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            placeholder="Optional project note or demo reference"
+          />
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setIsSubmitModalOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" isLoading={submitting}>
-              Submit for Verification
+              Process Demo Payment
             </Button>
           </div>
         </form>

@@ -1,44 +1,76 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
+import { useWishlistCart } from '../../lib/wishlist-cart-context';
+import { resolveToolImage, setLocalToolImage } from '../../lib/local-storage';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { Alert } from '../../components/ui/Alert';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ReservationFormModal } from '../reservations/ReservationFormModal';
-import { ArrowLeft, Check, Shield, Star, MessageSquare } from 'lucide-react';
+import { ToolFormModal } from '../inventory/ToolFormModal';
+import {
+  ArrowLeft,
+  Star,
+  MessageSquare,
+  Heart,
+  ShoppingCart,
+  Edit,
+  Trash2,
+  Tag,
+  UserCheck,
+} from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
 import { formatPHP } from '@mcteb/shared';
 
 export function ToolDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { isInWishlist, isInCart, toggleWishlist, addToCart } = useWishlistCart();
   const navigate = useNavigate();
 
   const [tool, setTool] = useState<Tool | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [reserveModalOpen, setReserveModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [banner, setBanner] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    try {
+      if (!id) return;
+      const [toolData, reviewData] = await Promise.all([
+        apiRequest<Tool>(`/tools/${id}`),
+        apiRequest<any[]>(`/feedback/public?tool_id=${id}`),
+      ]);
+      setTool(toolData);
+      setReviews(reviewData);
+    } catch (err) {
+      console.error('Failed to load tool detail', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        if (!id) return;
-        const [toolData, reviewData] = await Promise.all([
-          apiRequest<Tool>(`/tools/${id}`),
-          apiRequest<any[]>(`/feedback/public?tool_id=${id}`),
-        ]);
-        setTool(toolData);
-        setReviews(reviewData);
-      } catch (err) {
-        console.error('Failed to load tool detail', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
-  }, [id]);
+  }, [loadData]);
+
+  const handleDeleteTool = async () => {
+    if (!tool) return;
+    if (!confirm(`Are you sure you want to permanently remove "${tool.name}" from inventory?`)) {
+      return;
+    }
+    try {
+      await apiRequest(`/tools/${tool.id}`, { method: 'DELETE' });
+      setLocalToolImage(tool.id, null);
+      navigate('/catalog');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete tool');
+    }
+  };
 
   if (loading) {
     return (
@@ -74,38 +106,82 @@ export function ToolDetailPage() {
   }
 
   const isAvailable = tool.availability_status === 'Available' && tool.available_quantity > 0;
+  const discountPercent = tool.discount_percent ?? 0;
+  const effectiveFeeCentavos =
+    discountPercent > 0
+      ? Math.round(tool.rental_fee_centavos * (1 - discountPercent / 100))
+      : tool.rental_fee_centavos;
+  const canManage =
+    !!user &&
+    (user.role === 'Administrator' || user.role === 'Municipal Staff' || tool.owner_id === user.id);
+  const inWishlist = isInWishlist(tool.id);
+  const inCart = isInCart(tool.id);
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
-      <Link
-        to="/catalog"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-      >
-        <ArrowLeft className="h-4 w-4" /> Back to Equipment Catalog
-      </Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link
+          to="/catalog"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Equipment Catalog
+        </Link>
+
+        {canManage && (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => setEditModalOpen(true)}
+            >
+              <Edit className="h-3.5 w-3.5" /> Edit Tool
+            </Button>
+            <Button size="sm" variant="danger" className="gap-1.5" onClick={handleDeleteTool}>
+              <Trash2 className="h-3.5 w-3.5" /> Delete Tool
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {banner && (
+        <Alert variant="success" onClose={() => setBanner(null)}>
+          {banner}
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         {/* Tool Photo Preview */}
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 flex items-center justify-center min-h-[360px]">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 flex items-center justify-center min-h-[360px] relative">
           <img
-            src={tool.image_url || '/equipment/fallback.svg'}
+            src={resolveToolImage(tool)}
             alt={tool.name}
-            className="max-h-[300px] max-w-full object-contain"
+            className="max-h-[300px] max-w-full object-contain rounded-lg"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/equipment/fallback.svg';
             }}
           />
+          {discountPercent > 0 && (
+            <span className="absolute top-4 left-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-sm">
+              <Tag className="h-3.5 w-3.5" /> {discountPercent}% DISCOUNT
+            </span>
+          )}
         </div>
 
         {/* Tool Specifications & Actions */}
         <div className="space-y-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
                 {tool.category}
               </span>
               <Badge status={tool.availability_status} />
               <Badge status={tool.condition_status} />
+              {tool.owner_name && tool.owner_role === 'Borrower' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300">
+                  <UserCheck className="h-3.5 w-3.5" /> Shared by {tool.owner_name}
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{tool.name}</h1>
@@ -132,32 +208,75 @@ export function ToolDetailPage() {
           )}
 
           {/* Pricing and Stock Summary */}
-          <div className="grid grid-cols-2 gap-4 p-4 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900">
+          <div className="grid grid-cols-3 gap-3 p-4 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900">
             <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Daily Rental Fee</p>
-              <p className="text-xl font-bold text-civic-forest dark:text-civic-light">
-                {formatPHP(tool.rental_fee_centavos)}
+              <p className="text-xs text-slate-500 dark:text-slate-400">Daily Rate</p>
+              {discountPercent > 0 && (
+                <p className="text-xs text-slate-400 line-through">
+                  {formatPHP(tool.rental_fee_centavos)}
+                </p>
+              )}
+              <p className="text-lg font-bold text-civic-forest dark:text-civic-light">
+                {formatPHP(effectiveFeeCentavos)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Security Deposit</p>
-              <p className="text-lg font-semibold text-slate-700 dark:text-slate-300">
+              <p className="text-xs text-slate-500 dark:text-slate-400">Deposit</p>
+              <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
                 {formatPHP(tool.deposit_fee_centavos)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Available</p>
+              <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
+                {tool.available_quantity} / {tool.total_quantity}
               </p>
             </div>
           </div>
 
           {/* Action buttons */}
-          <div className="pt-2">
+          <div className="space-y-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Button
+                variant={inCart ? 'secondary' : 'primary'}
+                disabled={!isAvailable}
+                onClick={() => {
+                  addToCart(tool, 1);
+                  setBanner(`"${tool.name}" added to your Borrowing Cart.`);
+                }}
+                className="gap-2 w-full"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {inCart ? 'Added to Cart (+1)' : isAvailable ? 'Add to Cart' : 'Unavailable'}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const added = toggleWishlist(tool);
+                  setBanner(
+                    added
+                      ? `"${tool.name}" saved to your Wishlist.`
+                      : `"${tool.name}" removed from your Wishlist.`,
+                  );
+                }}
+                className={`gap-2 w-full ${inWishlist ? 'border-rose-300 text-rose-600 dark:text-rose-400' : ''}`}
+              >
+                <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
+                {inWishlist ? 'Saved in Wishlist' : 'Add to Wishlist'}
+              </Button>
+            </div>
+
             {!user ? (
               <div className="space-y-2">
                 <Button
+                  variant="outline"
                   className="w-full"
                   onClick={() =>
                     navigate('/login', { state: { from: { pathname: `/catalog/${tool.id}` } } })
                   }
                 >
-                  Sign In to Reserve Equipment
+                  Sign In for Direct Reservation
                 </Button>
                 <p className="text-center text-xs text-slate-500">
                   Residency in Basco required for equipment loans
@@ -166,16 +285,16 @@ export function ToolDetailPage() {
             ) : user.role === 'Borrower' ? (
               <Button
                 className="w-full"
-                size="lg"
+                variant="secondary"
                 disabled={!isAvailable}
                 onClick={() => setReserveModalOpen(true)}
               >
-                {isAvailable ? 'Request Reservation' : 'Currently Unavailable'}
+                {isAvailable ? 'Quick Reservation Request' : 'Currently Unavailable'}
               </Button>
             ) : (
               <Link to="/staff/inventory" className="block w-full">
-                <Button variant="outline" className="w-full">
-                  Manage Tool in Inventory
+                <Button variant="ghost" className="w-full">
+                  Open Full Inventory Ledger
                 </Button>
               </Link>
             )}
@@ -224,6 +343,19 @@ export function ToolDetailPage() {
           isOpen={reserveModalOpen}
           onClose={() => setReserveModalOpen(false)}
           tool={tool}
+        />
+      )}
+
+      {/* Edit Tool Modal */}
+      {tool && (
+        <ToolFormModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          tool={tool}
+          onSuccess={() => {
+            setBanner('Tool record updated.');
+            loadData();
+          }}
         />
       )}
     </div>

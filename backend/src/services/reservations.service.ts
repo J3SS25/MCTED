@@ -3,6 +3,7 @@ import {
   type ReservationWithDetails,
 } from '../repositories/reservations.repository.js';
 import { ToolsRepository } from '../repositories/tools.repository.js';
+import { UsersRepository } from '../repositories/users.repository.js';
 import { AuditService } from './audit.service.js';
 import { NotificationsService } from './notifications.service.js';
 import { AppError } from '../utils/errors.js';
@@ -77,8 +78,20 @@ export class ReservationsService {
         title: 'Reservation Submitted',
         message: `Your reservation request for "${tool.name}" (${input.pickup_date} to ${input.return_date}) has been received and is pending staff review.`,
         type: 'info',
-        link_url: `/reservations/${created.id}`,
+        link_url: '/my-reservations',
       });
+
+      const staffIds = UsersRepository.findStaffAndAdminIds();
+      for (const staffId of staffIds) {
+        if (staffId === userId) continue;
+        NotificationsService.create({
+          user_id: staffId,
+          title: 'New Borrowing Request',
+          message: `${borrowerName} requested ${input.quantity} unit(s) of "${tool.name}" (${input.pickup_date} to ${input.return_date}).`,
+          type: 'info',
+          link_url: '/staff/reservations',
+        });
+      }
 
       return created;
     });
@@ -127,7 +140,7 @@ export class ReservationsService {
             ? `Good news! Your reservation for "${existing.tool_name}" was approved by Municipal Staff. You may proceed to pickup on ${existing.pickup_date}.`
             : `Your reservation for "${existing.tool_name}" was rejected. Reason: ${input.staff_notes || 'Municipal policy / stock constraint'}.`,
         type: input.decision === 'Approved' ? 'success' : 'danger',
-        link_url: `/reservations/${id}`,
+        link_url: '/my-reservations',
       });
 
       return updated;
@@ -172,7 +185,7 @@ export class ReservationsService {
         title: 'Reservation Cancelled',
         message: `Reservation for "${reservation.tool_name}" has been marked as Cancelled.`,
         type: 'warning',
-        link_url: `/reservations/${id}`,
+        link_url: '/my-reservations',
       });
 
       return updated;

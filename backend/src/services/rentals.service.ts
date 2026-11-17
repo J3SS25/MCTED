@@ -68,7 +68,7 @@ export class RentalsService {
         title: 'Tool Handover Complete',
         message: `You have successfully received "${tool.name}". Return due date: ${input.due_date}. Please keep the tool in good condition.`,
         type: 'success',
-        link_url: `/rentals/${rental.id}`,
+        link_url: '/my-rentals',
       });
 
       return rental;
@@ -129,7 +129,7 @@ export class RentalsService {
         title: 'Tool Returned & Inspected',
         message: `Your return of "${existing.tool_name}" has been accepted. Inspection condition: ${input.returned_condition}. Thank you for using the municipal tool bank!`,
         type: 'info',
-        link_url: `/rentals/${id}`,
+        link_url: '/my-rentals',
       });
 
       return updated;

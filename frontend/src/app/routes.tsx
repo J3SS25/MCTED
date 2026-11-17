@@ -9,6 +9,8 @@ import { RegisterPage } from '../features/auth/RegisterPage';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { CatalogPage } from '../features/catalog/CatalogPage';
 import { ToolDetailPage } from '../features/catalog/ToolDetailPage';
+import { WishlistPage } from '../features/wishlist/WishlistPage';
+import { CartPage } from '../features/cart/CartPage';
 import { MyReservationsPage } from '../features/reservations/MyReservationsPage';
 import { ReservationQueuePage } from '../features/reservations/ReservationQueuePage';
 import { MyRentalsPage } from '../features/rentals/MyRentalsPage';
@@ -34,6 +36,8 @@ export function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/catalog" element={<CatalogPage />} />
       <Route path="/catalog/:id" element={<ToolDetailPage />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
+      <Route path="/cart" element={<CartPage />} />
       <Route path="/feedback" element={<FeedbackPage />} />
 
       {/* Authenticated All Roles */}
@@ -148,7 +152,7 @@ export function AppRoutes() {
       <Route
         path="/admin/audit"
         element={
-          <ProtectedRoute allowedRoles={['Administrator']}>
+          <ProtectedRoute allowedRoles={['Municipal Staff', 'Administrator']}>
             <AuditLogPage />
           </ProtectedRoute>
         }

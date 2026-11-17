@@ -33,6 +33,7 @@ export class ToolsController {
       const tool = ToolsService.createTool(validated, {
         id: req.user.id,
         name: req.user.full_name,
+        role: req.user.role,
       });
       res.status(201).json(tool);
     } catch (error) {
@@ -50,6 +51,7 @@ export class ToolsController {
       const tool = ToolsService.updateTool(id, validated, {
         id: req.user.id,
         name: req.user.full_name,
+        role: req.user.role,
       });
       res.json(tool);
     } catch (error) {
@@ -66,8 +68,26 @@ export class ToolsController {
       const tool = ToolsService.archiveTool(id, {
         id: req.user.id,
         name: req.user.full_name,
+        role: req.user.role,
       });
       res.json(tool);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static remove(req: Request, res: Response, next: NextFunction): void {
+    try {
+      if (!req.user) throw AppError.unauthorized();
+      const id = req.params['id'] as string;
+      if (!id) throw AppError.badRequest('Tool ID is required');
+
+      ToolsService.deleteTool(id, {
+        id: req.user.id,
+        name: req.user.full_name,
+        role: req.user.role,
+      });
+      res.json({ deleted: true, id });
     } catch (error) {
       next(error);
     }

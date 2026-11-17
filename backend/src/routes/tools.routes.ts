@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ToolsController } from '../controllers/tools.controller.js';
-import { requireAuth, requireRole } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 
 export const toolsRouter: Router = Router();
 
@@ -8,17 +8,9 @@ export const toolsRouter: Router = Router();
 toolsRouter.get('/', ToolsController.list);
 toolsRouter.get('/:id', ToolsController.getById);
 
-// Staff and Administrator inventory operations
-toolsRouter.post(
-  '/',
-  requireAuth,
-  requireRole('Administrator', 'Municipal Staff'),
-  ToolsController.create,
-);
-toolsRouter.put(
-  '/:id',
-  requireAuth,
-  requireRole('Administrator', 'Municipal Staff'),
-  ToolsController.update,
-);
-toolsRouter.delete('/:id', requireAuth, requireRole('Administrator'), ToolsController.archive);
+// Authenticated inventory & borrower tool management (ownership enforced in service)
+toolsRouter.post('/', requireAuth, ToolsController.create);
+toolsRouter.patch('/:id', requireAuth, ToolsController.update);
+toolsRouter.put('/:id', requireAuth, ToolsController.update);
+toolsRouter.post('/:id/archive', requireAuth, ToolsController.archive);
+toolsRouter.delete('/:id', requireAuth, ToolsController.remove);

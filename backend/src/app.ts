@@ -47,7 +47,7 @@ app.use(
 );
 
 // Request body and cookie parsers
-app.use(express.json({ limit: '100kb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser(env.SESSION_SECRET));
 
 // Structured logger
