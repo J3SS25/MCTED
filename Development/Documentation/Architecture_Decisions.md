@@ -66,7 +66,7 @@ Standardize on a **pnpm workspace monorepo** with three packages:
 - `backend`: Layered Express.js REST API backend (`@mcteb/backend`).
 - `frontend`: React 19 single-page application (`@mcteb/frontend`).
 - `Database/`: Dedicated persistent database directory housing `app.db` and backups.
-- `development/`: Consolidated developer ecosystem (documentation, scripts, audits, setup).
+- `Development/`: Consolidated developer ecosystem (documentation, scripts, audits, setup).
 
 ### Consequences
 

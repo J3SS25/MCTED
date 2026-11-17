@@ -9,6 +9,7 @@ export default tseslint.config(
       '**/build/**',
       '**/node_modules/**',
       'Database/**',
+      'Development/_legacy/**',
       '**/*.d.ts',
       '**/*.d.ts.map',
       '**/*.js.map',
@@ -27,8 +28,6 @@ export default tseslint.config(
           allowDefaultProject: [
             'Development/scripts/*.ts',
             'Development/scripts/database/*.ts',
-            'development/scripts/*.ts',
-            'development/scripts/database/*.ts',
             'scripts/*.ts',
             'backend/*.config.ts',
             'frontend/*.config.ts',

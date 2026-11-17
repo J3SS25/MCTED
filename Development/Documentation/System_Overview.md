@@ -30,7 +30,7 @@ flowchart TD
         API["backend<br/>(@mcteb/backend)<br/>• Express Backend<br/>• SQLite Engine<br/>• Repository & Service Layers<br/>• Auth & RBAC Middleware"]
         Web["frontend<br/>(@mcteb/frontend)<br/>• React 19 SPA<br/>• Vite & Tailwind CSS<br/>• TanStack Query<br/>• Responsive UI"]
         DB[("Database/<br/>• app.db<br/>• backups/")]
-        Dev["development/<br/>• Documentation/<br/>• Audit/<br/>• scripts/<br/>• setup/ & testing/"]
+        Dev["Development/<br/>• Documentation/<br/>• Audit/<br/>• scripts/<br/>• setup/ & testing/"]
     end
 
     Shared -->|Imported by| API
@@ -47,7 +47,7 @@ flowchart TD
 | `@mcteb/backend`    | `backend`         | Layered RESTful backend service built on Express.js and native Node.js SQLite (`node:sqlite`). Implements domain modules, authentication, rate limiting, and transactions.                   |
 | `@mcteb/frontend`   | `frontend`        | Single-page application built on React 19, TypeScript, Vite, Tailwind CSS, Lucide icons, and TanStack Query. Features dark/light mode, mobile responsive drawer, and role-scoped navigation. |
 | `Database/`         | `Database`        | Dedicated data directory housing the live SQLite database (`Database/app.db`) and hot backup snapshots (`Database/backups/`).                                                                |
-| `development/`      | `development`     | Centralized developer ecosystem housing technical documentation, audit reports, cross-platform scripts (`.bat`, `.ps1`, `.sh`), setup guides, and coding standards.                          |
+| `Development/`      | `Development`     | Centralized developer ecosystem housing technical documentation, audit reports, cross-platform scripts (`.bat`, `.ps1`, `.sh`), setup guides, and coding standards.                          |
 
 ---
 

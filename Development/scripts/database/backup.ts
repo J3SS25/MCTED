@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
-// This script lives at development/scripts/database/backup.ts
+// This script lives at Development/scripts/database/backup.ts
 // When run from repo root, DATABASE_PATH is relative to root
 const sourceDbPath = process.env['DATABASE_PATH'] ?? './Database/app.db';
 const backupDir = './Database/backups';

@@ -89,5 +89,5 @@ Before submitting a Pull Request for review, verify all four quality gates:
 - [ ] **Lint**: `pnpm run lint` completes with zero errors.
 - [ ] **Formatting**: `pnpm run format:check` reports all files matching Prettier styling.
 - [ ] **Tests**: `pnpm run test` executes successfully across all workspace packages.
-- [ ] **Documentation**: If architecture, APIs, or database schemas changed, corresponding docs in `development/Documentation/` are updated.
+- [ ] **Documentation**: If architecture, APIs, or database schemas changed, corresponding docs in `Development/Documentation/` are updated.
 - [ ] **No Generated Artifacts**: No compiled `.js`, `.d.ts`, or `.map` files are committed inside `src/` directories.

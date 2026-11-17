@@ -138,5 +138,5 @@ Demo Accounts (Password for all: Basco@2026!):
   Borrower:         borrower@basco.gov.ph (Ana Reyes - Resident tool reservations)
   Borrower:         farmer@basco.gov.ph   (Pedro Batanes - Resident farmer loans)
 
-Full credentials and account matrix: development/Documentation/User_Roles_and_Permissions.md
+Full credentials and account matrix: Development/Documentation/User_Roles_and_Permissions.md
 ${NC}"

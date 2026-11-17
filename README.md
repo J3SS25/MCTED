@@ -14,8 +14,8 @@ MCTEB provides local government autonomy and equipment preservation in an island
 - **Resilient Zero-Dependency SQLite Engine**: Utilizes Node.js's native `node:sqlite` (`DatabaseSync`) module running in Write-Ahead Logging (`WAL`) mode with strict foreign keys and busy timeout handlers. Zero external C++ compilation required.
 - **Strict Layered Separation of Concerns**: Enforces `routes -> controller -> service -> repository -> db` across all 10 domain modules with an isolated `/api/v1/admin` route perimeter.
 - **Integer Centavos Currency**: Eliminates floating-point rounding anomalies by representing all rental rates, deposit bonds, and assessed penalties as integer centavos.
-- **Automated Development Setup**: Cross-platform bootstrapping via `setup.bat`, `development/scripts/setup.ps1`, and `development/scripts/setup.sh`.
-- **Centralized Developer Ecosystem**: All documentation, audits, developer scripts, testing guidelines, and maintenance files consolidated under `development/`.
+- **Automated Development Setup**: Cross-platform bootstrapping via `setup.bat`, `Development/scripts/setup.ps1`, and `Development/scripts/setup.sh`.
+- **Centralized Developer Ecosystem**: All documentation, audits, developer scripts, testing guidelines, and maintenance files consolidated under `Development/`.
 
 ---
 
@@ -76,7 +76,7 @@ MCTEB/
 │   ├── backups/                 # Atomic hot backups (git-ignored)
 │   └── .gitkeep
 │
-├── development/                 # Centralized developer ecosystem
+├── Development/                 # Centralized developer ecosystem
 │   ├── Documentation/           # System, architecture, API, and DB documentation
 │   ├── Audit/                   # Development, security, and UI/UX audit reports
 │   ├── scripts/                 # Cross-platform development scripts
@@ -97,7 +97,7 @@ MCTEB/
 │       │   └── index.ts         # Barrel contract exports
 │       └── package.json
 │
-├── setup.bat                    # Windows setup launcher (calls development/scripts/setup.bat)
+├── setup.bat                    # Windows setup launcher (calls Development/scripts/setup.bat)
 ├── pnpm-workspace.yaml          # pnpm workspace configuration
 ├── tsconfig.json                # Root TypeScript project references
 ├── tsconfig.base.json           # Shared base TypeScript options
@@ -122,14 +122,14 @@ setup.bat
 Or directly in PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File development\scripts\setup.ps1
+powershell -ExecutionPolicy Bypass -File Development\scripts\setup.ps1
 ```
 
 ### Linux / macOS
 
 ```bash
-chmod +x development/scripts/setup.sh
-./development/scripts/setup.sh
+chmod +x Development/scripts/setup.sh
+./Development/scripts/setup.sh
 ```
 
 The automated script automatically:
@@ -184,7 +184,7 @@ All development demo accounts authenticate with the password: **`Basco@2026!`**
 | **Ana Reyes**      | `Borrower`        | `borrower@basco.gov.ph` | Barangay III           | Tool bookings, payment uploads, reviews          |
 | **Pedro Batanes**  | `Borrower`        | `farmer@basco.gov.ph`   | Barangay IV            | Agricultural equipment loans & tracking          |
 
-Full credentials, permission details, and sample data relationships are documented in [User_Roles_and_Permissions.md](file:///c:/Web-Application/MCTED/development/Documentation/User_Roles_and_Permissions.md).
+Full credentials, permission details, and sample data relationships are documented in [User_Roles_and_Permissions.md](Development/Documentation/User_Roles_and_Permissions.md).
 
 ---
 

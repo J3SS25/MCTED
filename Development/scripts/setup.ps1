@@ -56,7 +56,7 @@ try {
 
 # 3. Environment Configuration Check
 Write-Step "3/7 Checking local environment configuration..."
-# This script lives in development/scripts/ — root is two levels up
+# This script lives in Development/scripts/ — root is two levels up
 $rootDir = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $envFile = Join-Path $rootDir ".env"
 $envExample = Join-Path $rootDir ".env.example"
@@ -152,5 +152,5 @@ Demo Accounts (Password for all: Basco@2026!):
   Borrower:         borrower@basco.gov.ph (Ana Reyes - Resident tool reservations)
   Borrower:         farmer@basco.gov.ph   (Pedro Batanes - Resident farmer loans)
 
-Full credentials: development/Documentation/User_Roles_and_Permissions.md
+Full credentials: Development/Documentation/User_Roles_and_Permissions.md
 "@ -ForegroundColor Yellow

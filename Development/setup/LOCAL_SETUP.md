@@ -48,14 +48,14 @@ setup.bat
 Or directly in PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File development\scripts\setup.ps1
+powershell -ExecutionPolicy Bypass -File Development\scripts\setup.ps1
 ```
 
 ### Linux / macOS (Bash)
 
 ```bash
-chmod +x development/scripts/setup.sh
-./development/scripts/setup.sh
+chmod +x Development/scripts/setup.sh
+./Development/scripts/setup.sh
 ```
 
 ---
@@ -131,7 +131,7 @@ pnpm run dev
 - **Backend API**: [http://localhost:3000/api/v1](http://localhost:3000/api/v1)
 - **API Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
 
-Log in using any of the documented development credentials (see [User_Roles_and_Permissions.md](file:///c:/Web-Application/MCTED/Development/Documentation/User_Roles_and_Permissions.md)).
+Log in using any of the documented development credentials (see [User_Roles_and_Permissions.md](../Documentation/User_Roles_and_Permissions.md)).
 
 ---
 

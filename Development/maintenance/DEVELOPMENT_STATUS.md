@@ -26,7 +26,7 @@
 | **Alerts & Audit Logging**        | `backend/src/controllers/notifications.controller.ts`, `audit.controller.ts`               |      `Completed`      | Resident alert feed with deep links, unread counters, immutable security audit logging.                          |
 | **Frontend Responsive SPA**       | `frontend/src/`                                                                            |      `Completed`      | React 19 app shell with dark/light themes, desktop sidebar, mobile drawer, role-scoped navigation.               |
 | **Administrative Perimeter**      | `backend/src/admin/`                                                                       |      `Completed`      | Isolated `/api/v1/admin` perimeter with stats, health diagnostics, user management, and audit inspection.        |
-| **Automated Development Setup**   | `development/scripts/`, `setup.bat`                                                        |      `Completed`      | Cross-platform setup scripts (`setup.ps1`, `setup.sh`), SQLite check, database initialization, seeding.          |
+| **Automated Development Setup**   | `Development/scripts/`, `setup.bat`                                                        |      `Completed`      | Cross-platform setup scripts (`setup.ps1`, `setup.sh`), SQLite check, database initialization, seeding.          |
 | **Demo Seeding & Reset**          | `backend/db/seed/`                                                                         |      `Completed`      | Idempotent seed script (`db:seed`) and foreign-key safe reset script (`db:reset-demo`).                          |
 
 ---

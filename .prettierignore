@@ -15,6 +15,9 @@ data/
 *.db-wal
 backups/
 
+# Local legacy archive
+Development/_legacy/
+
 # Package manager lockfiles
 pnpm-lock.yaml
 

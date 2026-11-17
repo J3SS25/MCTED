@@ -16,7 +16,7 @@ MCTEB/
 ├── Database/                    # SQLite database file and backups
 │   ├── app.db                   # Live development database (do NOT commit)
 │   └── backups/                 # Hot backup files from db:backup script
-├── development/                 # Centralized developer ecosystem
+├── Development/                 # Centralized developer ecosystem
 │   ├── Documentation/           # Architecture and technical reference docs
 │   ├── Audit/                   # Code, security, and UI/UX audit reports
 │   ├── scripts/                 # Developer setup, start, stop, and test scripts
@@ -43,7 +43,7 @@ MCTEB/
 ├── pnpm-workspace.yaml          # pnpm monorepo workspace definition
 ├── pnpm-lock.yaml               # Lockfile (commit this)
 ├── package.json                 # Root scripts and dev tooling
-├── CHANGELOG.md                 # Version history (also at development/maintenance/)
+├── CHANGELOG.md                 # Version history (also at Development/maintenance/)
 ├── README.md                    # Project overview and quick start
 └── SECURITY.md                  # Security policy and vulnerability reporting
 ```
@@ -130,10 +130,10 @@ packages/shared/
 
 ---
 
-## Development Directory (`development/`)
+## Development Directory (`Development/`)
 
 ```
-development/
+Development/
 ├── Documentation/
 │   ├── System_Overview.md
 │   ├── Architecture.md
@@ -176,6 +176,8 @@ development/
     ├── TYPESCRIPT_STANDARDS.md
     └── KNOWN_ISSUES.md
 ```
+
+Legacy project content and local-only reports, when retained locally, are archived under the gitignored `Development/_legacy/` directory. They are not part of the active workspace.
 
 ---
 

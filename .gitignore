@@ -22,6 +22,21 @@ Database/backups/*.db-wal
 Database/backups/*.db-shm
 !Database/.gitkeep
 
+# Archived and superseded project content
+/Development/_legacy/
+/apps/
+/data/
+/docs/
+/Overview/
+/PERFORMANCE_REVIEW.md
+/PROJECT_PLAN.md
+/report.md
+/SECURITY_AUDIT.md
+/SYSTEM_INVENTORY.md
+/TECHNICAL_DEBT_REPORT.md
+/TECH_STACK_AUDIT.md
+/UNUSED_CODE_ANALYSIS.md
+
 # Logs
 *.log
 logs/
