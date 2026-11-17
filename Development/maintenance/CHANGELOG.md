@@ -6,6 +6,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
 
 ---
 
+## [0.4.0] - 2026-11-17
+
+### Added
+
+- **Repository Reconciliation & Feature Integration**:
+  - Integrated Wishlist & Borrowing Cart system (`WishlistPage`, `CartPage`, `WishlistCartContext`, `local-storage.ts`).
+  - Added native PDF receipt generation engine (`pdf-receipt.ts`) and download capabilities in `OfficialReceiptModal`.
+  - Added Borrower community tool sharing (borrowers can contribute, update, and manage their own tools without staff bottleneck).
+  - Integrated demo multi-channel payment options (GCash, LANDBANK, Maya (PayMaya), BDO) with receipt metadata and line items tracking.
+  - Implemented dynamic SQLite schema upgrade pipeline in `backend/db/migrate.ts` (`upgradeExistingSchema()`) with automatic column backfilling and table migration.
+  - Added municipal 18+ age verification with automatic calculation from birth date in `@mcteb/shared`.
+  - Added Staff activity log preview directly on the main Dashboard.
+  - Added Category Navigation component (`CategoryNav.tsx`) and modular `ToolCard.tsx` in frontend catalog.
+
+### Changed
+
+- Preserved the Batanes Niche target architecture (`backend/`, `frontend/`, `Database/`, `Development/`, `packages/shared/`) while integrating all updates from `master`.
+- Normalized equipment categories to canonical values (`Agriculture`, `Fishing`) across fixtures, database, and shared enums.
+- Removed deprecated legacy `apps/api` and `apps/web` files and unified all routes and services under the new layered architecture.
+
+---
+
 ## [0.3.0] - 2026-11-17
 
 ### Added
