@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { apiRequest } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { useWishlistCart } from '../../lib/wishlist-cart-context';
-import { setLocalToolImage } from '../../lib/local-storage';
+import { setLocalToolImages } from '../../lib/local-storage';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
@@ -10,8 +11,10 @@ import { CardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CategoryNav } from '../../components/catalog/CategoryNav';
 import { ToolCard } from '../../components/catalog/ToolCard';
+import { ToolDetailsModal } from '../../components/catalog/ToolDetailsModal';
 import { ToolFormModal } from '../inventory/ToolFormModal';
-import { Search, Plus, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
+import { ReservationFormModal } from '../reservations/ReservationFormModal';
+import { Search, Plus, ArrowUpDown, SlidersHorizontal, Package } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
 
 const AVAILABILITY_FILTERS = [
@@ -42,10 +45,11 @@ export function CatalogPage() {
   const [category, setCategory] = useState('');
   const [availability, setAvailability] = useState('');
   const [sortBy, setSortBy] = useState('name_asc');
-  const [onlyMyTools, setOnlyMyTools] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTool, setEditingTool] = useState<Tool | null>(null);
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+  const [reserveTool, setReserveTool] = useState<Tool | null>(null);
   const [feedbackBanner, setFeedbackBanner] = useState<string | null>(null);
 
   const fetchCatalog = useCallback(async () => {
@@ -56,7 +60,6 @@ export function CatalogPage() {
       if (category) params.append('category', category);
       if (availability) params.append('availability', availability);
       if (sortBy) params.append('sort_by', sortBy);
-      if (onlyMyTools && user) params.append('owner_id', user.id);
       params.append('limit', '100');
 
       const res = await apiRequest<{ items: Tool[]; total: number }>(`/tools?${params.toString()}`);
@@ -66,11 +69,11 @@ export function CatalogPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, category, availability, sortBy, onlyMyTools, user]);
+  }, [search, category, availability, sortBy]);
 
   useEffect(() => {
     fetchCatalog();
-  }, [category, availability, sortBy, onlyMyTools]);
+  }, [category, availability, sortBy]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +91,7 @@ export function CatalogPage() {
 
     try {
       await apiRequest(`/tools/${tool.id}`, { method: 'DELETE' });
-      setLocalToolImage(tool.id, null);
+      setLocalToolImages(tool.id, null);
       setFeedbackBanner(`"${tool.name}" was removed successfully.`);
       await fetchCatalog();
     } catch (err) {
@@ -127,15 +130,13 @@ export function CatalogPage() {
         </div>
 
         {user && (
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
             {user.role === 'Borrower' && (
-              <Button
-                variant={onlyMyTools ? 'secondary' : 'outline'}
-                size="sm"
-                onClick={() => setOnlyMyTools((prev) => !prev)}
-              >
-                {onlyMyTools ? 'Showing My Uploads' : 'My Uploaded Tools'}
-              </Button>
+              <Link to="/my-tools">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <Package className="h-4 w-4" /> My Uploaded Tools &amp; Equipment
+                </Button>
+              </Link>
             )}
             <Button
               size="sm"
@@ -146,7 +147,7 @@ export function CatalogPage() {
               className="gap-1.5"
             >
               <Plus className="h-4 w-4" />
-              {user.role === 'Borrower' ? 'Share My Tool' : 'Add Equipment'}
+              {user.role === 'Borrower' ? 'Upload Tool / Equipment' : 'Add Equipment'}
             </Button>
           </div>
         )}
@@ -223,14 +224,13 @@ export function CatalogPage() {
             setSearch('');
             setCategory('');
             setAvailability('');
-            setOnlyMyTools(false);
           }}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {tools.map((tool) => {
-            const isOwner = !!user && tool.owner_id === user.id;
-            const canManage = isStaffOrAdmin || isOwner;
+            // Borrowers cannot modify tools in the general catalog; only staff/admins manage catalog items here
+            const canManage = isStaffOrAdmin;
 
             return (
               <ToolCard
@@ -239,6 +239,7 @@ export function CatalogPage() {
                 inWishlist={isInWishlist(tool.id)}
                 inCart={isInCart(tool.id)}
                 canManage={canManage}
+                onSelect={(item) => setSelectedTool(item)}
                 onToggleWishlist={(item) => {
                   const added = toggleWishlist(item);
                   setFeedbackBanner(
@@ -262,6 +263,21 @@ export function CatalogPage() {
         </div>
       )}
 
+      {/* Automatic Complete Tool Details Modal */}
+      <ToolDetailsModal
+        isOpen={!!selectedTool}
+        onClose={() => setSelectedTool(null)}
+        tool={selectedTool}
+        canManage={isStaffOrAdmin}
+        onEdit={(item) => {
+          setEditingTool(item);
+          setIsModalOpen(true);
+        }}
+        onDelete={handleDeleteTool}
+        onReserve={(item) => setReserveTool(item)}
+        onActionNotice={(msg) => setFeedbackBanner(msg)}
+      />
+
       {/* Add / Edit Tool Modal */}
       <ToolFormModal
         isOpen={isModalOpen}
@@ -275,6 +291,15 @@ export function CatalogPage() {
           fetchCatalog();
         }}
       />
+
+      {/* Quick Reservation Modal */}
+      {reserveTool && (
+        <ReservationFormModal
+          isOpen={!!reserveTool}
+          onClose={() => setReserveTool(null)}
+          tool={reserveTool}
+        />
+      )}
     </div>
   );
 }

@@ -2,12 +2,41 @@ import { ToolsRepository } from '../repositories/tools.repository.js';
 import { AuditService } from './audit.service.js';
 import { NotificationsService } from './notifications.service.js';
 import { AppError } from '../utils/errors.js';
-import type { Tool, CreateToolInput, UpdateToolInput, ToolFilterInput } from '@mcteb/shared';
+import {
+  validateAndModerateImage,
+  validateToolImagesBatch,
+  type Tool,
+  type CreateToolInput,
+  type UpdateToolInput,
+  type ToolFilterInput,
+} from '@mcteb/shared';
 
 interface ToolActor {
   id: string;
   name: string;
   role: string;
+}
+
+function validateToolImagesInput(input: {
+  image_urls?: string[];
+  image_url?: string;
+  image_filenames?: string[];
+}): void {
+  if (input.image_urls !== undefined) {
+    const batchCheck = validateToolImagesBatch(input.image_urls, input.image_filenames);
+    if (!batchCheck.valid) {
+      throw AppError.badRequest(
+        batchCheck.reason || 'Uploaded images failed validation or content moderation.',
+      );
+    }
+  } else if (input.image_url !== undefined && input.image_url.trim() !== '') {
+    const singleCheck = validateAndModerateImage(input.image_url, input.image_filenames?.[0]);
+    if (!singleCheck.valid) {
+      throw AppError.badRequest(
+        singleCheck.reason || 'Uploaded image failed validation or content moderation.',
+      );
+    }
+  }
 }
 
 export class ToolsService {
@@ -23,7 +52,48 @@ export class ToolsService {
     return tool;
   }
 
+  static verifySerialNumber(
+    serialNumber: string,
+    excludeToolId?: string,
+  ): { exists: boolean; valid: boolean; message: string } {
+    const trimmed = (serialNumber || '').trim();
+    if (!trimmed) {
+      return {
+        exists: false,
+        valid: false,
+        message: 'Serial ID Number is required.',
+      };
+    }
+
+    const existing = ToolsRepository.findBySerialNumber(trimmed, excludeToolId);
+    if (existing) {
+      return {
+        exists: true,
+        valid: false,
+        message: `Serial ID Number "${trimmed}" already exists in the database.`,
+      };
+    }
+
+    return {
+      exists: false,
+      valid: true,
+      message: 'Serial ID Number is unique and available.',
+    };
+  }
+
   static createTool(input: CreateToolInput, actor: ToolActor): Tool {
+    const serialTrimmed = input.serial_number?.trim();
+    if (serialTrimmed) {
+      const duplicate = ToolsRepository.findBySerialNumber(serialTrimmed);
+      if (duplicate) {
+        throw AppError.conflict(
+          `Serial ID Number "${serialTrimmed}" already exists in the database. Please enter a unique Serial ID Number.`,
+        );
+      }
+    }
+
+    validateToolImagesInput(input);
+
     const tool = ToolsRepository.create(input, actor.id);
 
     AuditService.record({
@@ -49,9 +119,23 @@ export class ToolsService {
   static updateTool(id: string, input: UpdateToolInput, actor: ToolActor): Tool {
     const current = this.getToolById(id);
 
-    if (actor.role === 'Borrower' && current.owner_id !== actor.id) {
-      throw AppError.forbidden('Borrowers can only edit tools they uploaded');
+    if (actor.role === 'Borrower' && (!current.owner_id || current.owner_id !== actor.id)) {
+      throw AppError.forbidden(
+        'Borrowers can only edit, update, or delete tools and equipment that they personally uploaded.',
+      );
     }
+
+    const serialTrimmed = input.serial_number?.trim();
+    if (serialTrimmed) {
+      const duplicate = ToolsRepository.findBySerialNumber(serialTrimmed, id);
+      if (duplicate) {
+        throw AppError.conflict(
+          `Serial ID Number "${serialTrimmed}" already exists in the database. Please enter a unique Serial ID Number.`,
+        );
+      }
+    }
+
+    validateToolImagesInput(input);
 
     // If total quantity is being reduced below borrowed quantity
     if (input.total_quantity !== undefined) {
@@ -94,8 +178,10 @@ export class ToolsService {
   static archiveTool(id: string, actor: ToolActor): Tool {
     const tool = this.getToolById(id);
 
-    if (actor.role === 'Borrower' && tool.owner_id !== actor.id) {
-      throw AppError.forbidden('Borrowers can only archive tools they uploaded');
+    if (actor.role === 'Borrower' && (!tool.owner_id || tool.owner_id !== actor.id)) {
+      throw AppError.forbidden(
+        'Borrowers can only archive tools and equipment that they personally uploaded.',
+      );
     }
 
     if (tool.available_quantity < tool.total_quantity) {
@@ -132,8 +218,10 @@ export class ToolsService {
   static deleteTool(id: string, actor: ToolActor): void {
     const tool = this.getToolById(id);
 
-    if (actor.role === 'Borrower' && tool.owner_id !== actor.id) {
-      throw AppError.forbidden('Borrowers can only delete tools they uploaded');
+    if (actor.role === 'Borrower' && (!tool.owner_id || tool.owner_id !== actor.id)) {
+      throw AppError.forbidden(
+        'Borrowers can only edit, update, or delete tools and equipment that they personally uploaded.',
+      );
     }
 
     if (ToolsRepository.hasActiveBorrowedRentals(id)) {

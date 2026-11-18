@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { apiRequest } from '../../lib/api';
-import { resolveToolImage, setLocalToolImage } from '../../lib/local-storage';
+import { resolveToolImage, setLocalToolImages } from '../../lib/local-storage';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Input';
@@ -102,7 +102,7 @@ export function InventoryPage() {
 
     try {
       await apiRequest(`/tools/${tool.id}`, { method: 'DELETE' });
-      setLocalToolImage(tool.id, null);
+      setLocalToolImages(tool.id, null);
       setMessage(`"${tool.name}" was permanently removed from inventory.`);
       await fetchInventory();
     } catch (err: unknown) {

@@ -20,6 +20,7 @@ import {
   LogOut,
   Menu,
   X,
+  Package,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { useTheme } from '../../lib/theme-context';
@@ -79,18 +80,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (!user) {
     navItems = [
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
-      {
-        label: 'Wishlist',
-        href: '/wishlist',
-        icon: <Heart className="h-5 w-5" />,
-        badge: wishlist.length,
-      },
-      {
-        label: 'Borrowing Cart',
-        href: '/cart',
-        icon: <ShoppingCart className="h-5 w-5" />,
-        badge: cartTotalItems,
-      },
+      // {
+      //   label: 'Wishlist',
+      //   href: '/wishlist',
+      //   icon: <Heart className="h-5 w-5" />,
+      //   badge: wishlist.length,
+      // },
+      // {
+      //   label: 'Borrowing Cart',
+      //   href: '/cart',
+      //   icon: <ShoppingCart className="h-5 w-5" />,
+      //   badge: cartTotalItems,
+      // },
       {
         label: 'Community Feedback',
         href: '/feedback',
@@ -101,6 +102,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     navItems = [
       { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
+      {
+        label: 'My Uploaded Tools & Equipment',
+        href: '/my-tools',
+        icon: <Package className="h-5 w-5" />,
+      },
       {
         label: 'Wishlist',
         href: '/wishlist',

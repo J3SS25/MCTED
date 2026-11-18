@@ -9,6 +9,7 @@ import { RegisterPage } from '../features/auth/RegisterPage';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { CatalogPage } from '../features/catalog/CatalogPage';
 import { ToolDetailPage } from '../features/catalog/ToolDetailPage';
+import { MyUploadedToolsPage } from '../features/catalog/MyUploadedToolsPage';
 import { WishlistPage } from '../features/wishlist/WishlistPage';
 import { CartPage } from '../features/cart/CartPage';
 import { MyReservationsPage } from '../features/reservations/MyReservationsPage';
@@ -46,6 +47,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-tools"
+        element={
+          <ProtectedRoute>
+            <MyUploadedToolsPage />
           </ProtectedRoute>
         }
       />

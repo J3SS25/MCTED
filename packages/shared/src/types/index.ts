@@ -9,3 +9,4 @@ export type * from '../schemas/notification.js';
 export type * from '../schemas/audit.js';
 export type * from '../permissions.js';
 export type * from '../enums.js';
+export type * from '../image-moderation.js';

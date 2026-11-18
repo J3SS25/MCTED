@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS tools (
     available_quantity INTEGER NOT NULL DEFAULT 1,
     serial_number TEXT,
     image_url TEXT,
+    images_json TEXT,
     owner_id TEXT REFERENCES users(id) ON DELETE SET NULL,
     discount_percent INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
@@ -169,6 +170,8 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_tools_category ON tools(category);
 CREATE INDEX IF NOT EXISTS idx_tools_availability ON tools(availability_status);
+CREATE INDEX IF NOT EXISTS idx_tools_serial ON tools(serial_number);
+CREATE INDEX IF NOT EXISTS idx_tools_owner ON tools(owner_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_user ON reservations(user_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_tool ON reservations(tool_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations(status);

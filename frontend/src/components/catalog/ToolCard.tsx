@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, Edit, Trash2, Tag, UserCheck, Building2 } from 'lucide-react';
+import { Heart, ShoppingCart, Edit, Trash2, Tag, UserCheck, Building2, Images } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
 import { formatPHP } from '@mcteb/shared';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { resolveToolImage } from '../../lib/local-storage';
+import { resolveToolImages } from '../../lib/local-storage';
 
 interface ToolCardProps {
   tool: Tool;
@@ -15,6 +15,7 @@ interface ToolCardProps {
   canManage: boolean;
   onToggleWishlist: (tool: Tool) => void;
   onAddToCart: (tool: Tool) => void;
+  onSelect?: (tool: Tool) => void;
   onEdit?: (tool: Tool) => void;
   onDelete?: (tool: Tool) => void;
 }
@@ -26,6 +27,7 @@ export function ToolCard({
   canManage,
   onToggleWishlist,
   onAddToCart,
+  onSelect,
   onEdit,
   onDelete,
 }: ToolCardProps) {
@@ -35,10 +37,22 @@ export function ToolCard({
     discountPercent > 0
       ? Math.round(tool.rental_fee_centavos * (1 - discountPercent / 100))
       : tool.rental_fee_centavos;
-  const imageSrc = resolveToolImage(tool);
+  const images = resolveToolImages(tool);
+  const imageSrc = images[0] || '/equipment/fallback.svg';
+
+  const handleCardSelect = () => {
+    if (onSelect) {
+      onSelect(tool);
+    }
+  };
 
   return (
-    <Card className="flex flex-col h-full group hover:shadow-lg hover:border-civic-accent/50 transition-all duration-200 overflow-hidden">
+    <Card
+      onClick={onSelect ? handleCardSelect : undefined}
+      className={`flex flex-col h-full group hover:shadow-lg hover:border-civic-accent/50 transition-all duration-200 overflow-hidden ${
+        onSelect ? 'cursor-pointer' : ''
+      }`}
+    >
       {/* Image Header + Badges */}
       <div className="h-48 bg-slate-100 dark:bg-slate-700/50 p-4 flex items-center justify-center relative overflow-hidden">
         <img
@@ -54,7 +68,10 @@ export function ToolCard({
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => onToggleWishlist(tool)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleWishlist(tool);
+            }}
             aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             title={inWishlist ? 'Remove from Wishlist' : 'Save to Wishlist'}
             className={`p-2 rounded-full shadow-sm border transition-colors ${
@@ -77,9 +94,14 @@ export function ToolCard({
           ) : null}
         </div>
 
-        {/* Top-Right Status Badge */}
+        {/* Top-Right Status & Photo Count Badges */}
         <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
           <Badge status={tool.availability_status} />
+          {images.length > 1 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-900/75 text-white backdrop-blur-sm">
+              <Images className="h-3 w-3" /> {images.length} Photos
+            </span>
+          )}
         </div>
 
         {/* Bottom Category & Ownership Badges */}
@@ -103,20 +125,40 @@ export function ToolCard({
       <CardContent className="p-4 flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-1.5">
           <div className="flex items-start justify-between gap-2">
-            <Link
-              to={`/catalog/${tool.id}`}
-              className="hover:text-civic-deep dark:hover:text-civic-light"
-            >
-              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 line-clamp-1">
-                {tool.name}
-              </h3>
-            </Link>
+            {onSelect ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(tool);
+                }}
+                className="text-left hover:text-civic-deep dark:hover:text-civic-light"
+              >
+                <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 line-clamp-1">
+                  {tool.name}
+                </h3>
+              </button>
+            ) : (
+              <Link
+                to={`/catalog/${tool.id}`}
+                className="hover:text-civic-deep dark:hover:text-civic-light"
+              >
+                <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 line-clamp-1">
+                  {tool.name}
+                </h3>
+              </Link>
+            )}
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 min-h-[2rem]">
             {tool.description}
           </p>
-          <div className="pt-1">
+          <div className="pt-1 flex items-center gap-2 flex-wrap">
             <Badge status={tool.condition_status} className="text-[10px] px-2 py-0" />
+            {tool.serial_number && (
+              <span className="text-[10px] font-mono text-slate-400 truncate max-w-[140px]">
+                SN: {tool.serial_number}
+              </span>
+            )}
           </div>
         </div>
 
@@ -151,18 +193,35 @@ export function ToolCard({
               size="sm"
               variant={inCart ? 'secondary' : 'primary'}
               disabled={!isAvailable}
-              onClick={() => onAddToCart(tool)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart(tool);
+              }}
               className="gap-1.5 w-full"
             >
               <ShoppingCart className="h-3.5 w-3.5" />
               {inCart ? 'In Cart (+1)' : isAvailable ? 'Add to Cart' : 'Unavailable'}
             </Button>
 
-            <Link to={`/catalog/${tool.id}`} className="block w-full">
-              <Button variant="outline" size="sm" className="w-full">
+            {onSelect ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(tool);
+                }}
+              >
                 Details
               </Button>
-            </Link>
+            ) : (
+              <Link to={`/catalog/${tool.id}`} className="block w-full">
+                <Button variant="outline" size="sm" className="w-full">
+                  Details
+                </Button>
+              </Link>
+            )}
           </div>
 
           {canManage && (onEdit || onDelete) && (
@@ -172,7 +231,10 @@ export function ToolCard({
                   size="sm"
                   variant="ghost"
                   className="flex-1 gap-1 text-xs"
-                  onClick={() => onEdit(tool)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(tool);
+                  }}
                 >
                   <Edit className="h-3.5 w-3.5" /> Edit
                 </Button>
@@ -182,7 +244,10 @@ export function ToolCard({
                   size="sm"
                   variant="ghost"
                   className="flex-1 gap-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
-                  onClick={() => onDelete(tool)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(tool);
+                  }}
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Delete
                 </Button>

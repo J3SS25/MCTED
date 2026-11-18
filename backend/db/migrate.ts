@@ -36,6 +36,9 @@ function upgradeExistingSchema(): void {
   if (!toolCols.has('discount_percent')) {
     db.exec('ALTER TABLE tools ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0;');
   }
+  if (!toolCols.has('images_json')) {
+    db.exec('ALTER TABLE tools ADD COLUMN images_json TEXT;');
+  }
   db.exec("UPDATE tools SET category = 'Agriculture' WHERE category = 'Agricultural';");
   db.exec("UPDATE tools SET category = 'Fishing' WHERE category = 'Fishery';");
 

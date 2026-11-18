@@ -3,7 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { useWishlistCart } from '../../lib/wishlist-cart-context';
-import { resolveToolImage, setLocalToolImage } from '../../lib/local-storage';
+import { resolveToolImages, setLocalToolImages } from '../../lib/local-storage';
+import { ToolImageGallery } from '../../components/catalog/ToolImageGallery';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -19,11 +20,14 @@ import {
   ShoppingCart,
   Edit,
   Trash2,
-  Tag,
   UserCheck,
+  Building2,
+  Calendar,
+  Hash,
+  Package,
 } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
-import { formatPHP } from '@mcteb/shared';
+import { formatPHP, formatDateTime } from '@mcteb/shared';
 
 export function ToolDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +69,7 @@ export function ToolDetailPage() {
     }
     try {
       await apiRequest(`/tools/${tool.id}`, { method: 'DELETE' });
-      setLocalToolImage(tool.id, null);
+      setLocalToolImages(tool.id, null);
       navigate('/catalog');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete tool');
@@ -111,11 +115,21 @@ export function ToolDetailPage() {
     discountPercent > 0
       ? Math.round(tool.rental_fee_centavos * (1 - discountPercent / 100))
       : tool.rental_fee_centavos;
-  const canManage =
-    !!user &&
-    (user.role === 'Administrator' || user.role === 'Municipal Staff' || tool.owner_id === user.id);
+  const canManage = Boolean(
+    user &&
+      (user.role === 'Administrator' ||
+        user.role === 'Municipal Staff' ||
+        (user.role === 'Borrower' && tool.owner_id && tool.owner_id === user.id)),
+  );
   const inWishlist = isInWishlist(tool.id);
   const inCart = isInCart(tool.id);
+  const images = resolveToolImages(tool);
+  const ownerLabel =
+    tool.owner_name && tool.owner_role === 'Borrower'
+      ? `${tool.owner_name} (${tool.owner_role}${tool.owner_barangay ? ` • Brgy. ${tool.owner_barangay}` : ''})`
+      : tool.owner_name
+        ? `${tool.owner_name} (${tool.owner_role || 'Staff'})`
+        : 'Municipal Tool Bank (LGU Basco, Batanes)';
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -151,21 +165,9 @@ export function ToolDetailPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        {/* Tool Photo Preview */}
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 flex items-center justify-center min-h-[360px] relative">
-          <img
-            src={resolveToolImage(tool)}
-            alt={tool.name}
-            className="max-h-[300px] max-w-full object-contain rounded-lg"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/equipment/fallback.svg';
-            }}
-          />
-          {discountPercent > 0 && (
-            <span className="absolute top-4 left-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-sm">
-              <Tag className="h-3.5 w-3.5" /> {discountPercent}% DISCOUNT
-            </span>
-          )}
+        {/* Tool Image Carousel & Gallery */}
+        <div className="space-y-2">
+          <ToolImageGallery images={images} alt={tool.name} discountPercent={discountPercent} />
         </div>
 
         {/* Tool Specifications & Actions */}
@@ -185,16 +187,84 @@ export function ToolDetailPage() {
             </div>
 
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{tool.name}</h1>
-            {tool.serial_number && (
-              <p className="text-xs font-mono text-slate-400 mt-1">
-                Serial No: {tool.serial_number}
-              </p>
-            )}
+            <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1">
+              Serial ID Number: {tool.serial_number || 'Not Assigned'}
+            </p>
           </div>
 
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             {tool.description}
           </p>
+
+          {/* Complete Tool & Equipment Details Card */}
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium">Tool Name</dt>
+              <dd className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{tool.name}</dd>
+            </div>
+
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium">Category</dt>
+              <dd className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                {tool.category}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                <Hash className="h-3 w-3" /> Serial ID Number
+              </dt>
+              <dd className="font-mono font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                {tool.serial_number || 'Not Assigned'}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium">Condition</dt>
+              <dd className="mt-0.5">
+                <Badge status={tool.condition_status} className="text-[10px] px-2 py-0" />
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                <Package className="h-3 w-3" /> Quantity
+              </dt>
+              <dd className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                {tool.available_quantity} Available / {tool.total_quantity} Total Unit(s)
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium">Availability Status</dt>
+              <dd className="mt-0.5">
+                <Badge status={tool.availability_status} className="text-[10px] px-2 py-0" />
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> Upload Date
+              </dt>
+              <dd className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                {formatDateTime(tool.created_at)}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                {tool.owner_role === 'Borrower' ? (
+                  <UserCheck className="h-3 w-3" />
+                ) : (
+                  <Building2 className="h-3 w-3" />
+                )}{' '}
+                Owner Information
+              </dt>
+              <dd className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                {ownerLabel}
+              </dd>
+            </div>
+          </dl>
 
           {tool.specifications && (
             <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">

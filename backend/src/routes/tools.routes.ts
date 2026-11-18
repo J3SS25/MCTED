@@ -6,6 +6,7 @@ export const toolsRouter: Router = Router();
 
 // Public catalog listing & item details
 toolsRouter.get('/', ToolsController.list);
+toolsRouter.get('/verify-serial', ToolsController.verifySerial);
 toolsRouter.get('/:id', ToolsController.getById);
 
 // Authenticated inventory & borrower tool management (ownership enforced in service)

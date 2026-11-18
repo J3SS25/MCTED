@@ -3,6 +3,7 @@ export * from './types/index.js';
 export * from './permissions.js';
 export * from './money.js';
 export * from './dates.js';
+export * from './image-moderation.js';
 
 export * from './schemas/user.js';
 export * from './schemas/tool.js';

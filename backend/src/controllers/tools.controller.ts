@@ -26,6 +26,17 @@ export class ToolsController {
     }
   }
 
+  static verifySerial(req: Request, res: Response, next: NextFunction): void {
+    try {
+      const serialNumber = typeof req.query['serial_number'] === 'string' ? req.query['serial_number'] : '';
+      const excludeId = typeof req.query['exclude_id'] === 'string' ? req.query['exclude_id'] : undefined;
+      const result = ToolsService.verifySerialNumber(serialNumber, excludeId);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static create(req: Request, res: Response, next: NextFunction): void {
     try {
       if (!req.user) throw AppError.unauthorized();

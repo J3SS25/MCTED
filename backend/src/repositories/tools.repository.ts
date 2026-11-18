@@ -1,12 +1,59 @@
 import db from '../../db/client.js';
 import type { Tool, CreateToolInput, UpdateToolInput, ToolFilterInput } from '@mcteb/shared';
+import { MAX_TOOL_IMAGES } from '@mcteb/shared';
 import { generateUUID } from '../utils/crypto.js';
 
 const TOOL_SELECT_COLUMNS = `
   tools.*,
   u.full_name as owner_name,
-  u.role as owner_role
+  u.role as owner_role,
+  u.email as owner_email,
+  u.barangay as owner_barangay,
+  u.phone as owner_phone
 `;
+
+function normalizeImageUrls(imageUrls?: string[], singleImageUrl?: string | null): string[] {
+  if (Array.isArray(imageUrls)) {
+    return imageUrls
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, MAX_TOOL_IMAGES);
+  }
+  if (typeof singleImageUrl === 'string' && singleImageUrl.trim()) {
+    return [singleImageUrl.trim()];
+  }
+  return [];
+}
+
+function mapToolRow(row: Record<string, unknown> | undefined): Tool | null {
+  if (!row) return null;
+
+  let parsedImages: string[] = [];
+  if (typeof row.images_json === 'string' && row.images_json.trim()) {
+    try {
+      const parsed = JSON.parse(row.images_json) as unknown;
+      if (Array.isArray(parsed)) {
+        parsedImages = parsed
+          .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          .slice(0, MAX_TOOL_IMAGES);
+      }
+    } catch {
+      parsedImages = [];
+    }
+  }
+
+  const singleUrl = typeof row.image_url === 'string' && row.image_url.trim() ? row.image_url : null;
+  if (parsedImages.length === 0 && singleUrl) {
+    parsedImages = [singleUrl];
+  }
+
+  const { images_json: _imagesJson, ...rest } = row;
+  return {
+    ...rest,
+    image_url: parsedImages[0] ?? singleUrl,
+    image_urls: parsedImages,
+  } as Tool;
+}
 
 export class ToolsRepository {
   static findById(id: string): Tool | null {
@@ -16,8 +63,40 @@ export class ToolsRepository {
       LEFT JOIN users u ON tools.owner_id = u.id
       WHERE tools.id = ?
     `);
-    const row = stmt.get(id);
-    return (row as Tool) || null;
+    const row = stmt.get(id) as Record<string, unknown> | undefined;
+    return mapToolRow(row);
+  }
+
+  static findBySerialNumber(serialNumber: string, excludeToolId?: string): Tool | null {
+    const trimmed = serialNumber.trim();
+    if (!trimmed) return null;
+
+    if (excludeToolId) {
+      const stmt = db.prepare(`
+        SELECT ${TOOL_SELECT_COLUMNS}
+        FROM tools
+        LEFT JOIN users u ON tools.owner_id = u.id
+        WHERE tools.serial_number IS NOT NULL
+          AND TRIM(tools.serial_number) != ''
+          AND LOWER(TRIM(tools.serial_number)) = LOWER(?)
+          AND tools.id != ?
+        LIMIT 1
+      `);
+      const row = stmt.get(trimmed, excludeToolId) as Record<string, unknown> | undefined;
+      return mapToolRow(row);
+    }
+
+    const stmt = db.prepare(`
+      SELECT ${TOOL_SELECT_COLUMNS}
+      FROM tools
+      LEFT JOIN users u ON tools.owner_id = u.id
+      WHERE tools.serial_number IS NOT NULL
+        AND TRIM(tools.serial_number) != ''
+        AND LOWER(TRIM(tools.serial_number)) = LOWER(?)
+      LIMIT 1
+    `);
+    const row = stmt.get(trimmed) as Record<string, unknown> | undefined;
+    return mapToolRow(row);
   }
 
   static findMany(filters: ToolFilterInput): { items: Tool[]; total: number } {
@@ -25,9 +104,11 @@ export class ToolsRepository {
     const params: (string | number)[] = [];
 
     if (filters.search) {
-      conditions.push('(tools.name LIKE ? OR tools.description LIKE ? OR tools.category LIKE ?)');
+      conditions.push(
+        '(tools.name LIKE ? OR tools.description LIKE ? OR tools.category LIKE ? OR tools.serial_number LIKE ?)',
+      );
       const searchParam = `%${filters.search}%`;
-      params.push(searchParam, searchParam, searchParam);
+      params.push(searchParam, searchParam, searchParam, searchParam);
     }
     if (filters.category) {
       if (filters.category === 'Agriculture') {
@@ -92,20 +173,28 @@ export class ToolsRepository {
       LIMIT ? OFFSET ?
     `);
 
-    const items = queryStmt.all(...params, filters.limit, offset) as Tool[];
+    const rawItems = queryStmt.all(...params, filters.limit, offset) as Record<string, unknown>[];
+    const items = rawItems
+      .map((row) => mapToolRow(row))
+      .filter((item): item is Tool => item !== null);
 
     return { items, total };
   }
 
   static create(input: CreateToolInput, ownerId?: string): Tool {
     const id = generateUUID();
+    const imageUrls = normalizeImageUrls(input.image_urls, input.image_url);
+    const primaryImageUrl = imageUrls[0] ?? null;
+    const imagesJson = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
+    const serialNumber = input.serial_number?.trim() ? input.serial_number.trim() : null;
+
     const stmt = db.prepare(`
       INSERT INTO tools (
         id, name, category, description, specifications, availability_status, condition_status,
-        rental_fee_centavos, deposit_fee_centavos, total_quantity, available_quantity, serial_number, image_url,
-        owner_id, discount_percent
+        rental_fee_centavos, deposit_fee_centavos, total_quantity, available_quantity, serial_number,
+        image_url, images_json, owner_id, discount_percent
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -120,8 +209,9 @@ export class ToolsRepository {
       input.deposit_fee_centavos,
       input.total_quantity,
       input.total_quantity, // Initially all are available
-      input.serial_number ?? null,
-      input.image_url ?? null,
+      serialNumber,
+      primaryImageUrl,
+      imagesJson,
       ownerId ?? null,
       input.discount_percent ?? 0,
     );
@@ -145,15 +235,34 @@ export class ToolsRepository {
       'total_quantity',
       'available_quantity',
       'serial_number',
-      'image_url',
       'discount_percent',
     ];
 
     for (const key of allowedKeys) {
       if (input[key] !== undefined) {
-        fields.push(`${key} = ?`);
-        values.push(input[key] ?? null);
+        if (key === 'serial_number') {
+          const trimmed = typeof input.serial_number === 'string' ? input.serial_number.trim() : '';
+          fields.push('serial_number = ?');
+          values.push(trimmed || null);
+        } else {
+          fields.push(`${key} = ?`);
+          values.push((input[key] as string | number | null | undefined) ?? null);
+        }
       }
+    }
+
+    if (input.image_urls !== undefined) {
+      const normalized = normalizeImageUrls(input.image_urls, input.image_url);
+      fields.push('image_url = ?');
+      values.push(normalized[0] ?? null);
+      fields.push('images_json = ?');
+      values.push(normalized.length > 0 ? JSON.stringify(normalized) : null);
+    } else if (input.image_url !== undefined) {
+      const primary = input.image_url?.trim() || null;
+      fields.push('image_url = ?');
+      values.push(primary);
+      fields.push('images_json = ?');
+      values.push(primary ? JSON.stringify([primary]) : null);
     }
 
     if (fields.length === 0) {
@@ -205,9 +314,10 @@ export class ToolsRepository {
         END,
         updated_at = DATETIME('now')
       WHERE id = ?
-      RETURNING *
     `);
 
-    return (stmt.get(delta, delta, id) as Tool) || null;
+    const info = stmt.run(delta, delta, id);
+    if (Number(info.changes) === 0) return null;
+    return this.findById(id);
   }
 }
