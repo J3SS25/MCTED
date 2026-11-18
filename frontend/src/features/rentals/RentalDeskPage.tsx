@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiRequest } from '../../lib/api';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Select } from '../../components/ui/Input';
-import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ReturnInspectionModal } from './ReturnInspectionModal';
-import { ShoppingBag, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
-import { formatDate, formatPHP } from '@mcteb/shared';
+import { ToolBorrowingReceiptModal } from '../../components/receipt/ToolBorrowingReceiptModal';
+import { ArrowDownLeft, ArrowUpRight, FileText } from 'lucide-react';
+import { formatDate } from '@mcteb/shared';
 
 export function RentalDeskPage() {
   const [rentals, setRentals] = useState<any[]>([]);
   const [approvedReservations, setApprovedReservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [inspectRental, setInspectRental] = useState<any>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [releaseLoading, setReleaseLoading] = useState<string | null>(null);
+  const [receiptSource, setReceiptSource] = useState<Record<string, unknown> | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -37,7 +38,7 @@ export function RentalDeskPage() {
     fetchData();
   }, []);
 
-  const handleHandoverCheckout = async (reservation: any) => {
+  const handleHandoverRelease = async (reservation: any) => {
     if (
       !confirm(
         `Release ${reservation.quantity} unit(s) of "${reservation.tool_name}" to ${reservation.borrower_name}?`,
@@ -46,9 +47,9 @@ export function RentalDeskPage() {
       return;
     }
 
-    setCheckoutLoading(reservation.id);
+    setReleaseLoading(reservation.id);
     try {
-      await apiRequest('/rentals/checkout', {
+      const releasedRental = await apiRequest<Record<string, unknown>>('/rentals/release', {
         method: 'POST',
         body: JSON.stringify({
           reservation_id: reservation.id,
@@ -62,22 +63,32 @@ export function RentalDeskPage() {
       });
 
       await fetchData();
+      setReceiptSource(releasedRental);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Checkout failed');
+      alert(err instanceof Error ? err.message : 'Handover release failed');
     } finally {
-      setCheckoutLoading(null);
+      setReleaseLoading(null);
     }
   };
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Municipal Tool Rental Desk
-        </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Coordinate equipment pickup handovers and process return inspections.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            Municipal Tool Rental Desk
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Coordinate equipment pickup handovers and process return inspections.
+          </p>
+        </div>
+
+        <Link to="/borrowing-receipt">
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <FileText className="h-4 w-4" />
+            New / Blank Receipt Form
+          </Button>
+        </Link>
       </div>
 
       {/* Section 1: Ready for Pickup (Approved Reservations) */}
@@ -118,14 +129,25 @@ export function RentalDeskPage() {
                     <p>Expected Due: {formatDate(res.return_date)}</p>
                   </div>
 
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    isLoading={checkoutLoading === res.id}
-                    onClick={() => handleHandoverCheckout(res)}
-                  >
-                    Release & Complete Handover
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      isLoading={releaseLoading === res.id}
+                      onClick={() => handleHandoverRelease(res)}
+                    >
+                      Release & Complete Handover
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => setReceiptSource(res)}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Borrowing Receipt
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -172,7 +194,16 @@ export function RentalDeskPage() {
                     </p>
                   </div>
 
-                  <div className="self-end md:self-center">
+                  <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => setReceiptSource(rental)}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Borrowing Receipt
+                    </Button>
                     {rental.status === 'Borrowed' && (
                       <Button
                         size="sm"
@@ -198,6 +229,12 @@ export function RentalDeskPage() {
           onSuccess={fetchData}
         />
       )}
+
+      <ToolBorrowingReceiptModal
+        isOpen={!!receiptSource}
+        onClose={() => setReceiptSource(null)}
+        source={receiptSource}
+      />
     </div>
   );
 }

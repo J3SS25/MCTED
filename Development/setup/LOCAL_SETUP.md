@@ -109,7 +109,7 @@ pnpm run db:migrate
 
 ### Step 7: Seed Demo Personas & Catalog Tools
 
-Populates 4 realistic demo users, 7 catalog tools, sample bookings, payments, and reviews:
+Populates 4 realistic demo users, 7 catalog tools, sample bookings, loans, and reviews:
 
 ```bash
 pnpm run db:seed

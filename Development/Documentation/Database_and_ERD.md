@@ -23,7 +23,7 @@ PRAGMA synchronous = NORMAL;
 
 - **`journal_mode = WAL`**: Write-Ahead Logging allows readers to execute concurrently without blocking writers, and writers do not block readers.
 - **`foreign_keys = ON`**: SQLite disables foreign key validation by default; this pragma strictly prevents orphaned child records.
-- **`busy_timeout = 5000`**: If a transaction temporarily locks the database, subsequent queries wait up to 5,000 milliseconds before throwing a busy error.
+- **`busy_timeout = 5000`**: If an atomic write temporarily locks the database, subsequent queries wait up to 5,000 milliseconds before throwing a busy error.
 - **`synchronous = NORMAL`**: Maximizes performance while maintaining crash resilience in WAL mode.
 
 ---
@@ -34,7 +34,6 @@ PRAGMA synchronous = NORMAL;
 erDiagram
     users ||--o{ reservations : "requests"
     users ||--o{ rentals : "borrows"
-    users ||--o{ payments : "submits"
     users ||--o{ maintenance : "reports"
     users ||--o{ feedback : "submits"
     users ||--o{ notifications : "receives"
@@ -44,8 +43,6 @@ erDiagram
     tools ||--o{ maintenance : "serviced in"
     tools ||--o{ feedback : "reviewed in"
     reservations ||--o| rentals : "fulfilled by"
-    reservations ||--o{ payments : "billed in"
-    rentals ||--o{ payments : "settled in"
 ```
 
 ---
@@ -77,21 +74,21 @@ Stores registered residents, equipment desk staff, and municipal administrators.
 
 Municipal equipment catalog items and shelf stock.
 
-| Column                 | Type    | Constraints                   | Description                                                                                         |
-| ---------------------- | ------- | ----------------------------- | --------------------------------------------------------------------------------------------------- |
-| `id`                   | TEXT    | PRIMARY KEY                   | UUID v4 identifier                                                                                  |
-| `name`                 | TEXT    | NOT NULL                      | Equipment title                                                                                     |
-| `category`             | TEXT    | NOT NULL                      | Category (e.g. Agricultural, Carpentry, Electrical)                                                 |
-| `description`          | TEXT    | NOT NULL                      | Equipment manual and operating description                                                          |
-| `specifications`       | TEXT    | NULLABLE                      | JSON string with technical specifications                                                           |
-| `availability_status`  | TEXT    | NOT NULL, DEFAULT 'Available' | `'Available'`, `'Reserved'`, `'Borrowed'`, `'Returned'`, `'Maintenance'`, `'Damaged'`, `'Archived'` |
-| `condition_status`     | TEXT    | NOT NULL, DEFAULT 'Good'      | `'Excellent'`, `'Good'`, `'Fair'`, `'Needs Repair'`, `'Under Maintenance'`                          |
-| `rental_fee_centavos`  | INTEGER | NOT NULL, DEFAULT 0           | Daily rental charge in integer centavos                                                             |
-| `deposit_fee_centavos` | INTEGER | NOT NULL, DEFAULT 0           | Refundable security deposit in centavos                                                             |
-| `total_quantity`       | INTEGER | NOT NULL, DEFAULT 1           | Total inventory units acquired                                                                      |
-| `available_quantity`   | INTEGER | NOT NULL, DEFAULT 1           | Units currently unreserved on shelf                                                                 |
-| `serial_number`        | TEXT    | NULLABLE                      | Manufacturer serial number                                                                          |
-| `image_url`            | TEXT    | NULLABLE                      | Equipment photo URL or illustration key                                                             |
+| Column                | Type    | Constraints                   | Description                                                                                         |
+| --------------------- | ------- | ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| `id`                  | TEXT    | PRIMARY KEY                   | UUID v4 identifier                                                                                  |
+| `name`                | TEXT    | NOT NULL                      | Equipment title                                                                                     |
+| `category`            | TEXT    | NOT NULL                      | Category (e.g. Agriculture, Carpentry, Electrical)                                                  |
+| `description`         | TEXT    | NOT NULL                      | Equipment manual and operating description                                                          |
+| `specifications`      | TEXT    | NULLABLE                      | JSON string with technical specifications                                                           |
+| `availability_status` | TEXT    | NOT NULL, DEFAULT 'Available' | `'Available'`, `'Reserved'`, `'Borrowed'`, `'Returned'`, `'Maintenance'`, `'Damaged'`, `'Archived'` |
+| `condition_status`    | TEXT    | NOT NULL, DEFAULT 'Good'      | `'Excellent'`, `'Good'`, `'Fair'`, `'Needs Repair'`, `'Under Maintenance'`                          |
+| `total_quantity`      | INTEGER | NOT NULL, DEFAULT 1           | Total inventory units acquired                                                                      |
+| `available_quantity`  | INTEGER | NOT NULL, DEFAULT 1           | Units currently unreserved on shelf                                                                 |
+| `serial_number`       | TEXT    | NULLABLE                      | Manufacturer serial number                                                                          |
+| `image_url`           | TEXT    | NULLABLE                      | Equipment photo URL or illustration key                                                             |
+| `images_json`         | TEXT    | NULLABLE                      | JSON array of up to 5 uploaded equipment images                                                     |
+| `owner_id`            | TEXT    | NULLABLE, REFERENCES users(id)| Community uploader ID (null for municipal inventory)                                                |
 
 ### 3. `reservations`
 
@@ -115,62 +112,39 @@ Advance booking requests submitted by residents.
 
 Active and historic equipment loans executed at the physical municipal desk.
 
-| Column                     | Type    | Constraints                           | Description                                                          |
-| -------------------------- | ------- | ------------------------------------- | -------------------------------------------------------------------- |
-| `id`                       | TEXT    | PRIMARY KEY                           | UUID v4 identifier                                                   |
-| `reservation_id`           | TEXT    | NULLABLE, REFERENCES reservations(id) | Originating reservation                                              |
-| `user_id`                  | TEXT    | NOT NULL, REFERENCES users(id)        | Borrower taking physical possession                                  |
-| `tool_id`                  | TEXT    | NOT NULL, REFERENCES tools(id)        | Equipment checked out                                                |
-| `quantity`                 | INTEGER | NOT NULL, DEFAULT 1                   | Quantity released                                                    |
-| `due_date`                 | TEXT    | NOT NULL                              | Handover deadline date (YYYY-MM-DD)                                  |
-| `returned_at`              | TEXT    | NULLABLE                              | Actual check-in timestamp                                            |
-| `status`                   | TEXT    | NOT NULL, DEFAULT 'Borrowed'          | `'Pending'`, `'Reserved'`, `'Borrowed'`, `'Returned'`, `'Completed'` |
-| `initial_condition`        | TEXT    | NOT NULL                              | Condition checked during release                                     |
-| `returned_condition`       | TEXT    | NULLABLE                              | Condition checked during return                                      |
-| `inspection_notes`         | TEXT    | NULLABLE                              | Defects or scratches observed                                        |
-| `overdue_penalty_centavos` | INTEGER | NOT NULL, DEFAULT 0                   | Calculated late return penalty                                       |
-| `damage_penalty_centavos`  | INTEGER | NOT NULL, DEFAULT 0                   | Assessed repair fee                                                  |
-| `released_by`              | TEXT    | NULLABLE, REFERENCES users(id)        | Desk staff releasing equipment                                       |
-| `received_by`              | TEXT    | NULLABLE, REFERENCES users(id)        | Desk staff receiving equipment                                       |
+| Column               | Type    | Constraints                           | Description                                                          |
+| -------------------- | ------- | ------------------------------------- | -------------------------------------------------------------------- |
+| `id`                 | TEXT    | PRIMARY KEY                           | UUID v4 identifier                                                   |
+| `reservation_id`     | TEXT    | NULLABLE, REFERENCES reservations(id) | Originating reservation                                              |
+| `user_id`            | TEXT    | NOT NULL, REFERENCES users(id)        | Borrower taking physical possession                                  |
+| `tool_id`            | TEXT    | NOT NULL, REFERENCES tools(id)        | Equipment released                                                   |
+| `quantity`           | INTEGER | NOT NULL, DEFAULT 1                   | Quantity released                                                    |
+| `due_date`           | TEXT    | NOT NULL                              | Handover deadline date (YYYY-MM-DD)                                  |
+| `returned_at`        | TEXT    | NULLABLE                              | Actual check-in timestamp                                            |
+| `status`             | TEXT    | NOT NULL, DEFAULT 'Borrowed'          | `'Pending'`, `'Reserved'`, `'Borrowed'`, `'Returned'`, `'Completed'` |
+| `initial_condition`  | TEXT    | NOT NULL                              | Condition checked during release                                     |
+| `returned_condition` | TEXT    | NULLABLE                              | Condition checked during return                                      |
+| `inspection_notes`   | TEXT    | NULLABLE                              | Defects or scratches observed                                        |
+| `released_by`        | TEXT    | NULLABLE, REFERENCES users(id)        | Desk staff releasing equipment                                       |
+| `received_by`        | TEXT    | NULLABLE, REFERENCES users(id)        | Desk staff receiving equipment                                       |
 
-### 5. `payments`
-
-Municipal treasury assessments and receipt records.
-
-| Column              | Type    | Constraints                           | Description                                                    |
-| ------------------- | ------- | ------------------------------------- | -------------------------------------------------------------- |
-| `id`                | TEXT    | PRIMARY KEY                           | UUID v4 identifier                                             |
-| `receipt_reference` | TEXT    | NOT NULL, UNIQUE                      | Traceable code (e.g. `BASCO-PAY-2026-XXXXXX`)                  |
-| `user_id`           | TEXT    | NOT NULL, REFERENCES users(id)        | Paying resident                                                |
-| `reservation_id`    | TEXT    | NULLABLE, REFERENCES reservations(id) | Related advance booking                                        |
-| `rental_id`         | TEXT    | NULLABLE, REFERENCES rentals(id)      | Related physical loan                                          |
-| `tool_id`           | TEXT    | NULLABLE, REFERENCES tools(id)        | Related tool item                                              |
-| `amount_centavos`   | INTEGER | NOT NULL                              | Settled amount in integer centavos                             |
-| `payment_method`    | TEXT    | NOT NULL                              | `'Cash'`, `'GCash'`, `'Bank Transfer'`, `'Municipal Treasury'` |
-| `status`            | TEXT    | NOT NULL, DEFAULT 'Pending'           | `'Pending'`, `'Paid'`, `'Failed'`, `'Refunded'`                |
-| `proof_url`         | TEXT    | NULLABLE                              | Uploaded deposit slip or transfer screenshot                   |
-| `verified_by`       | TEXT    | NULLABLE, REFERENCES users(id)        | Treasury staff confirming settlement                           |
-| `verified_at`       | TEXT    | NULLABLE                              | Verification timestamp                                         |
-
-### 6. `maintenance`
+### 5. `maintenance`
 
 Equipment repair tickets and maintenance board.
 
-| Column                    | Type    | Constraints                      | Description                                                                     |
-| ------------------------- | ------- | -------------------------------- | ------------------------------------------------------------------------------- |
-| `id`                      | TEXT    | PRIMARY KEY                      | UUID v4 identifier                                                              |
-| `tool_id`                 | TEXT    | NOT NULL, REFERENCES tools(id)   | Equipment requiring repair                                                      |
-| `rental_id`               | TEXT    | NULLABLE, REFERENCES rentals(id) | Related rental where damage occurred                                            |
-| `reported_by`             | TEXT    | NOT NULL, REFERENCES users(id)   | Staff or borrower reporting defect                                              |
-| `issue_description`       | TEXT    | NOT NULL                         | Description of malfunction or defect                                            |
-| `severity`                | TEXT    | NOT NULL                         | `'Minor'`, `'Moderate'`, `'Severe'`, `'Critical'`                               |
-| `status`                  | TEXT    | NOT NULL, DEFAULT 'Reported'     | `'Reported'`, `'Scheduled'`, `'In Progress'`, `'Completed'`, `'Decommissioned'` |
-| `technician_name`         | TEXT    | NULLABLE                         | Municipal technician or contractor                                              |
-| `estimated_cost_centavos` | INTEGER | NOT NULL, DEFAULT 0              | Estimated repair expenditure                                                    |
-| `actual_cost_centavos`    | INTEGER | NOT NULL, DEFAULT 0              | Realized repair expenditure                                                     |
-| `resolution_notes`        | TEXT    | NULLABLE                         | Summary of repairs performed                                                    |
+| Column              | Type | Constraints                      | Description                                                                     |
+| ------------------- | ---- | -------------------------------- | ------------------------------------------------------------------------------- |
+| `id`                | TEXT | PRIMARY KEY                      | UUID v4 identifier                                                              |
+| `tool_id`           | TEXT | NOT NULL, REFERENCES tools(id)   | Equipment requiring repair                                                      |
+| `rental_id`         | TEXT | NULLABLE, REFERENCES rentals(id) | Related rental where damage occurred                                            |
+| `reported_by`       | TEXT | NOT NULL, REFERENCES users(id)   | Staff or borrower reporting defect                                              |
+| `issue_description` | TEXT | NOT NULL                         | Description of malfunction or defect                                            |
+| `severity`          | TEXT | NOT NULL                         | `'Minor'`, `'Moderate'`, `'Severe'`, `'Critical'`                               |
+| `status`            | TEXT | NOT NULL, DEFAULT 'Reported'     | `'Reported'`, `'Scheduled'`, `'In Progress'`, `'Completed'`, `'Decommissioned'` |
+| `technician_name`   | TEXT | NULLABLE                         | Municipal technician or contractor                                              |
+| `resolution_notes`  | TEXT | NULLABLE                         | Summary of repairs performed                                                    |
 
-### 7. `feedback`
+### 6. `feedback`
 
 Post-loan ratings and community reviews.
 
@@ -186,21 +160,21 @@ Post-loan ratings and community reviews.
 | `comments`              | TEXT    | NOT NULL                         | Narrative review               |
 | `is_public`             | INTEGER | CHECK IN (0, 1)                  | Moderation visibility flag     |
 
-### 8. `notifications`
+### 7. `notifications`
 
 Direct alerts and reminders for residents.
 
-| Column     | Type    | Constraints                    | Description                                        |
-| ---------- | ------- | ------------------------------ | -------------------------------------------------- |
-| `id`       | TEXT    | PRIMARY KEY                    | UUID v4 identifier                                 |
-| `user_id`  | TEXT    | NOT NULL, REFERENCES users(id) | Recipient resident                                 |
-| `title`    | TEXT    | NOT NULL                       | Alert subject                                      |
-| `message`  | TEXT    | NOT NULL                       | Detailed notification body                         |
-| `type`     | TEXT    | NOT NULL                       | `'info'`, `'success'`, `'warning'`, `'danger'`     |
-| `link_url` | TEXT    | NULLABLE                       | Deep link to reservation, receipt, or catalog item |
-| `is_read`  | INTEGER | CHECK IN (0, 1)                | Read / Unread status flag                          |
+| Column     | Type    | Constraints                    | Description                                    |
+| ---------- | ------- | ------------------------------ | ---------------------------------------------- |
+| `id`       | TEXT    | PRIMARY KEY                    | UUID v4 identifier                             |
+| `user_id`  | TEXT    | NOT NULL, REFERENCES users(id) | Recipient resident                             |
+| `title`    | TEXT    | NOT NULL                       | Alert subject                                  |
+| `message`  | TEXT    | NOT NULL                       | Detailed notification body                     |
+| `type`     | TEXT    | NOT NULL                       | `'info'`, `'success'`, `'warning'`, `'danger'` |
+| `link_url` | TEXT    | NULLABLE                       | Deep link to reservation, loan, or catalog item|
+| `is_read`  | INTEGER | CHECK IN (0, 1)                | Read / Unread status flag                      |
 
-### 9. `audit_logs`
+### 8. `audit_logs`
 
 Immutable record of all state transitions and security events.
 
@@ -215,7 +189,7 @@ Immutable record of all state transitions and security events.
 | `details`     | TEXT | NULLABLE                       | Contextual details or state changes             |
 | `ip_address`  | TEXT | NULLABLE                       | Client IP address                               |
 
-### 10. `sessions`
+### 9. `sessions`
 
 Server-side active authentication sessions.
 

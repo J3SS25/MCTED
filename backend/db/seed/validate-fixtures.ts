@@ -20,7 +20,6 @@ export function validateFixtures(data: {
     due_date: string;
     returned_at?: string | null;
   }>;
-  payments: Array<{ id: string; user_id: string; amount_centavos: number }>;
 }): FixtureValidationReport {
   const errors: string[] = [];
   const userIds = new Set(data.users.map((u) => u.id));
@@ -46,16 +45,6 @@ export function validateFixtures(data: {
     }
     if (!toolIds.has(rent.tool_id)) {
       errors.push(`Rental ${rent.id} references non-existent tool ${rent.tool_id}`);
-    }
-  }
-
-  // Check payments
-  for (const pay of data.payments) {
-    if (!userIds.has(pay.user_id)) {
-      errors.push(`Payment ${pay.id} references non-existent user ${pay.user_id}`);
-    }
-    if (pay.amount_centavos <= 0) {
-      errors.push(`Payment ${pay.id} has non-positive amount`);
     }
   }
 

@@ -102,8 +102,6 @@ Adds a new equipment item to the municipal tool bank.
     "name": "Heavy Duty Concrete Mixer",
     "category": "Construction",
     "description": "Electric 1-bag concrete mixer.",
-    "rental_fee_centavos": 25000,
-    "deposit_fee_centavos": 100000,
     "total_quantity": 2,
     "available_quantity": 2,
     "serial_number": "CM-2026-001"
@@ -176,9 +174,9 @@ Cancels an advance reservation. Borrowers may cancel their own pending/approved 
 
 Lists physical loans. Scoped to the current borrower or visible to all staff.
 
-### `POST /rentals/checkout` _(Staff & Admin Only)_
+### `POST /rentals/release` _(Staff & Admin Only)_
 
-Executes physical equipment handover. Decrements available tool quantity and completes originating reservation inside an atomic transaction.
+Executes physical equipment handover. Decrements available tool quantity and completes originating reservation inside an atomic operation.
 
 - **Request Body**:
   ```json
@@ -194,47 +192,19 @@ Executes physical equipment handover. Decrements available tool quantity and com
 
 ### `POST /rentals/:id/return` _(Staff & Admin Only)_
 
-Records return inspection. Evaluates condition, increments available stock, and assesses damage or overdue penalties inside an atomic transaction.
+Records return inspection. Evaluates condition and increments available stock inside an atomic operation.
 
 - **Request Body**:
   ```json
   {
     "returned_condition": "Fair",
-    "inspection_notes": "Normal wear, cleaned.",
-    "overdue_penalty_centavos": 0,
-    "damage_penalty_centavos": 0
+    "inspection_notes": "Normal wear, cleaned."
   }
   ```
 
 ---
 
-## 5. Payments & Receipts (`/api/v1/payments`)
-
-### `GET /payments`
-
-Lists payments.
-
-### `POST /payments`
-
-Submits a payment record with proof URL or reference.
-
-- **Request Body**:
-  ```json
-  {
-    "user_id": "a0000000-0000-4000-8000-000000000003",
-    "amount_centavos": 15000,
-    "payment_method": "GCash",
-    "proof_url": "https://example.com/proof.jpg"
-  }
-  ```
-
-### `PATCH /payments/:id/verify` _(Staff & Admin Only)_
-
-Verifies payment and updates status to `Paid` or `Failed`. Generates official receipt reference.
-
----
-
-## 6. Maintenance & Defects (`/api/v1/maintenance`)
+## 5. Maintenance & Defects (`/api/v1/maintenance`)
 
 ### `GET /maintenance`
 
@@ -250,7 +220,7 @@ Updates ticket progress. When marked `'Completed'` with `return_to_service: true
 
 ---
 
-## 7. Feedback & Reviews (`/api/v1/feedback`)
+## 6. Feedback & Reviews (`/api/v1/feedback`)
 
 ### `GET /feedback/public`
 
@@ -266,7 +236,7 @@ Toggles public visibility of feedback.
 
 ---
 
-## 8. Notifications (`/api/v1/notifications`)
+## 7. Notifications (`/api/v1/notifications`)
 
 - `GET /notifications`: User notification alert feed.
 - `PATCH /notifications/:id/read`: Marks a single notification as read.
@@ -274,13 +244,13 @@ Toggles public visibility of feedback.
 
 ---
 
-## 9. Security Audit (`/api/v1/audit`) _(Admin Only)_
+## 8. Security Audit (`/api/v1/audit`) _(Admin Only)_
 
 - `GET /audit`: Immutable security audit log feed with actor, action code, timestamp, and IP address.
 
 ---
 
-## 10. Administrative Perimeter (`/api/v1/admin`) _(Administrator Only)_
+## 9. Administrative Perimeter (`/api/v1/admin`) _(Administrator Only)_
 
 All endpoints under `/api/v1/admin` require an authenticated session with the `Administrator` role. Requests by `Borrower` or `Municipal Staff` receive `403 Forbidden`.
 
@@ -289,9 +259,8 @@ All endpoints under `/api/v1/admin` require an authenticated session with the `A
 Returns high-level administrative operational statistics:
 
 - Total registered users and active borrowers.
-- Total inventory items, active loans, and overdue counts.
+- Total inventory items, active loans, and pending reservation counts.
 - Open maintenance defect tickets.
-- Unverified payments pending treasury confirmation.
 
 ### `GET /admin/health`
 

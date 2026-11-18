@@ -66,7 +66,7 @@ export function NotificationsPage() {
             Notifications & System Alerts
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Status updates regarding your equipment requests, approvals, due dates, and payments.
+            Status updates regarding your equipment requests, approvals, and return due dates.
           </p>
         </div>
 

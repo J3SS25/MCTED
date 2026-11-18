@@ -49,10 +49,6 @@ frontend/
 │   │   │   └── MaintenanceReportModal.tsx
 │   │   ├── notifications/    # In-app notification center
 │   │   │   └── NotificationsPage.tsx
-│   │   ├── payments/         # Payment tracking and verification
-│   │   │   ├── MyPaymentsPage.tsx
-│   │   │   ├── OfficialReceiptModal.tsx
-│   │   │   └── PaymentVerificationPage.tsx
 │   │   ├── profile/          # User account profile management
 │   │   │   └── ProfilePage.tsx
 │   │   ├── rentals/          # Active rental desk operations

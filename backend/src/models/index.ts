@@ -3,7 +3,6 @@ import type {
   Tool,
   Reservation,
   Rental,
-  Payment,
   Maintenance,
   Feedback,
   Notification,
@@ -14,7 +13,6 @@ export type UserModel = User;
 export type ToolModel = Tool;
 export type ReservationModel = Reservation;
 export type RentalModel = Rental;
-export type PaymentModel = Payment;
 export type MaintenanceModel = Maintenance;
 export type FeedbackModel = Feedback;
 export type NotificationModel = Notification;

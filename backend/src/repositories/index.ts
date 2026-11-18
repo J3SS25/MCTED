@@ -5,7 +5,6 @@ export * from './users.repository.js';
 export * from './tools.repository.js';
 export * from './reservations.repository.js';
 export * from './rentals.repository.js';
-export * from './payments.repository.js';
 export * from './maintenance.repository.js';
 export * from './feedback.repository.js';
 export * from './notifications.repository.js';

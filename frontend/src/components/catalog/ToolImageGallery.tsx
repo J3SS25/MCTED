@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Tag, Images } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Images } from 'lucide-react';
 
 interface ToolImageGalleryProps {
   images: string[];
   alt: string;
-  discountPercent?: number;
   compact?: boolean;
 }
 
 export function ToolImageGallery({
   images,
   alt,
-  discountPercent = 0,
   compact = false,
 }: ToolImageGalleryProps) {
   const safeImages = images.length > 0 ? images : ['/equipment/fallback.svg'];
@@ -50,12 +48,6 @@ export function ToolImageGallery({
             (e.target as HTMLImageElement).src = '/equipment/fallback.svg';
           }}
         />
-
-        {discountPercent > 0 && (
-          <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-sm">
-            <Tag className="h-3.5 w-3.5" /> {discountPercent}% DISCOUNT
-          </span>
-        )}
 
         <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-900/75 text-white backdrop-blur-sm">
           <Images className="h-3 w-3" />

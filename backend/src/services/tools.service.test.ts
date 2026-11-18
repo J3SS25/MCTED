@@ -4,6 +4,18 @@ import { AppError } from '../utils/errors.js';
 import { runMigrations } from '../../db/migrate.js';
 import { runSeed } from '../../db/seed/seed.js';
 
+const ADMIN_MARIA = {
+  id: 'a0000000-0000-4000-8000-000000000001',
+  name: 'Maria Santos',
+  role: 'Administrator',
+};
+
+const STAFF_JUAN = {
+  id: 'a0000000-0000-4000-8000-000000000002',
+  name: 'Juan dela Cruz',
+  role: 'Municipal Staff',
+};
+
 const BORROWER_ANA = {
   id: 'a0000000-0000-4000-8000-000000000003',
   name: 'Ana Reyes',
@@ -31,95 +43,107 @@ beforeAll(async () => {
 afterAll(() => {
   for (const id of createdToolIds) {
     try {
-      ToolsService.deleteTool(id, { id: 'admin', name: 'Cleanup', role: 'Administrator' });
+      ToolsService.deleteTool(id, ADMIN_MARIA);
     } catch {
       // Already deleted during test
     }
   }
 });
 
-describe('ToolsService - Borrower Tools & Equipment Management', () => {
-  it('enforces borrower ownership access control on municipal and other borrowers tools', () => {
-    // Borrower cannot edit, archive, or delete municipal catalog tools
-    expect(() =>
-      ToolsService.updateTool(MUNICIPAL_TOOL_ID, { name: 'Tampered Municipal Tool' }, BORROWER_ANA),
-    ).toThrowError(AppError);
+describe('ToolsService - Role-Based Tool & Equipment Management', () => {
+  it('forbids Borrowers from creating, updating, archiving, or deleting tools, while allowing Staff and Admins', () => {
+    // Borrowers cannot upload/create tools
+    for (const borrower of [BORROWER_ANA, BORROWER_PEDRO]) {
+      try {
+        ToolsService.createTool(
+          {
+            name: 'Unauthorized Borrower Tool',
+            category: 'Carpentry',
+            description: 'Borrowers must not be permitted to upload tools.',
+            availability_status: 'Available',
+            condition_status: 'Good',
+            total_quantity: 1,
+            serial_number: `BOR-DENIED-${Date.now()}-${Math.random()}`,
+          },
+          borrower,
+        );
+        expect.unreachable('Expected createTool to throw 403 for Borrower');
+      } catch (err) {
+        expect(err).toBeInstanceOf(AppError);
+        expect((err as AppError).statusCode).toBe(403);
+      }
 
-    try {
-      ToolsService.updateTool(MUNICIPAL_TOOL_ID, { name: 'Tampered' }, BORROWER_ANA);
-    } catch (err) {
-      expect(err).toBeInstanceOf(AppError);
-      expect((err as AppError).statusCode).toBe(403);
+      try {
+        ToolsService.updateTool(MUNICIPAL_TOOL_ID, { name: 'Tampered' }, borrower);
+        expect.unreachable('Expected updateTool to throw 403 for Borrower');
+      } catch (err) {
+        expect(err).toBeInstanceOf(AppError);
+        expect((err as AppError).statusCode).toBe(403);
+      }
+
+      try {
+        ToolsService.archiveTool(MUNICIPAL_TOOL_ID, borrower);
+        expect.unreachable('Expected archiveTool to throw 403 for Borrower');
+      } catch (err) {
+        expect(err).toBeInstanceOf(AppError);
+        expect((err as AppError).statusCode).toBe(403);
+      }
+
+      try {
+        ToolsService.deleteTool(MUNICIPAL_TOOL_ID, borrower);
+        expect.unreachable('Expected deleteTool to throw 403 for Borrower');
+      } catch (err) {
+        expect(err).toBeInstanceOf(AppError);
+        expect((err as AppError).statusCode).toBe(403);
+      }
     }
 
-    try {
-      ToolsService.archiveTool(MUNICIPAL_TOOL_ID, BORROWER_ANA);
-    } catch (err) {
-      expect(err).toBeInstanceOf(AppError);
-      expect((err as AppError).statusCode).toBe(403);
-    }
-
-    try {
-      ToolsService.deleteTool(MUNICIPAL_TOOL_ID, BORROWER_ANA);
-    } catch (err) {
-      expect(err).toBeInstanceOf(AppError);
-      expect((err as AppError).statusCode).toBe(403);
-    }
-
-    // Ana creates her own tool
-    const uniqueSerial = `ANA-SN-${Date.now()}`;
-    const created = ToolsService.createTool(
+    // Municipal Staff creates a catalog tool
+    const uniqueSerial = `STAFF-SN-${Date.now()}`;
+    const createdByStaff = ToolsService.createTool(
       {
-        name: 'Ana Cordless Grinder',
+        name: 'Municipal Cordless Grinder',
         category: 'Construction',
-        description: 'Brushless angle grinder shared for community projects.',
+        description: 'Brushless angle grinder managed by municipal staff.',
         availability_status: 'Available',
         condition_status: 'Excellent',
-        rental_fee_centavos: 12000,
-        deposit_fee_centavos: 40000,
-        total_quantity: 1,
+        total_quantity: 2,
         serial_number: uniqueSerial,
         image_urls: [VALID_PNG_DATA_URL, VALID_PNG_DATA_URL],
         image_filenames: ['grinder-front.png', 'grinder-side.png'],
       },
-      BORROWER_ANA,
+      STAFF_JUAN,
     );
-    createdToolIds.push(created.id);
+    createdToolIds.push(createdByStaff.id);
 
-    expect(created.owner_id).toBe(BORROWER_ANA.id);
-    expect(created.owner_name).toBe('Ana Reyes');
-    expect(created.owner_role).toBe('Borrower');
-    expect(created.owner_barangay).toBe('Barangay III');
-    expect(created.image_urls).toHaveLength(2);
-    expect(created.created_at).toBeTruthy();
+    expect(createdByStaff.owner_id).toBe(STAFF_JUAN.id);
+    expect(createdByStaff.owner_name).toBe('Juan dela Cruz');
+    expect(createdByStaff.owner_role).toBe('Municipal Staff');
+    expect(createdByStaff.image_urls).toHaveLength(2);
+    expect(createdByStaff.created_at).toBeTruthy();
 
-    // Another borrower (Pedro) cannot edit or delete Ana's uploaded tool
+    // Borrower still cannot edit or delete a staff-created tool
     try {
-      ToolsService.updateTool(created.id, { name: 'Hijacked Grinder' }, BORROWER_PEDRO);
-      expect.unreachable('Expected updateTool to throw 403');
+      ToolsService.updateTool(createdByStaff.id, { name: 'Hijacked Grinder' }, BORROWER_ANA);
+      expect.unreachable('Expected updateTool to throw 403 for Borrower');
     } catch (err) {
       expect(err).toBeInstanceOf(AppError);
       expect((err as AppError).statusCode).toBe(403);
     }
 
-    try {
-      ToolsService.deleteTool(created.id, BORROWER_PEDRO);
-      expect.unreachable('Expected deleteTool to throw 403');
-    } catch (err) {
-      expect(err).toBeInstanceOf(AppError);
-      expect((err as AppError).statusCode).toBe(403);
-    }
-
-    // Ana CAN edit and delete her own uploaded tool
+    // Municipal Staff can update and archive, and Administrator can delete
     const updated = ToolsService.updateTool(
-      created.id,
-      { name: 'Ana Cordless Grinder Pro', serial_number: uniqueSerial },
-      BORROWER_ANA,
+      createdByStaff.id,
+      { name: 'Municipal Cordless Grinder Pro', serial_number: uniqueSerial },
+      STAFF_JUAN,
     );
-    expect(updated.name).toBe('Ana Cordless Grinder Pro');
+    expect(updated.name).toBe('Municipal Cordless Grinder Pro');
 
-    ToolsService.deleteTool(created.id, BORROWER_ANA);
-    expect(() => ToolsService.getToolById(created.id)).toThrowError(AppError);
+    const archived = ToolsService.archiveTool(createdByStaff.id, STAFF_JUAN);
+    expect(archived.availability_status).toBe('Archived');
+
+    ToolsService.deleteTool(createdByStaff.id, ADMIN_MARIA);
+    expect(() => ToolsService.getToolById(createdByStaff.id)).toThrowError(AppError);
   });
 
   it('verifies unique Serial ID Numbers and rejects duplicates on create and update', () => {
@@ -145,12 +169,10 @@ describe('ToolsService - Borrower Tools & Equipment Management', () => {
           description: 'Attempt to create duplicate serial ID.',
           availability_status: 'Available',
           condition_status: 'Good',
-          rental_fee_centavos: 5000,
-          deposit_fee_centavos: 10000,
           total_quantity: 1,
           serial_number: 'TLR-2024-001',
         },
-        BORROWER_ANA,
+        STAFF_JUAN,
       );
       expect.unreachable('Expected createTool to throw 409 Conflict');
     } catch (err) {
@@ -159,7 +181,7 @@ describe('ToolsService - Borrower Tools & Equipment Management', () => {
       expect((err as AppError).message).toMatch(/already exists/i);
     }
 
-    // Create two distinct tools
+    // Create two distinct tools as Staff / Admin
     const toolA = ToolsService.createTool(
       {
         name: 'Tool A',
@@ -167,12 +189,10 @@ describe('ToolsService - Borrower Tools & Equipment Management', () => {
         description: 'Tool A unique serial.',
         availability_status: 'Available',
         condition_status: 'Good',
-        rental_fee_centavos: 5000,
-        deposit_fee_centavos: 10000,
         total_quantity: 1,
         serial_number: uniqueSerialA,
       },
-      BORROWER_ANA,
+      STAFF_JUAN,
     );
     createdToolIds.push(toolA.id);
 
@@ -183,12 +203,10 @@ describe('ToolsService - Borrower Tools & Equipment Management', () => {
         description: 'Tool B unique serial.',
         availability_status: 'Available',
         condition_status: 'Good',
-        rental_fee_centavos: 5000,
-        deposit_fee_centavos: 10000,
         total_quantity: 1,
         serial_number: uniqueSerialB,
       },
-      BORROWER_ANA,
+      ADMIN_MARIA,
     );
     createdToolIds.push(toolB.id);
 
@@ -197,7 +215,7 @@ describe('ToolsService - Borrower Tools & Equipment Management', () => {
 
     // Updating toolB to toolA's serial must throw 409 Conflict
     try {
-      ToolsService.updateTool(toolB.id, { serial_number: uniqueSerialA }, BORROWER_ANA);
+      ToolsService.updateTool(toolB.id, { serial_number: uniqueSerialA }, ADMIN_MARIA);
       expect.unreachable('Expected updateTool to throw 409 Conflict');
     } catch (err) {
       expect(err).toBeInstanceOf(AppError);
@@ -215,13 +233,11 @@ describe('ToolsService - Borrower Tools & Equipment Management', () => {
           description: 'Testing 5-image maximum limit.',
           availability_status: 'Available',
           condition_status: 'Good',
-          rental_fee_centavos: 5000,
-          deposit_fee_centavos: 10000,
           total_quantity: 1,
           serial_number: `MAX-IMG-${Date.now()}`,
           image_urls: sixImages,
         },
-        BORROWER_ANA,
+        STAFF_JUAN,
       );
       expect.unreachable('Expected createTool to reject > 5 images');
     } catch (err) {
@@ -246,14 +262,12 @@ describe('ToolsService - Borrower Tools & Equipment Management', () => {
             description: 'Testing backend content moderation enforcement.',
             availability_status: 'Available',
             condition_status: 'Good',
-            rental_fee_centavos: 5000,
-            deposit_fee_centavos: 10000,
             total_quantity: 1,
             serial_number: `MOD-${Date.now()}-${Math.random()}`,
             image_urls: [VALID_PNG_DATA_URL],
             image_filenames: [testCase.filename],
           },
-          BORROWER_ANA,
+          STAFF_JUAN,
         );
         expect.unreachable(`Expected moderation rejection for ${testCase.filename}`);
       } catch (err) {

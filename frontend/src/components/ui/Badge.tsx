@@ -15,7 +15,6 @@ export function Badge({ className, status, variant, children, ...props }: BadgeP
       case 'Available':
       case 'Active':
       case 'Approved':
-      case 'Paid':
       case 'Completed':
       case 'Excellent':
       case 'success':
@@ -37,7 +36,6 @@ export function Badge({ className, status, variant, children, ...props }: BadgeP
         break;
       case 'Rejected':
       case 'Cancelled':
-      case 'Failed':
       case 'Suspended':
       case 'Damaged':
       case 'Needs Repair':

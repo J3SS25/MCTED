@@ -1,6 +1,6 @@
 -- Municipal Community Tool and Equipment Bank (MCTEB)
 -- Municipality of Basco, Batanes
--- Authoritative Database Schema: 9 Core Entities
+-- Authoritative Database Schema: 8 Core Entities
 
 PRAGMA foreign_keys = ON;
 
@@ -34,15 +34,12 @@ CREATE TABLE IF NOT EXISTS tools (
     specifications TEXT,
     availability_status TEXT NOT NULL DEFAULT 'Available' CHECK(availability_status IN ('Available', 'Reserved', 'Borrowed', 'Returned', 'Maintenance', 'Damaged', 'Archived')),
     condition_status TEXT NOT NULL DEFAULT 'Good' CHECK(condition_status IN ('Excellent', 'Good', 'Fair', 'Needs Repair', 'Under Maintenance')),
-    rental_fee_centavos INTEGER NOT NULL DEFAULT 0,
-    deposit_fee_centavos INTEGER NOT NULL DEFAULT 0,
     total_quantity INTEGER NOT NULL DEFAULT 1,
     available_quantity INTEGER NOT NULL DEFAULT 1,
     serial_number TEXT,
     image_url TEXT,
     images_json TEXT,
     owner_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-    discount_percent INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
     updated_at TEXT NOT NULL DEFAULT (DATETIME('now'))
 );
@@ -77,38 +74,13 @@ CREATE TABLE IF NOT EXISTS rentals (
     initial_condition TEXT NOT NULL CHECK(initial_condition IN ('Excellent', 'Good', 'Fair', 'Needs Repair', 'Under Maintenance')),
     returned_condition TEXT CHECK(returned_condition IN ('Excellent', 'Good', 'Fair', 'Needs Repair', 'Under Maintenance')),
     inspection_notes TEXT,
-    overdue_penalty_centavos INTEGER NOT NULL DEFAULT 0,
-    damage_penalty_centavos INTEGER NOT NULL DEFAULT 0,
     released_by TEXT REFERENCES users(id) ON DELETE SET NULL,
     received_by TEXT REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
     updated_at TEXT NOT NULL DEFAULT (DATETIME('now'))
 );
 
--- 5. Payments table
-CREATE TABLE IF NOT EXISTS payments (
-    id TEXT PRIMARY KEY,
-    receipt_reference TEXT NOT NULL UNIQUE,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    reservation_id TEXT REFERENCES reservations(id) ON DELETE SET NULL,
-    rental_id TEXT REFERENCES rentals(id) ON DELETE SET NULL,
-    tool_id TEXT REFERENCES tools(id) ON DELETE SET NULL,
-    amount_centavos INTEGER NOT NULL,
-    payment_method TEXT NOT NULL CHECK(payment_method IN ('GCash', 'LANDBANK', 'Maya (PayMaya)', 'BDO', 'Cash', 'Bank Transfer', 'Municipal Treasury')),
-    status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending', 'Paid', 'Failed', 'Refunded')),
-    proof_url TEXT,
-    items_json TEXT,
-    pickup_date TEXT,
-    return_date TEXT,
-    duration_days INTEGER DEFAULT 1,
-    remarks TEXT,
-    verified_by TEXT REFERENCES users(id) ON DELETE SET NULL,
-    verified_at TEXT,
-    created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
-    updated_at TEXT NOT NULL DEFAULT (DATETIME('now'))
-);
-
--- 6. Maintenance table
+-- 5. Maintenance table
 CREATE TABLE IF NOT EXISTS maintenance (
     id TEXT PRIMARY KEY,
     tool_id TEXT NOT NULL REFERENCES tools(id) ON DELETE RESTRICT,
@@ -118,8 +90,6 @@ CREATE TABLE IF NOT EXISTS maintenance (
     severity TEXT NOT NULL CHECK(severity IN ('Minor', 'Moderate', 'Severe', 'Critical')),
     status TEXT NOT NULL DEFAULT 'Reported' CHECK(status IN ('Reported', 'Scheduled', 'In Progress', 'Completed', 'Decommissioned')),
     technician_name TEXT,
-    estimated_cost_centavos INTEGER NOT NULL DEFAULT 0,
-    actual_cost_centavos INTEGER NOT NULL DEFAULT 0,
     scheduled_date TEXT,
     completed_at TEXT,
     resolution_notes TEXT,
@@ -127,7 +97,7 @@ CREATE TABLE IF NOT EXISTS maintenance (
     updated_at TEXT NOT NULL DEFAULT (DATETIME('now'))
 );
 
--- 7. Feedback table
+-- 6. Feedback table
 CREATE TABLE IF NOT EXISTS feedback (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -141,7 +111,7 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at TEXT NOT NULL DEFAULT (DATETIME('now'))
 );
 
--- 8. Notifications table
+-- 7. Notifications table
 CREATE TABLE IF NOT EXISTS notifications (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -153,7 +123,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TEXT NOT NULL DEFAULT (DATETIME('now'))
 );
 
--- 9. Audit Logs table
+-- 8. Audit Logs table
 CREATE TABLE IF NOT EXISTS audit_logs (
     id TEXT PRIMARY KEY,
     actor_id TEXT REFERENCES users(id) ON DELETE SET NULL,
@@ -178,8 +148,6 @@ CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations(status);
 CREATE INDEX IF NOT EXISTS idx_rentals_user ON rentals(user_id);
 CREATE INDEX IF NOT EXISTS idx_rentals_tool ON rentals(tool_id);
 CREATE INDEX IF NOT EXISTS idx_rentals_status ON rentals(status);
-CREATE INDEX IF NOT EXISTS idx_payments_user ON payments(user_id);
-CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
 CREATE INDEX IF NOT EXISTS idx_maintenance_tool ON maintenance(tool_id);
 CREATE INDEX IF NOT EXISTS idx_maintenance_status ON maintenance(status);
 CREATE INDEX IF NOT EXISTS idx_feedback_tool ON feedback(tool_id);

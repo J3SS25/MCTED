@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, Edit, Trash2, Tag, UserCheck, Building2, Images } from 'lucide-react';
+import { CalendarCheck, Edit, Trash2, UserCheck, Building2, Images } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
-import { formatPHP } from '@mcteb/shared';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -10,11 +9,8 @@ import { resolveToolImages } from '../../lib/local-storage';
 
 interface ToolCardProps {
   tool: Tool;
-  inWishlist: boolean;
-  inCart: boolean;
   canManage: boolean;
-  onToggleWishlist: (tool: Tool) => void;
-  onAddToCart: (tool: Tool) => void;
+  onBorrowNow?: (tool: Tool) => void;
   onSelect?: (tool: Tool) => void;
   onEdit?: (tool: Tool) => void;
   onDelete?: (tool: Tool) => void;
@@ -22,21 +18,13 @@ interface ToolCardProps {
 
 export function ToolCard({
   tool,
-  inWishlist,
-  inCart,
   canManage,
-  onToggleWishlist,
-  onAddToCart,
+  onBorrowNow,
   onSelect,
   onEdit,
   onDelete,
 }: ToolCardProps) {
   const isAvailable = tool.availability_status === 'Available' && tool.available_quantity > 0;
-  const discountPercent = tool.discount_percent ?? 0;
-  const effectiveFeeCentavos =
-    discountPercent > 0
-      ? Math.round(tool.rental_fee_centavos * (1 - discountPercent / 100))
-      : tool.rental_fee_centavos;
   const images = resolveToolImages(tool);
   const imageSrc = images[0] || '/equipment/fallback.svg';
 
@@ -63,36 +51,6 @@ export function ToolCard({
             (e.target as HTMLImageElement).src = '/equipment/fallback.svg';
           }}
         />
-
-        {/* Top-Left Wishlist & Discount Badges */}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleWishlist(tool);
-            }}
-            aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-            title={inWishlist ? 'Remove from Wishlist' : 'Save to Wishlist'}
-            className={`p-2 rounded-full shadow-sm border transition-colors ${
-              inWishlist
-                ? 'bg-rose-500 text-white border-rose-500'
-                : 'bg-white/90 dark:bg-slate-800/90 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:text-rose-500'
-            }`}
-          >
-            <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
-          </button>
-
-          {discountPercent > 0 ? (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-sm">
-              <Tag className="h-3 w-3" /> {discountPercent}% OFF
-            </span>
-          ) : tool.rental_fee_centavos === 0 ? (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white shadow-sm">
-              FREE LOAN
-            </span>
-          ) : null}
-        </div>
 
         {/* Top-Right Status & Photo Count Badges */}
         <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
@@ -162,22 +120,8 @@ export function ToolCard({
           </div>
         </div>
 
-        {/* Pricing & Units */}
+        {/* Units Available */}
         <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-1.5 text-xs">
-          <div className="flex justify-between items-center">
-            <span className="text-slate-500 dark:text-slate-400">Daily Rental Fee:</span>
-            <div className="text-right">
-              {discountPercent > 0 && (
-                <span className="text-[11px] text-slate-400 line-through mr-1.5">
-                  {formatPHP(tool.rental_fee_centavos)}
-                </span>
-              )}
-              <span className="font-bold text-civic-forest dark:text-civic-light text-sm">
-                {formatPHP(effectiveFeeCentavos)}
-              </span>
-              <span className="text-[10px] text-slate-400"> / day</span>
-            </div>
-          </div>
           <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
             <span>Stock Available:</span>
             <span className="font-semibold text-slate-700 dark:text-slate-200">
@@ -188,20 +132,22 @@ export function ToolCard({
 
         {/* Primary Actions */}
         <div className="space-y-2 pt-1">
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              size="sm"
-              variant={inCart ? 'secondary' : 'primary'}
-              disabled={!isAvailable}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart(tool);
-              }}
-              className="gap-1.5 w-full"
-            >
-              <ShoppingCart className="h-3.5 w-3.5" />
-              {inCart ? 'In Cart (+1)' : isAvailable ? 'Add to Cart' : 'Unavailable'}
-            </Button>
+          <div className={onBorrowNow ? 'grid grid-cols-2 gap-2' : 'block'}>
+            {onBorrowNow && (
+              <Button
+                size="sm"
+                variant="primary"
+                disabled={!isAvailable}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBorrowNow(tool);
+                }}
+                className="gap-1.5 w-full"
+              >
+                <CalendarCheck className="h-3.5 w-3.5" />
+                {isAvailable ? 'Borrow Now' : 'Unavailable'}
+              </Button>
+            )}
 
             {onSelect ? (
               <Button

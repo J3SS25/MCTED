@@ -13,8 +13,6 @@ export const RentalSchema = z.object({
   initial_condition: ToolConditionStatusSchema,
   returned_condition: ToolConditionStatusSchema.nullable().optional(),
   inspection_notes: z.string().nullable().optional(),
-  overdue_penalty_centavos: z.number().int().nonnegative().default(0),
-  damage_penalty_centavos: z.number().int().nonnegative().default(0),
   released_by: z.string().uuid().nullable().optional(),
   received_by: z.string().uuid().nullable().optional(),
   created_at: z.string(),
@@ -23,7 +21,7 @@ export const RentalSchema = z.object({
 
 export type Rental = z.infer<typeof RentalSchema>;
 
-export const CheckoutRentalSchema = z.object({
+export const ReleaseRentalSchema = z.object({
   reservation_id: z.string().uuid().optional(),
   user_id: z.string().uuid(),
   tool_id: z.string().uuid(),
@@ -33,13 +31,11 @@ export const CheckoutRentalSchema = z.object({
   inspection_notes: z.string().optional(),
 });
 
-export type CheckoutRentalInput = z.infer<typeof CheckoutRentalSchema>;
+export type ReleaseRentalInput = z.infer<typeof ReleaseRentalSchema>;
 
 export const ReturnRentalSchema = z.object({
   returned_condition: ToolConditionStatusSchema,
   inspection_notes: z.string().optional(),
-  overdue_penalty_centavos: z.number().int().nonnegative().default(0),
-  damage_penalty_centavos: z.number().int().nonnegative().default(0),
 });
 
 export type ReturnRentalInput = z.infer<typeof ReturnRentalSchema>;

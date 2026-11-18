@@ -4,7 +4,6 @@ export * from './users.controller.js';
 export * from './tools.controller.js';
 export * from './reservations.controller.js';
 export * from './rentals.controller.js';
-export * from './payments.controller.js';
 export * from './maintenance.controller.js';
 export * from './feedback.controller.js';
 export * from './notifications.controller.js';

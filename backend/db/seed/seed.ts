@@ -9,7 +9,6 @@ import {
   SEED_TOOLS,
   SEED_RESERVATIONS,
   SEED_RENTALS,
-  SEED_PAYMENTS,
   SEED_FEEDBACK,
 } from './fixtures/index.js';
 import { runMigrations } from '../migrate.js';
@@ -32,7 +31,6 @@ export async function runSeed(): Promise<void> {
     tools: SEED_TOOLS,
     reservations: SEED_RESERVATIONS,
     rentals: SEED_RENTALS,
-    payments: SEED_PAYMENTS,
   });
 
   if (!report.valid) {
@@ -43,7 +41,7 @@ export async function runSeed(): Promise<void> {
   // Common demo password hashed with scrypt
   const defaultPasswordHash = await hashPassword('Basco@2026!');
 
-  const seedTransaction = db.transaction(() => {
+  const seedBatch = db.atomic(() => {
     // 1. Seed Users
     const userStmt = db.prepare(`
       INSERT OR IGNORE INTO users (
@@ -74,8 +72,8 @@ export async function runSeed(): Promise<void> {
     const toolStmt = db.prepare(`
       INSERT OR IGNORE INTO tools (
         id, name, category, description, specifications, availability_status, condition_status,
-        rental_fee_centavos, deposit_fee_centavos, total_quantity, available_quantity, serial_number, image_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        total_quantity, available_quantity, serial_number, image_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     for (const t of SEED_TOOLS) {
@@ -87,8 +85,6 @@ export async function runSeed(): Promise<void> {
         t.specifications,
         t.availability_status,
         t.condition_status,
-        t.rental_fee_centavos,
-        t.deposit_fee_centavos,
         t.total_quantity,
         t.available_quantity,
         t.serial_number,
@@ -124,9 +120,8 @@ export async function runSeed(): Promise<void> {
     const rentalStmt = db.prepare(`
       INSERT OR IGNORE INTO rentals (
         id, reservation_id, user_id, tool_id, quantity, due_date, returned_at, status,
-        initial_condition, returned_condition, inspection_notes, overdue_penalty_centavos,
-        damage_penalty_centavos, released_by, received_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        initial_condition, returned_condition, inspection_notes, released_by, received_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     for (const ren of SEED_RENTALS) {
@@ -142,39 +137,12 @@ export async function runSeed(): Promise<void> {
         ren.initial_condition,
         ren.returned_condition,
         ren.inspection_notes,
-        ren.overdue_penalty_centavos,
-        ren.damage_penalty_centavos,
         ren.released_by,
         ren.received_by,
       );
     }
 
-    // 5. Seed Payments
-    const payStmt = db.prepare(`
-      INSERT OR IGNORE INTO payments (
-        id, receipt_reference, user_id, reservation_id, rental_id, tool_id, amount_centavos,
-        payment_method, status, proof_url, verified_by, verified_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    for (const p of SEED_PAYMENTS) {
-      payStmt.run(
-        p.id,
-        p.receipt_reference,
-        p.user_id,
-        p.reservation_id,
-        p.rental_id,
-        p.tool_id,
-        p.amount_centavos,
-        p.payment_method,
-        p.status,
-        p.proof_url,
-        p.verified_by,
-        p.verified_at,
-      );
-    }
-
-    // 6. Seed Feedback
+    // 5. Seed Feedback
     const fbStmt = db.prepare(`
       INSERT OR IGNORE INTO feedback (
         id, user_id, tool_id, rental_id, overall_rating, tool_condition_rating, service_rating, comments, is_public
@@ -195,7 +163,7 @@ export async function runSeed(): Promise<void> {
       );
     }
 
-    // 7. Seed System Audit Log
+    // 6. Seed System Audit Log
     db.prepare(
       `
       INSERT OR IGNORE INTO audit_logs (id, actor_name, action, target_type, target_id, details)
@@ -204,7 +172,7 @@ export async function runSeed(): Promise<void> {
     ).run('f7000000-0000-4000-8000-000000000001');
   });
 
-  seedTransaction();
+  seedBatch();
   logger.info('Database seeding completed successfully.');
 }
 

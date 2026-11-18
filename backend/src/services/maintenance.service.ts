@@ -35,7 +35,7 @@ export class MaintenanceService {
       throw AppError.notFound('Tool not found');
     }
 
-    const tx = db.transaction(() => {
+    const batch = db.atomic(() => {
       const record = MaintenanceRepository.create(reporterId, input);
 
       // If issue is severe or critical, mark tool as under maintenance so it cannot be booked
@@ -58,7 +58,7 @@ export class MaintenanceService {
       return record;
     });
 
-    const res = tx();
+    const res = batch();
     return this.getById(res.id);
   }
 
@@ -69,7 +69,7 @@ export class MaintenanceService {
   ): MaintenanceWithDetails {
     const existing = this.getById(id);
 
-    const tx = db.transaction(() => {
+    const batch = db.atomic(() => {
       const updated = MaintenanceRepository.update(id, input);
       if (!updated) {
         throw AppError.internal('Failed to update maintenance record');
@@ -104,7 +104,7 @@ export class MaintenanceService {
       return updated;
     });
 
-    tx();
+    batch();
     return this.getById(id);
   }
 }

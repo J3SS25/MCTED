@@ -32,7 +32,7 @@ export interface Statement<T = unknown> {
 export interface AppDatabase {
   prepare<T = unknown>(sql: string): Statement<T>;
   exec(sql: string): void;
-  transaction<Args extends unknown[], R>(fn: (...args: Args) => R): (...args: Args) => R;
+  atomic<Args extends unknown[], R>(fn: (...args: Args) => R): (...args: Args) => R;
   pragma(sql: string): void;
   close(): void;
 }
@@ -55,7 +55,7 @@ export const db: AppDatabase = {
   exec(sql: string): void {
     rawDb.exec(sql);
   },
-  transaction<Args extends unknown[], R>(fn: (...args: Args) => R): (...args: Args) => R {
+  atomic<Args extends unknown[], R>(fn: (...args: Args) => R): (...args: Args) => R {
     return (...args: Args): R => {
       rawDb.exec('BEGIN IMMEDIATE');
       try {

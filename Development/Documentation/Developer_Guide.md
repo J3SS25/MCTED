@@ -40,7 +40,7 @@ pnpm run test
 - **`main`**: Protected branch representing stable, production-ready code. Direct pushes are restricted.
 - **Feature Branches**: Branch off `main` using standard naming:
   - `feature/<module-name>-<short-description>` (e.g., `feature/reservations-date-picker`)
-  - `fix/<issue-description>` (e.g., `fix/currency-rounding-centavos`)
+  - `fix/<issue-description>` (e.g., `fix/reservation-date-validation`)
   - `docs/<doc-name>` (e.g., `docs/api-specification-update`)
   - `refactor/<target>` (e.g., `refactor/ts-controller-types`)
 

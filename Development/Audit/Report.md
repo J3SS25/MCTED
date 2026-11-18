@@ -66,7 +66,7 @@ During initial project inspection, the repository showed build artifact leakage:
 Each backend domain module in `backend/src/` adheres strictly to:
 `routes` → `controller` → `service` → `repository` → `db`
 
-- **Controllers**: Zero SQL statements or business transaction logic.
-- **Services**: Atomic transactions managed via `db.transaction()`; domain rules enforced.
+- **Controllers**: Zero SQL statements or multi-step domain write logic.
+- **Services**: Atomic operations managed via `db.atomic()`; domain rules enforced.
 - **Repositories**: All queries use parameterized statements (`?`), mitigating SQL injection.
 - **Shared Types**: Inferred directly from Zod schemas in `packages/shared/src/schemas/`.

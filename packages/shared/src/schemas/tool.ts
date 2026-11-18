@@ -9,8 +9,6 @@ export const ToolSchema = z.object({
   specifications: z.string().nullable().optional(),
   availability_status: ToolAvailabilityStatusSchema,
   condition_status: ToolConditionStatusSchema,
-  rental_fee_centavos: z.number().int().nonnegative(),
-  deposit_fee_centavos: z.number().int().nonnegative(),
   total_quantity: z.number().int().positive(),
   available_quantity: z.number().int().nonnegative(),
   serial_number: z.string().nullable().optional(),
@@ -22,7 +20,6 @@ export const ToolSchema = z.object({
   owner_email: z.string().nullable().optional(),
   owner_barangay: z.string().nullable().optional(),
   owner_phone: z.string().nullable().optional(),
-  discount_percent: z.number().int().min(0).max(100).default(0).optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -36,8 +33,6 @@ export const CreateToolSchema = z.object({
   specifications: z.string().optional(),
   availability_status: ToolAvailabilityStatusSchema.default('Available'),
   condition_status: ToolConditionStatusSchema.default('Good'),
-  rental_fee_centavos: z.number().int().nonnegative(),
-  deposit_fee_centavos: z.number().int().nonnegative(),
   total_quantity: z.number().int().positive(),
   serial_number: z.string().optional(),
   image_url: z.string().optional(),
@@ -46,7 +41,6 @@ export const CreateToolSchema = z.object({
     .max(5, 'You can upload a maximum of 5 images per tool or equipment.')
     .optional(),
   image_filenames: z.array(z.string()).max(5).optional(),
-  discount_percent: z.coerce.number().int().min(0).max(100).default(0).optional(),
 });
 
 export type CreateToolInput = z.infer<typeof CreateToolSchema>;
@@ -63,9 +57,7 @@ export const ToolFilterSchema = z.object({
   availability: ToolAvailabilityStatusSchema.optional(),
   condition: ToolConditionStatusSchema.optional(),
   owner_id: z.string().optional(),
-  sort_by: z
-    .enum(['name_asc', 'name_desc', 'price_asc', 'price_desc', 'newest', 'availability'])
-    .optional(),
+  sort_by: z.enum(['name_asc', 'name_desc', 'newest', 'availability']).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(12),
 });

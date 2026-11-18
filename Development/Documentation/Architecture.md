@@ -14,7 +14,6 @@ The system is designed with specific operational priorities:
 
 - **Offline / Local Resilience**: Operates reliably in an island environment with intermittent internet connectivity.
 - **Relational Integrity**: Enforces strict foreign keys, atomic inventory adjustments, and status state machines.
-- **Financial Precision**: Eliminates floating-point rounding errors by representing all monetary values as integer centavos.
 - **Civic Governance**: Provides granular role-based access control, account lockout protection, and immutable audit logs.
 
 ---
@@ -26,7 +25,7 @@ MCTEB is structured as a TypeScript monorepo orchestrated via `pnpm workspaces`:
 ```mermaid
 flowchart TD
     subgraph Monorepo ["MCTEB Monorepo Workspace"]
-        Shared["packages/shared<br/>(@mcteb/shared)<br/>• Zod Schemas<br/>• Domain Enums<br/>• Permissions<br/>• Money & Date Utilities"]
+        Shared["packages/shared<br/>(@mcteb/shared)<br/>• Zod Schemas<br/>• Domain Enums<br/>• Permissions<br/>• Date & Moderation Utilities"]
         API["backend<br/>(@mcteb/backend)<br/>• Express Backend<br/>• SQLite Engine<br/>• Repository & Service Layers<br/>• Auth & RBAC Middleware"]
         Web["frontend<br/>(@mcteb/frontend)<br/>• React 19 SPA<br/>• Vite & Tailwind CSS<br/>• TanStack Query<br/>• Responsive UI"]
         DB[("Database/<br/>• app.db<br/>• backups/")]
@@ -42,8 +41,8 @@ flowchart TD
 
 | Package           | Path              | Purpose                                                                                                                                                                                      |
 | ----------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@mcteb/shared`   | `packages/shared` | Authoritative domain contracts, Zod schemas, role-permission matrices, integer centavos currency utilities, and localized date formatters. Zero runtime dependencies other than `zod`.       |
-| `@mcteb/backend`  | `backend`         | Layered RESTful backend service built on Express.js and native Node.js SQLite (`node:sqlite`). Implements domain modules, authentication, rate limiting, and transactions.                   |
+| `@mcteb/shared`   | `packages/shared` | Authoritative domain contracts, Zod schemas, role-permission matrices, image moderation utilities, and localized date formatters. Zero runtime dependencies other than `zod`.                |
+| `@mcteb/backend`  | `backend`         | Layered RESTful backend service built on Express.js and native Node.js SQLite (`node:sqlite`). Implements domain modules, authentication, rate limiting, and atomic database operations.     |
 | `@mcteb/frontend` | `frontend`        | Single-page application built on React 19, TypeScript, Vite, Tailwind CSS, Lucide icons, and TanStack Query. Features dark/light mode, mobile responsive drawer, and role-scoped navigation. |
 
 ---
@@ -86,12 +85,12 @@ flowchart LR
    - Parses HTTP requests and route parameters.
    - Delegates operations to domain services.
    - Translates domain responses into HTTP status codes and JSON payloads.
-   - Contains no database queries or business transaction logic.
+   - Contains no database queries or multi-step domain write logic.
 
 4. **Service Layer (`backend/src/services/`)**:
 
    - Enforces municipal business rules (e.g., minimum 18-year-old borrower age, stock availability checks).
-   - Coordinates atomic database transactions using `db.transaction()`.
+   - Coordinates atomic database operations using `db.atomic()`.
    - Dispatches user notifications and writes immutable system audit records.
    - Completely decoupled from HTTP request/response objects.
 
@@ -110,14 +109,10 @@ flowchart LR
 
 ## 4. Key Architectural Patterns
 
-### 1. Integer Centavos Currency
-
-To prevent IEEE 754 floating-point inaccuracies, all financial values (rental fees, deposit bonds, damage assessments, overdue penalties) are stored and computed as integers representing centavos (1 PHP = 100 centavos). Conversion to pesos and localized formatting occurs strictly at the presentation boundary via `@mcteb/shared/src/money.ts`.
-
-### 2. Idempotent Data Management
+### 1. Idempotent Data Management
 
 Database migrations (`backend/db/schema.sql`) and seed fixtures (`backend/db/seed/`) are fully idempotent. Re-running `db:migrate` or `db:seed` will not duplicate records, drop user tables, or corrupt existing relationships.
 
-### 3. Explicit Demo Data Isolation
+### 2. Explicit Demo Data Isolation
 
 Demo records utilize deterministic identifier prefixes (`a0000000-...` for users, `b0000000-...` for equipment). The dedicated command `pnpm run db:reset-demo` cleans up only these designated demo records in exact reverse foreign-key order while preserving custom user data.

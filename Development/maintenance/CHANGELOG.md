@@ -12,9 +12,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
 
 - **Repository Reconciliation & Feature Integration**:
   - Integrated Wishlist & Borrowing Cart system (`WishlistPage`, `CartPage`, `WishlistCartContext`, `local-storage.ts`).
-  - Added native PDF receipt generation engine (`pdf-receipt.ts`) and download capabilities in `OfficialReceiptModal`.
   - Added Borrower community tool sharing (borrowers can contribute, update, and manage their own tools without staff bottleneck).
-  - Integrated demo multi-channel payment options (GCash, LANDBANK, Maya (PayMaya), BDO) with receipt metadata and line items tracking.
   - Implemented dynamic SQLite schema upgrade pipeline in `backend/db/migrate.ts` (`upgradeExistingSchema()`) with automatic column backfilling and table migration.
   - Added municipal 18+ age verification with automatic calculation from birth date in `@mcteb/shared`.
   - Added Staff activity log preview directly on the main Dashboard.
@@ -66,7 +64,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
   - `pnpm run db:backup`: Atomic hot database snapshot backup via SQLite `VACUUM INTO`.
 - **Automated Test Suites**:
   - Vitest component testing in `apps/web/src/components/ui/Button.test.tsx` using `@testing-library/react` and `jsdom`.
-  - Vitest unit testing in `packages/shared/src/money.test.ts` for integer centavos financial conversions.
 - **Centralized Documentation System (21 Comprehensive Documents)**:
   - `docs/architecture/`: `SYSTEM_ARCHITECTURE.md`, `PROJECT_STRUCTURE.md`, `ARCHITECTURE_DECISIONS.md`, `DATA_FLOW.md`.
   - `docs/technical/`: `DATABASE.md`, `API_DOCUMENTATION.md`, `AUTHENTICATION.md`, `SECURITY.md`, `CONFIGURATION.md`.
@@ -100,9 +97,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
 ### Added
 
 - Initial project structure (pnpm monorepo with `apps/web`, `apps/api`, `packages/shared`).
-- SQLite database schema (`db/schema.sql`) with nine core entities: `users`, `tools`, `reservations`, `rentals`, `payments`, `maintenance`, `feedback`, `notifications`, `audit_logs`.
-- Shared package with Zod enums, schemas, permissions matrix, money and date helpers.
-- Backend API with all ten modules: auth, users, tools, reservations, rentals, payments, maintenance, feedback, notifications, audit.
+- SQLite database schema (`db/schema.sql`) with core entities: `users`, `tools`, `reservations`, `rentals`, `maintenance`, `feedback`, `notifications`, `audit_logs`.
+- Shared package with Zod enums, schemas, permissions matrix, and date helpers.
+- Backend API with domain modules: auth, users, tools, reservations, rentals, maintenance, feedback, notifications, audit.
 - Frontend React application with all eleven feature modules.
 - Role-aware navigation shell with light/dark theme support.
 - Demo seed data with safeguards against production exposure.

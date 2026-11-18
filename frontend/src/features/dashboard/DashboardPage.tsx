@@ -1,27 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
-import { useWishlistCart } from '../../lib/wishlist-cart-context';
 import { apiRequest } from '../../lib/api';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { ToolBorrowingReceiptModal } from '../../components/receipt/ToolBorrowingReceiptModal';
 import {
   CalendarCheck,
   ShoppingBag,
-  CreditCard,
   ClipboardList,
   Wrench,
   ArrowRight,
   CheckCircle,
   AlertCircle,
-  Heart,
-  ShoppingCart,
   Activity,
-  DollarSign,
+  Package,
+  FileText,
 } from 'lucide-react';
-import { formatPHP, formatDate, formatDateTime, type Tool, type AuditLog } from '@mcteb/shared';
+import { formatDate, type Tool, type AuditLog } from '@mcteb/shared';
 
 interface InventoryStatusCounts {
   total: number;
@@ -34,20 +32,17 @@ interface InventoryStatusCounts {
 
 export function DashboardPage() {
   const { user } = useAuth();
-  const { wishlist, cartTotalItems } = useWishlistCart();
   const [stats, setStats] = useState<{
     reservationsCount: number;
     rentalsCount: number;
-    paymentsCount: number;
+    completedRentalsCount: number;
     maintenanceCount: number;
-    totalRevenueCentavos: number;
     inventory: InventoryStatusCounts;
   }>({
     reservationsCount: 0,
     rentalsCount: 0,
-    paymentsCount: 0,
+    completedRentalsCount: 0,
     maintenanceCount: 0,
-    totalRevenueCentavos: 0,
     inventory: {
       total: 0,
       Available: 0,
@@ -59,9 +54,11 @@ export function DashboardPage() {
   });
 
   const [recentItems, setRecentItems] = useState<any[]>([]);
-  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [receiptReservation, setReceiptReservation] = useState<Record<string, unknown> | null>(
+    null,
+  );
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -69,28 +66,34 @@ export function DashboardPage() {
         if (!user) return;
 
         if (user.role === 'Borrower') {
-          const [res, rent, pay] = await Promise.all([
+          const [res, rent, toolsRes] = await Promise.all([
             apiRequest<any[]>('/reservations'),
             apiRequest<any[]>('/rentals'),
-            apiRequest<any[]>('/payments'),
+            apiRequest<{ items: Tool[]; total: number }>('/tools?limit=100'),
           ]);
 
+          const tools = toolsRes.items || [];
           setStats((prev) => ({
             ...prev,
             reservationsCount: res.length,
             rentalsCount: rent.filter((r) => r.status === 'Borrowed').length,
-            paymentsCount: pay.length,
+            completedRentalsCount: rent.filter(
+              (r) => r.status === 'Returned' || r.status === 'Completed',
+            ).length,
             maintenanceCount: 0,
+            inventory: {
+              ...prev.inventory,
+              total: tools.length,
+              Available: tools.filter((t) => t.availability_status === 'Available').length,
+            },
           }));
 
           setRecentItems(res.slice(0, 5));
-          setRecentTransactions(pay.slice(0, 4));
         } else {
           // Staff / Admin
-          const [res, rent, pay, maint, toolsRes, auditRes] = await Promise.all([
+          const [res, rent, maint, toolsRes, auditRes] = await Promise.all([
             apiRequest<any[]>('/reservations'),
             apiRequest<any[]>('/rentals'),
-            apiRequest<any[]>('/payments'),
             apiRequest<any[]>('/maintenance'),
             apiRequest<{ items: Tool[]; total: number }>('/tools?limit=100'),
             apiRequest<{ items: AuditLog[] }>('/audit?limit=6').catch(() => ({ items: [] })),
@@ -108,21 +111,17 @@ export function DashboardPage() {
             Archived: tools.filter((t) => t.availability_status === 'Archived').length,
           };
 
-          const paidRevenue = pay
-            .filter((p) => p.status === 'Paid')
-            .reduce((sum, p) => sum + (Number(p.amount_centavos) || 0), 0);
-
           setStats({
             reservationsCount: res.filter((r) => r.status === 'Pending').length,
             rentalsCount: rent.filter((r) => r.status === 'Borrowed').length,
-            paymentsCount: pay.filter((p) => p.status === 'Pending').length,
+            completedRentalsCount: rent.filter(
+              (r) => r.status === 'Returned' || r.status === 'Completed',
+            ).length,
             maintenanceCount: maint.filter((m) => m.status !== 'Completed').length,
-            totalRevenueCentavos: paidRevenue,
             inventory: inventoryCounts,
           });
 
           setRecentItems(res.filter((r) => r.status === 'Pending').slice(0, 5));
-          setRecentTransactions(pay.slice(0, 5));
           setActivityLogs(auditRes.items || []);
         }
       } catch (err) {
@@ -171,13 +170,13 @@ export function DashboardPage() {
             </Button>
           </Link>
           {!isStaffOrAdmin && (
-            <Link to="/cart">
+            <Link to="/my-reservations">
               <Button
                 size="sm"
                 variant="outline"
                 className="gap-2 border-emerald-300 text-white hover:bg-civic-forest"
               >
-                <ShoppingCart className="h-4 w-4" /> Cart ({cartTotalItems})
+                <CalendarCheck className="h-4 w-4" /> My Reservations
               </Button>
             </Link>
           )}
@@ -222,23 +221,14 @@ export function DashboardPage() {
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
-                {isStaffOrAdmin ? 'Verified Revenue' : 'My Payments'}
+                {isStaffOrAdmin ? 'Catalog Equipment' : 'Available Equipment'}
               </p>
               <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-slate-100">
-                {isStaffOrAdmin ? formatPHP(stats.totalRevenueCentavos) : stats.paymentsCount}
+                {isStaffOrAdmin ? stats.inventory.total : stats.inventory.Available}
               </h3>
-              {isStaffOrAdmin && (
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  {stats.paymentsCount} pending verification
-                </p>
-              )}
             </div>
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-emerald-600 dark:text-emerald-400">
-              {isStaffOrAdmin ? (
-                <DollarSign className="h-6 w-6" />
-              ) : (
-                <CreditCard className="h-6 w-6" />
-              )}
+              <Package className="h-6 w-6" />
             </div>
           </CardContent>
         </Card>
@@ -247,17 +237,17 @@ export function DashboardPage() {
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">
-                {isStaffOrAdmin ? 'Open Maintenance' : 'Saved Wishlist'}
+                {isStaffOrAdmin ? 'Open Maintenance' : 'Completed Returns'}
               </p>
               <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-slate-100">
-                {isStaffOrAdmin ? stats.maintenanceCount : wishlist.length}
+                {isStaffOrAdmin ? stats.maintenanceCount : stats.completedRentalsCount}
               </h3>
             </div>
             <div className="p-3 bg-slate-100 dark:bg-slate-700/60 rounded-xl text-slate-600 dark:text-slate-300">
               {isStaffOrAdmin ? (
                 <ClipboardList className="h-6 w-6" />
               ) : (
-                <Heart className="h-6 w-6 text-rose-500" />
+                <CheckCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               )}
             </div>
           </CardContent>
@@ -371,8 +361,19 @@ export function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 self-end sm:self-center">
+                      <div className="flex items-center gap-2 self-end sm:self-center">
                         <Badge status={item.status} />
+                        {(item.status === 'Approved' || item.status === 'Completed') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={() => setReceiptReservation(item)}
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            Borrowing Receipt
+                          </Button>
+                        )}
                         <Link to={isStaffOrAdmin ? '/staff/reservations' : `/my-reservations`}>
                           <Button size="sm" variant="outline">
                             Details
@@ -383,55 +384,6 @@ export function DashboardPage() {
                   </Card>
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* Transaction History Summary */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                Recent Transaction History
-              </h3>
-              <Link
-                to={isStaffOrAdmin ? '/staff/payments' : '/my-payments'}
-                className="text-xs font-semibold text-civic-deep dark:text-civic-light hover:underline flex items-center gap-1"
-              >
-                All transactions <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-
-            {recentTransactions.length === 0 ? (
-              <Card>
-                <CardContent className="p-5 text-center text-xs text-slate-500">
-                  No payment transactions recorded yet.
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <div className="divide-y divide-slate-100 dark:divide-slate-700/60">
-                  {recentTransactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="p-3.5 flex items-center justify-between gap-3 text-xs"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-slate-100">
-                          {tx.receipt_reference} &bull; {tx.payment_method}
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          {tx.payer_name} &bull; {formatDateTime(tx.created_at)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-civic-forest dark:text-civic-light">
-                          {formatPHP(tx.amount_centavos)}
-                        </span>
-                        <Badge status={tx.status} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
             )}
           </div>
         </div>
@@ -493,8 +445,8 @@ export function DashboardPage() {
                 <div className="flex gap-2">
                   <CheckCircle className="h-4 w-4 text-civic-accent flex-shrink-0 mt-0.5" />
                   <p>
-                    <strong>Community Sharing:</strong> Borrowers may upload their own tools and
-                    edit or delete them anytime without staff approval.
+                    <strong>Municipal Tool Bank:</strong> All equipment is managed by Municipal
+                    Staff and lent free of charge to verified Basco residents.
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -509,6 +461,11 @@ export function DashboardPage() {
           </div>
         </div>
       </div>
+      <ToolBorrowingReceiptModal
+        isOpen={!!receiptReservation}
+        onClose={() => setReceiptReservation(null)}
+        source={receiptReservation}
+      />
     </div>
   );
 }

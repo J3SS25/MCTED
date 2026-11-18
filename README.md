@@ -12,8 +12,7 @@ MCTEB provides local government autonomy and equipment preservation in an island
 
 - **100% TypeScript Architecture**: End-to-end static type safety from database query results to React UI components.
 - **Resilient Zero-Dependency SQLite Engine**: Utilizes Node.js's native `node:sqlite` (`DatabaseSync`) module running in Write-Ahead Logging (`WAL`) mode with strict foreign keys and busy timeout handlers. Zero external C++ compilation required.
-- **Strict Layered Separation of Concerns**: Enforces `routes -> controller -> service -> repository -> db` across all 10 domain modules with an isolated `/api/v1/admin` route perimeter.
-- **Integer Centavos Currency**: Eliminates floating-point rounding anomalies by representing all rental rates, deposit bonds, and assessed penalties as integer centavos.
+- **Strict Layered Separation of Concerns**: Enforces `routes -> controller -> service -> repository -> db` across all domain modules with an isolated `/api/v1/admin` route perimeter.
 - **Automated Development Setup**: Cross-platform bootstrapping via `setup.bat`, `Development/scripts/setup.ps1`, and `Development/scripts/setup.sh`.
 - **Centralized Developer Ecosystem**: All documentation, audits, developer scripts, testing guidelines, and maintenance files consolidated under `Development/`.
 
@@ -21,14 +20,14 @@ MCTEB provides local government autonomy and equipment preservation in an island
 
 ## 🛠️ Technology Stack
 
-| Layer                                    | Technologies                                                                                                            |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Monorepo Management**                  | `pnpm` v12.15.0 workspaces, Corepack, Husky, Commitlint                                                                 |
-| **Backend API (`backend/`)**             | Node.js (>= 20), Express 4, TypeScript 5.8, native `node:sqlite`, Zod 3.23, Pino 9.6, Helmet, CORS, Rate Limit          |
-| **Frontend SPA (`frontend/`)**           | React 19, TypeScript 5.8, Vite 6, Tailwind CSS 3.4, TanStack Query 5, React Router 7, Lucide Icons                      |
-| **Database (`Database/`)**               | Native SQLite (`DatabaseSync`), Write-Ahead Logging (`WAL`), automated hot backups (`VACUUM INTO`)                      |
-| **Shared Contracts (`packages/shared`)** | Zod schemas, domain enums, role-permission matrices, integer centavos currency helpers, Manila timezone date formatters |
-| **Code Quality & Testing**               | ESLint 9 (Flat Config), typescript-eslint 8, Prettier 3, Vitest 3, React Testing Library, Supertest                     |
+| Layer                                    | Technologies                                                                                                   |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Monorepo Management**                  | `pnpm` v12.15.0 workspaces, Corepack, Husky, Commitlint                                                        |
+| **Backend API (`backend/`)**             | Node.js (>= 20), Express 4, TypeScript 5.8, native `node:sqlite`, Zod 3.23, Pino 9.6, Helmet, CORS, Rate Limit |
+| **Frontend SPA (`frontend/`)**           | React 19, TypeScript 5.8, Vite 6, Tailwind CSS 3.4, TanStack Query 5, React Router 7, Lucide Icons             |
+| **Database (`Database/`)**               | Native SQLite (`DatabaseSync`), Write-Ahead Logging (`WAL`), automated hot backups (`VACUUM INTO`)             |
+| **Shared Contracts (`packages/shared`)** | Zod schemas, domain enums, role-permission matrices, Manila timezone date formatters, image moderation         |
+| **Code Quality & Testing**               | ESLint 9 (Flat Config), typescript-eslint 8, Prettier 3, Vitest 3, React Testing Library, Supertest            |
 
 ---
 
@@ -180,8 +179,8 @@ All development demo accounts authenticate with the password: **`Basco@2026!`**
 | Persona            | Role              | Email                   | Barangay               | Primary Purpose                                  |
 | ------------------ | ----------------- | ----------------------- | ---------------------- | ------------------------------------------------ |
 | **Maria Santos**   | `Administrator`   | `admin@basco.gov.ph`    | Barangay I (Poblacion) | User management, audit logs, catalog CRUD        |
-| **Juan dela Cruz** | `Municipal Staff` | `staff@basco.gov.ph`    | Barangay II            | Reservation review, checkouts, returns, payments |
-| **Ana Reyes**      | `Borrower`        | `borrower@basco.gov.ph` | Barangay III           | Tool bookings, payment uploads, reviews          |
+| **Juan dela Cruz** | `Municipal Staff` | `staff@basco.gov.ph`    | Barangay II            | Reservation review, handovers, returns, maintenance |
+| **Ana Reyes**      | `Borrower`        | `borrower@basco.gov.ph` | Barangay III           | Tool bookings, shared uploads, reviews              |
 | **Pedro Batanes**  | `Borrower`        | `farmer@basco.gov.ph`   | Barangay IV            | Agricultural equipment loans & tracking          |
 
 Full credentials, permission details, and sample data relationships are documented in [User_Roles_and_Permissions.md](Development/Documentation/User_Roles_and_Permissions.md).
@@ -216,5 +215,4 @@ All development, maintenance, and database tasks are managed via pnpm from the r
 
 1. **Municipal Jurisdiction**: Borrowers must reside within one of the six barangays of Basco (Chanarian, Ihubok I, Ihubok II, Kayhuvokan, San Antonio, San Joaquin).
 2. **Age Eligibility**: Borrowers must be legal adults (>= 18 years) to enter into equipment custody agreements.
-3. **Emergency Civic Relief**: Emergency response equipment (e.g., portable storm generators) carries a ₱0.00 rental and deposit fee during typhoon preparation windows.
-4. **Official Receipts**: All payments generate traceable municipal reference numbers (e.g., `BASCO-PAY-2026-XXXXXX`).
+3. **Free Community Sharing**: Municipal and community-shared equipment can be reserved and borrowed at no charge during all civic and disaster-response windows.

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { RentalsService } from '../services/rentals.service.js';
-import { CheckoutRentalSchema, ReturnRentalSchema, RentalStatusSchema } from '@mcteb/shared';
+import { ReleaseRentalSchema, ReturnRentalSchema, RentalStatusSchema } from '@mcteb/shared';
 import { AppError } from '../utils/errors.js';
 
 export class RentalsController {
@@ -41,11 +41,11 @@ export class RentalsController {
     }
   }
 
-  static checkout(req: Request, res: Response, next: NextFunction): void {
+  static release(req: Request, res: Response, next: NextFunction): void {
     try {
       if (!req.user) throw AppError.unauthorized();
-      const validated = CheckoutRentalSchema.parse(req.body);
-      const rental = RentalsService.checkout(validated, {
+      const validated = ReleaseRentalSchema.parse(req.body);
+      const rental = RentalsService.release(validated, {
         id: req.user.id,
         name: req.user.full_name,
       });

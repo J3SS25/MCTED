@@ -140,12 +140,6 @@ export class ToolsRepository {
       case 'name_desc':
         orderClause = 'ORDER BY tools.name DESC';
         break;
-      case 'price_asc':
-        orderClause = 'ORDER BY tools.rental_fee_centavos ASC, tools.name ASC';
-        break;
-      case 'price_desc':
-        orderClause = 'ORDER BY tools.rental_fee_centavos DESC, tools.name ASC';
-        break;
       case 'newest':
         orderClause = 'ORDER BY datetime(tools.created_at) DESC, tools.name ASC';
         break;
@@ -191,10 +185,10 @@ export class ToolsRepository {
     const stmt = db.prepare(`
       INSERT INTO tools (
         id, name, category, description, specifications, availability_status, condition_status,
-        rental_fee_centavos, deposit_fee_centavos, total_quantity, available_quantity, serial_number,
-        image_url, images_json, owner_id, discount_percent
+        total_quantity, available_quantity, serial_number,
+        image_url, images_json, owner_id
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -205,15 +199,12 @@ export class ToolsRepository {
       input.specifications ?? null,
       input.availability_status,
       input.condition_status,
-      input.rental_fee_centavos,
-      input.deposit_fee_centavos,
       input.total_quantity,
       input.total_quantity, // Initially all are available
       serialNumber,
       primaryImageUrl,
       imagesJson,
       ownerId ?? null,
-      input.discount_percent ?? 0,
     );
 
     return this.findById(id)!;
@@ -230,12 +221,9 @@ export class ToolsRepository {
       'specifications',
       'availability_status',
       'condition_status',
-      'rental_fee_centavos',
-      'deposit_fee_centavos',
       'total_quantity',
       'available_quantity',
       'serial_number',
-      'discount_percent',
     ];
 
     for (const key of allowedKeys) {
@@ -292,8 +280,7 @@ export class ToolsRepository {
   }
 
   static delete(id: string): boolean {
-    return db.transaction(() => {
-      db.prepare('UPDATE payments SET tool_id = NULL WHERE tool_id = ?').run(id);
+    return db.atomic(() => {
       db.prepare('DELETE FROM feedback WHERE tool_id = ?').run(id);
       db.prepare('DELETE FROM maintenance WHERE tool_id = ?').run(id);
       db.prepare('DELETE FROM rentals WHERE tool_id = ?').run(id);

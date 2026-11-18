@@ -10,15 +10,12 @@ This document outlines strategic enhancements planned for future phases of the M
 
 - **Barcode & QR Tagging**:
   - Generate printable QR asset tags with equipment serial codes.
-  - Enable webcam and handheld USB 2D barcode scanner input at the rental checkout desk for one-click tool handover.
+  - Enable webcam and handheld USB 2D barcode scanner input at the rental handover desk for one-click tool handover.
 - **Digital Equipment Inspection Signatures**:
   - Add signature pad component to `frontend` allowing borrowers and desk staff to digitally sign condition inspections on tablet devices.
 
-### Phase 3: Payment & Messaging Automation
+### Phase 3: Messaging Automation
 
-- **Payment Gateway Webhook Callbacks**:
-  - Integrate direct webhook verification via Maya Enterprise or GCash Merchant APIs.
-  - Automatically transition payment records to `'Paid'` and issue official receipts upon webhook signature validation.
 - **Cellular SMS Notifications**:
   - Integrate regional SMS gateway (Semaphore API) to dispatch text alerts for overdue tools, booking approvals, and severe weather equipment availability.
 

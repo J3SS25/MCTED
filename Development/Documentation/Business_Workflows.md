@@ -78,7 +78,7 @@ sequenceDiagram
     Staff->>ResSvc: PATCH /api/v1/reservations/:id/review (Approved)
 
     rect rgb(240, 248, 255)
-        Note over ResSvc, DB: Atomic Transaction (BEGIN IMMEDIATE)
+        Note over ResSvc, DB: Atomic Batch (BEGIN IMMEDIATE)
         ResSvc->>ResRepo: updateStatus(id, 'Approved', notes, staffId)
         ResSvc->>NotifSvc: dispatch(userId, 'Reservation Approved', link)
         ResSvc->>AuditSvc: log('RESERVATION_APPROVED')
@@ -88,7 +88,7 @@ sequenceDiagram
 
 ---
 
-## 3. Physical Handover Checkout & Return Inspection Flow
+## 3. Physical Handover Release & Return Inspection Flow
 
 ```mermaid
 sequenceDiagram
@@ -101,60 +101,32 @@ sequenceDiagram
     participant RentalRepo as rentals.repository
     participant DB as SQLite (app.db)
 
-    Note over Borrower, Staff: Handover Checkout
+    Note over Borrower, Staff: Handover Release
     Borrower->>Staff: Arrives at Municipal Tool Bank Desk
-    Staff->>Web: Checkout tool (record condition, serial number)
-    Web->>RentalSvc: POST /api/v1/rentals/checkout
+    Staff->>Web: Release tool (record condition, serial number)
+    Web->>RentalSvc: POST /api/v1/rentals/release
 
     rect rgb(240, 255, 240)
-        Note over RentalSvc, DB: Atomic Checkout Transaction
+        Note over RentalSvc, DB: Atomic Release Batch
         RentalSvc->>ToolRepo: decrementAvailableQuantity(toolId, qty)
         RentalSvc->>RentalRepo: create(status: 'Borrowed', dueDate, condition)
         RentalSvc->>DB: UPDATE reservations SET status = 'Completed'
     end
-    RentalSvc-->>Web: 201 Created (Handover receipt generated)
+    RentalSvc-->>Web: 201 Created (Handover recorded)
 
     Note over Borrower, Staff: Return Inspection
     Borrower->>Staff: Returns equipment to desk
-    Staff->>Web: Inspect tool condition & check overdue days
+    Staff->>Web: Inspect tool condition & check due date
     Web->>RentalSvc: POST /api/v1/rentals/:id/return
 
     rect rgb(255, 245, 240)
-        Note over RentalSvc, DB: Atomic Return Transaction
-        RentalSvc->>RentalRepo: recordReturn(returnedCondition, notes, penalties)
+        Note over RentalSvc, DB: Atomic Return Batch
+        RentalSvc->>RentalRepo: recordReturn(returnedCondition, notes)
         RentalSvc->>ToolRepo: incrementAvailableQuantity(toolId, qty)
         alt Tool Damaged
             RentalSvc->>ToolRepo: updateConditionStatus(toolId, 'Needs Repair')
             RentalSvc->>DB: INSERT INTO maintenance (auto defect ticket)
         end
     end
-    RentalSvc-->>Web: 200 OK (Inspection summary with penalty assessment)
-```
-
----
-
-## 4. Payment Submission & Treasury Verification Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Borrower as Resident Borrower
-    actor Staff as Treasury / Staff
-    participant Web as frontend (React SPA)
-    participant PaySvc as payments.service
-    participant PayRepo as payments.repository
-    participant NotifSvc as notifications.service
-    participant DB as SQLite (app.db)
-
-    Borrower->>Web: Submit payment (method: Cash/GCash, amount, proof URL)
-    Web->>PaySvc: POST /api/v1/payments
-    PaySvc->>PayRepo: create(receipt_reference: BASCO-PAY-2026-XXXXXX, status: 'Pending')
-    PayRepo->>DB: INSERT INTO payments ...
-    PaySvc-->>Web: 201 Created (Reference provided)
-
-    Staff->>Web: View Payment Verification Queue
-    Staff->>PaySvc: PATCH /api/v1/payments/:id/verify (status: 'Paid')
-    PaySvc->>PayRepo: updateStatus(id, 'Paid', staffId, verifiedAt)
-    PaySvc->>NotifSvc: dispatch(userId, 'Payment Verified', receiptRef)
-    PaySvc-->>Web: 200 OK (Official Municipal Receipt printable)
+    RentalSvc-->>Web: 200 OK (Inspection summary recorded)
 ```

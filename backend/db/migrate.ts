@@ -33,86 +33,39 @@ function upgradeExistingSchema(): void {
   if (!toolCols.has('owner_id')) {
     db.exec('ALTER TABLE tools ADD COLUMN owner_id TEXT REFERENCES users(id) ON DELETE SET NULL;');
   }
-  if (!toolCols.has('discount_percent')) {
-    db.exec('ALTER TABLE tools ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0;');
-  }
   if (!toolCols.has('images_json')) {
     db.exec('ALTER TABLE tools ADD COLUMN images_json TEXT;');
   }
   db.exec("UPDATE tools SET category = 'Agriculture' WHERE category = 'Agricultural';");
   db.exec("UPDATE tools SET category = 'Fishing' WHERE category = 'Fishery';");
 
-  // 3. Upgrade payments table if CHECK constraint or columns are outdated
-  const paymentsMeta = db
-    .prepare<{
-      sql: string;
-    }>("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'payments'")
-    .get();
-  const paymentCols = getTableColumns('payments');
-  const needsPaymentsRebuild =
-    !paymentsMeta?.sql?.includes('LANDBANK') || !paymentCols.has('items_json');
+  // 3. Remove legacy fee, deposit, discount, penalty, cost, and payment artifacts if present
+  db.exec('DROP INDEX IF EXISTS idx_payments_user;');
+  db.exec('DROP INDEX IF EXISTS idx_payments_status;');
+  db.exec('DROP TABLE IF EXISTS payments;');
 
-  if (needsPaymentsRebuild) {
-    logger.info(
-      'Rebuilding payments table to apply updated payment methods and receipt columns...',
-    );
-    db.pragma('foreign_keys = OFF');
-    try {
-      db.transaction(() => {
-        db.exec(`
-          CREATE TABLE payments_new (
-            id TEXT PRIMARY KEY,
-            receipt_reference TEXT NOT NULL UNIQUE,
-            user_id TEXT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-            reservation_id TEXT REFERENCES reservations(id) ON DELETE SET NULL,
-            rental_id TEXT REFERENCES rentals(id) ON DELETE SET NULL,
-            tool_id TEXT REFERENCES tools(id) ON DELETE SET NULL,
-            amount_centavos INTEGER NOT NULL,
-            payment_method TEXT NOT NULL CHECK(payment_method IN ('GCash', 'LANDBANK', 'Maya (PayMaya)', 'BDO', 'Cash', 'Bank Transfer', 'Municipal Treasury')),
-            status TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending', 'Paid', 'Failed', 'Refunded')),
-            proof_url TEXT,
-            items_json TEXT,
-            pickup_date TEXT,
-            return_date TEXT,
-            duration_days INTEGER DEFAULT 1,
-            remarks TEXT,
-            verified_by TEXT REFERENCES users(id) ON DELETE SET NULL,
-            verified_at TEXT,
-            created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
-            updated_at TEXT NOT NULL DEFAULT (DATETIME('now'))
-          );
-        `);
-
-        const itemsSelect = paymentCols.has('items_json') ? 'items_json' : 'NULL';
-        const pickupSelect = paymentCols.has('pickup_date') ? 'pickup_date' : 'NULL';
-        const returnSelect = paymentCols.has('return_date') ? 'return_date' : 'NULL';
-        const durationSelect = paymentCols.has('duration_days') ? 'duration_days' : '1';
-        const remarksSelect = paymentCols.has('remarks') ? 'remarks' : 'NULL';
-
-        db.exec(`
-          INSERT INTO payments_new (
-            id, receipt_reference, user_id, reservation_id, rental_id, tool_id,
-            amount_centavos, payment_method, status, proof_url,
-            items_json, pickup_date, return_date, duration_days, remarks,
-            verified_by, verified_at, created_at, updated_at
-          )
-          SELECT
-            id, receipt_reference, user_id, reservation_id, rental_id, tool_id,
-            amount_centavos, payment_method, status, proof_url,
-            ${itemsSelect}, ${pickupSelect}, ${returnSelect}, ${durationSelect}, ${remarksSelect},
-            verified_by, verified_at, created_at, updated_at
-          FROM payments;
-        `);
-
-        db.exec('DROP TABLE payments;');
-        db.exec('ALTER TABLE payments_new RENAME TO payments;');
-        db.exec('CREATE INDEX IF NOT EXISTS idx_payments_user ON payments(user_id);');
-        db.exec('CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);');
-      })();
-    } finally {
-      db.pragma('foreign_keys = ON');
+  const dropColumns = (tableName: string, colsToRemove: string[]) => {
+    const existingCols = getTableColumns(tableName);
+    for (const col of colsToRemove) {
+      if (existingCols.has(col)) {
+        db.exec(`ALTER TABLE ${tableName} DROP COLUMN ${col};`);
+      }
     }
+  };
+
+  db.pragma('foreign_keys = OFF');
+  try {
+    dropColumns('tools', ['rental_fee_centavos', 'deposit_fee_centavos', 'discount_percent']);
+    dropColumns('rentals', ['overdue_penalty_centavos', 'damage_penalty_centavos']);
+    dropColumns('maintenance', ['estimated_cost_centavos', 'actual_cost_centavos']);
+  } finally {
+    db.pragma('foreign_keys = ON');
   }
+
+  db.exec("DELETE FROM notifications WHERE link_url LIKE '%payment%';");
+  db.exec(
+    "DELETE FROM audit_logs WHERE target_type = 'payment' OR action LIKE 'PAYMENT_%' OR action = 'RENTAL_CHECKOUT';",
+  );
 }
 
 export function runMigrations(): void {

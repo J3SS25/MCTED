@@ -8,7 +8,8 @@ import { Input, Select } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { Check, X, CalendarCheck } from 'lucide-react';
+import { ToolBorrowingReceiptModal } from '../../components/receipt/ToolBorrowingReceiptModal';
+import { Check, X, CalendarCheck, FileText } from 'lucide-react';
 import { formatDate } from '@mcteb/shared';
 
 export function ReservationQueuePage() {
@@ -22,6 +23,9 @@ export function ReservationQueuePage() {
   const [staffNotes, setStaffNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [receiptReservation, setReceiptReservation] = useState<Record<string, unknown> | null>(
+    null,
+  );
 
   const fetchQueue = async () => {
     setLoading(true);
@@ -46,18 +50,25 @@ export function ReservationQueuePage() {
     setSubmitting(true);
 
     try {
-      await apiRequest(`/reservations/${selectedRes.id}/review`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          decision,
-          staff_notes: staffNotes,
-        }),
-      });
+      const updated = await apiRequest<Record<string, unknown>>(
+        `/reservations/${selectedRes.id}/review`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            decision,
+            staff_notes: staffNotes,
+          }),
+        },
+      );
 
       setMessage(`Reservation was successfully ${decision.toLowerCase()}.`);
       setSelectedRes(null);
       setStaffNotes('');
       await fetchQueue();
+
+      if (decision === 'Approved') {
+        setReceiptReservation(updated);
+      }
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Review action failed');
     } finally {
@@ -149,7 +160,18 @@ export function ReservationQueuePage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 self-end md:self-center">
+                <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+                  {(res.status === 'Approved' || res.status === 'Completed') && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => setReceiptReservation(res)}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Borrowing Receipt
+                    </Button>
+                  )}
                   {res.status === 'Pending' && (
                     <>
                       <Button
@@ -182,6 +204,12 @@ export function ReservationQueuePage() {
           ))}
         </div>
       )}
+
+      <ToolBorrowingReceiptModal
+        isOpen={!!receiptReservation}
+        onClose={() => setReceiptReservation(null)}
+        source={receiptReservation}
+      />
 
       {/* Decision Modal */}
       {selectedRes && (

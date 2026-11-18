@@ -26,19 +26,84 @@
   @apply bg-slate-400 dark:bg-slate-600;
 }
 
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
 @media print {
   .no-print {
     display: none !important;
   }
 
-  body {
+  html,
+  body,
+  #root {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .app-shell-root,
+  .app-shell-content,
+  .app-shell-main,
+  .app-shell-main > div {
+    display: block !important;
+    height: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body:has(.print-modal-wrapper) #root {
+    display: none !important;
+  }
+
+  .print-modal-wrapper {
+    position: static !important;
+    inset: auto !important;
+    overflow: visible !important;
+  }
+
+  .print-modal-container {
+    display: block !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  .print-modal-dialog {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
     background: #ffffff !important;
     color: #0f172a !important;
   }
 
-  .printable-receipt {
-    box-shadow: none !important;
-    border: none !important;
+  .print-modal-body {
     padding: 0 !important;
+  }
+
+  .a4-receipt-sheet {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }

@@ -15,15 +15,6 @@ vi.mock('../../lib/auth-context', () => ({
   }),
 }));
 
-vi.mock('../../lib/wishlist-cart-context', () => ({
-  useWishlistCart: () => ({
-    isInWishlist: () => false,
-    isInCart: () => false,
-    toggleWishlist: () => true,
-    addToCart: vi.fn(),
-  }),
-}));
-
 afterEach(() => {
   cleanup();
 });
@@ -36,8 +27,6 @@ const SAMPLE_TOOL: Tool = {
   specifications: '18V Li-Ion, 13mm chuck',
   availability_status: 'Available',
   condition_status: 'Excellent',
-  rental_fee_centavos: 15000,
-  deposit_fee_centavos: 50000,
   total_quantity: 2,
   available_quantity: 2,
   serial_number: 'MKT-2026-901',
@@ -47,16 +36,24 @@ const SAMPLE_TOOL: Tool = {
   owner_name: 'Ana Reyes',
   owner_role: 'Borrower',
   owner_barangay: 'Barangay III',
-  discount_percent: 0,
   created_at: '2026-11-10T08:30:00.000Z',
   updated_at: '2026-11-10T08:30:00.000Z',
 };
 
 describe('ToolDetailsModal', () => {
-  it('displays all 10 required tool details and multi-image carousel navigation', () => {
+  it('displays all tool details, multi-image carousel navigation, and Borrow Now action for borrowers', () => {
+    const onClose = vi.fn();
+    const onBorrowNow = vi.fn();
+
     render(
       <MemoryRouter>
-        <ToolDetailsModal isOpen={true} onClose={vi.fn()} tool={SAMPLE_TOOL} canManage={false} />
+        <ToolDetailsModal
+          isOpen={true}
+          onClose={onClose}
+          tool={SAMPLE_TOOL}
+          canManage={false}
+          onBorrowNow={onBorrowNow}
+        />
       </MemoryRouter>,
     );
 
@@ -85,6 +82,16 @@ describe('ToolDetailsModal', () => {
     expect(screen.getByText(/Nov 10, 2026/i)).toBeDefined();
     // 10. Owner Information
     expect(screen.getByText(/Ana Reyes \(Borrower • Brgy\. Barangay III\)/)).toBeDefined();
+
+    // Direct Borrow Now replaces Add to Cart & Wishlist
+    const borrowBtn = screen.getByRole('button', { name: /Borrow Now/i });
+    expect(borrowBtn).toBeDefined();
+    expect(screen.queryByRole('button', { name: /Add to Cart/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Wishlist/i })).toBeNull();
+
+    fireEvent.click(borrowBtn);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onBorrowNow).toHaveBeenCalledWith(SAMPLE_TOOL);
 
     // Non-managed catalog view hides Edit/Delete
     expect(screen.queryByRole('button', { name: /^Edit$/i })).toBeNull();

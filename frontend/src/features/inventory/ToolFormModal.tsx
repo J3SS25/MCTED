@@ -71,9 +71,6 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
     category: 'Agriculture',
     description: '',
     specifications: '',
-    rentalFeePesos: 50,
-    depositFeePesos: 200,
-    discountPercent: 0,
     totalQuantity: 1,
     serialNumber: '',
     availabilityStatus: 'Available' as ToolAvailabilityStatus,
@@ -114,9 +111,6 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
               : tool.category,
         description: tool.description,
         specifications: tool.specifications || '',
-        rentalFeePesos: tool.rental_fee_centavos / 100,
-        depositFeePesos: tool.deposit_fee_centavos / 100,
-        discountPercent: tool.discount_percent ?? 0,
         totalQuantity: tool.total_quantity,
         serialNumber: tool.serial_number || '',
         availabilityStatus: tool.availability_status,
@@ -130,9 +124,6 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
         category: 'Agriculture',
         description: '',
         specifications: '',
-        rentalFeePesos: 50,
-        depositFeePesos: 200,
-        discountPercent: 0,
         totalQuantity: 1,
         serialNumber: '',
         availabilityStatus: 'Available',
@@ -288,9 +279,6 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
         category: formData.category,
         description: formData.description,
         specifications: formData.specifications || undefined,
-        rental_fee_centavos: Math.round(formData.rentalFeePesos * 100),
-        deposit_fee_centavos: Math.round(formData.depositFeePesos * 100),
-        discount_percent: Math.min(100, Math.max(0, Number(formData.discountPercent) || 0)),
         total_quantity: Number(formData.totalQuantity),
         serial_number: formData.serialNumber.trim(),
         availability_status: formData.availabilityStatus,
@@ -571,34 +559,7 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
           placeholder="Dimensions, voltage, accessories included"
         />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Input
-            label="Rental Fee / Day (₱)"
-            type="number"
-            min="0"
-            required
-            value={formData.rentalFeePesos}
-            onChange={(e) => setFormData({ ...formData, rentalFeePesos: Number(e.target.value) })}
-          />
-
-          <Input
-            label="Deposit (₱)"
-            type="number"
-            min="0"
-            required
-            value={formData.depositFeePesos}
-            onChange={(e) => setFormData({ ...formData, depositFeePesos: Number(e.target.value) })}
-          />
-
-          <Input
-            label="Discount (%)"
-            type="number"
-            min="0"
-            max="100"
-            value={formData.discountPercent}
-            onChange={(e) => setFormData({ ...formData, discountPercent: Number(e.target.value) })}
-          />
-
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             label="Quantity"
             type="number"
@@ -607,9 +568,7 @@ export function ToolFormModal({ isOpen, onClose, tool, onSuccess }: ToolFormModa
             value={formData.totalQuantity}
             onChange={(e) => setFormData({ ...formData, totalQuantity: Number(e.target.value) })}
           />
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select
             label="Availability Status"
             options={AVAILABILITY_STATUSES}

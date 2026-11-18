@@ -6,12 +6,15 @@ export interface ReservationWithDetails extends Reservation {
   tool_name: string;
   tool_category: string;
   tool_image_url: string | null;
-  rental_fee_centavos: number;
-  deposit_fee_centavos: number;
+  tool_serial_number?: string | null;
+  tool_condition_status?: string | null;
   borrower_name: string;
   borrower_email: string;
   borrower_phone: string;
   borrower_barangay: string;
+  borrower_address?: string;
+  borrower_province?: string;
+  reviewed_by_name?: string | null;
 }
 
 export class ReservationsRepository {
@@ -22,15 +25,19 @@ export class ReservationsRepository {
         t.name as tool_name,
         t.category as tool_category,
         t.image_url as tool_image_url,
-        t.rental_fee_centavos,
-        t.deposit_fee_centavos,
+        t.serial_number as tool_serial_number,
+        t.condition_status as tool_condition_status,
         u.full_name as borrower_name,
         u.email as borrower_email,
         u.phone as borrower_phone,
-        u.barangay as borrower_barangay
+        u.barangay as borrower_barangay,
+        u.address as borrower_address,
+        u.province as borrower_province,
+        rev.full_name as reviewed_by_name
       FROM reservations r
       JOIN tools t ON r.tool_id = t.id
       JOIN users u ON r.user_id = u.id
+      LEFT JOIN users rev ON r.reviewed_by = rev.id
       WHERE r.id = ?
     `);
     const row = stmt.get(id);
@@ -44,15 +51,19 @@ export class ReservationsRepository {
         t.name as tool_name,
         t.category as tool_category,
         t.image_url as tool_image_url,
-        t.rental_fee_centavos,
-        t.deposit_fee_centavos,
+        t.serial_number as tool_serial_number,
+        t.condition_status as tool_condition_status,
         u.full_name as borrower_name,
         u.email as borrower_email,
         u.phone as borrower_phone,
-        u.barangay as borrower_barangay
+        u.barangay as borrower_barangay,
+        u.address as borrower_address,
+        u.province as borrower_province,
+        rev.full_name as reviewed_by_name
       FROM reservations r
       JOIN tools t ON r.tool_id = t.id
       JOIN users u ON r.user_id = u.id
+      LEFT JOIN users rev ON r.reviewed_by = rev.id
       WHERE r.user_id = ?
       ORDER BY datetime(r.created_at) DESC
     `);
@@ -66,15 +77,19 @@ export class ReservationsRepository {
         t.name as tool_name,
         t.category as tool_category,
         t.image_url as tool_image_url,
-        t.rental_fee_centavos,
-        t.deposit_fee_centavos,
+        t.serial_number as tool_serial_number,
+        t.condition_status as tool_condition_status,
         u.full_name as borrower_name,
         u.email as borrower_email,
         u.phone as borrower_phone,
-        u.barangay as borrower_barangay
+        u.barangay as borrower_barangay,
+        u.address as borrower_address,
+        u.province as borrower_province,
+        rev.full_name as reviewed_by_name
       FROM reservations r
       JOIN tools t ON r.tool_id = t.id
       JOIN users u ON r.user_id = u.id
+      LEFT JOIN users rev ON r.reviewed_by = rev.id
     `;
     const params: string[] = [];
 

@@ -44,22 +44,6 @@ export const RentalStatusSchema = z.enum([
 ]);
 export type RentalStatus = z.infer<typeof RentalStatusSchema>;
 
-export const PaymentStatusSchema = z.enum(['Pending', 'Paid', 'Failed', 'Refunded']);
-export type PaymentStatus = z.infer<typeof PaymentStatusSchema>;
-
-export const PaymentMethodSchema = z.enum([
-  'GCash',
-  'LANDBANK',
-  'Maya (PayMaya)',
-  'BDO',
-  'Cash',
-  'Bank Transfer',
-  'Municipal Treasury',
-]);
-export type PaymentMethod = z.infer<typeof PaymentMethodSchema>;
-
-export const DEMO_PAYMENT_METHODS = ['GCash', 'LANDBANK', 'Maya (PayMaya)', 'BDO'] as const;
-
 export const TOOL_CATEGORIES = [
   'Agriculture',
   'Fishing',

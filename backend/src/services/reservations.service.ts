@@ -60,8 +60,8 @@ export class ReservationsService {
       );
     }
 
-    // Create reservation inside a transaction
-    const createTx = db.transaction(() => {
+    // Create reservation atomically
+    const createBatch = db.atomic(() => {
       const created = ReservationsRepository.create(userId, input);
 
       AuditService.record({
@@ -96,7 +96,7 @@ export class ReservationsService {
       return created;
     });
 
-    const res = createTx();
+    const res = createBatch();
     return this.getById(res.id);
   }
 
@@ -110,8 +110,8 @@ export class ReservationsService {
       throw AppError.badRequest(`Cannot review reservation with status "${existing.status}"`);
     }
 
-    // Transaction for review
-    const reviewTx = db.transaction(() => {
+    // Atomic review update
+    const reviewBatch = db.atomic(() => {
       const updated = ReservationsRepository.updateDecision(
         id,
         input.decision,
@@ -146,7 +146,7 @@ export class ReservationsService {
       return updated;
     });
 
-    reviewTx();
+    reviewBatch();
     return this.getById(id);
   }
 
@@ -165,7 +165,7 @@ export class ReservationsService {
       throw AppError.badRequest(`Cannot cancel reservation with status "${reservation.status}"`);
     }
 
-    const cancelTx = db.transaction(() => {
+    const cancelBatch = db.atomic(() => {
       const updated = ReservationsRepository.updateStatus(id, 'Cancelled');
       if (!updated) {
         throw AppError.internal('Failed to cancel reservation');
@@ -191,7 +191,7 @@ export class ReservationsService {
       return updated;
     });
 
-    cancelTx();
+    cancelBatch();
     return this.getById(id);
   }
 }

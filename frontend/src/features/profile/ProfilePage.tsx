@@ -1,27 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { apiRequest } from '../../lib/api';
-import {
-  compressImageToDataUrl,
-  resolveToolImage,
-  setLocalToolImage,
-  useProfilePicture,
-} from '../../lib/local-storage';
+import { compressImageToDataUrl, useProfilePicture } from '../../lib/local-storage';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Input, Select } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
-import { ToolFormModal } from '../inventory/ToolFormModal';
-import { Mail, Calendar, Camera, Trash2, MapPin, Plus, Edit, Wrench } from 'lucide-react';
-import {
-  calculateAgeFromBirthDate,
-  formatDate,
-  formatPHP,
-  type Barangay,
-  type Tool,
-} from '@mcteb/shared';
+import { Mail, Calendar, Camera, Trash2, MapPin } from 'lucide-react';
+import { calculateAgeFromBirthDate, formatDate, type Barangay } from '@mcteb/shared';
 
 const BASE_BARANGAYS: Array<{ value: string; label: string }> = [
   { value: 'Chanarian', label: 'Chanarian' },
@@ -54,12 +41,6 @@ export function ProfilePage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // User's uploaded tools
-  const [myTools, setMyTools] = useState<Tool[]>([]);
-  const [toolsLoading, setToolsLoading] = useState(false);
-  const [toolModalOpen, setToolModalOpen] = useState(false);
-  const [editingTool, setEditingTool] = useState<Tool | null>(null);
-
   useEffect(() => {
     if (!user) return;
     const computed = user.age ?? calculateAgeFromBirthDate(user.birth_date);
@@ -72,23 +53,6 @@ export function ProfilePage() {
       address: user.address,
     });
   }, [user]);
-
-  const fetchMyTools = useCallback(async () => {
-    if (!user) return;
-    setToolsLoading(true);
-    try {
-      const res = await apiRequest<{ items: Tool[] }>(`/tools?owner_id=${user.id}&limit=100`);
-      setMyTools(res.items || []);
-    } catch (err) {
-      console.error('Failed to load user tools', err);
-    } finally {
-      setToolsLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchMyTools();
-  }, [fetchMyTools]);
 
   if (!user) return null;
 
@@ -162,25 +126,6 @@ export function ProfilePage() {
     }
   };
 
-  const handleDeleteOwnTool = async (tool: Tool) => {
-    if (
-      !confirm(
-        `Remove "${tool.name}" from the catalog? You can delete your own uploaded tools immediately without staff approval.`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await apiRequest(`/tools/${tool.id}`, { method: 'DELETE' });
-      setLocalToolImage(tool.id, null);
-      setMessage(`"${tool.name}" was deleted from your uploaded tools.`);
-      await fetchMyTools();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove tool');
-    }
-  };
-
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
@@ -188,8 +133,7 @@ export function ProfilePage() {
           User Account & Profile
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Update your profile picture (stored in local storage), personal details, and manage your
-          shared tools.
+          Update your profile picture and manage your personal, residential, and contact details.
         </p>
       </div>
 
@@ -360,123 +304,6 @@ export function ProfilePage() {
           </form>
         </CardContent>
       </Card>
-
-      {/* User / Borrower Uploaded Tools Management */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                <Wrench className="h-4 w-4 text-civic-forest dark:text-civic-light" />
-                My Uploaded Tools & Equipment ({myTools.length})
-              </h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Tools you share can be edited or removed directly by you at any time without staff
-                approval.
-              </p>
-            </div>
-
-            <Button
-              size="sm"
-              onClick={() => {
-                setEditingTool(null);
-                setToolModalOpen(true);
-              }}
-              className="gap-1.5 self-start sm:self-auto"
-            >
-              <Plus className="h-4 w-4" /> Upload Tool
-            </Button>
-          </div>
-
-          {toolsLoading ? (
-            <p className="text-xs text-slate-500">Loading your uploaded tools...</p>
-          ) : myTools.length === 0 ? (
-            <div className="p-6 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-xs text-slate-500">
-              You have not uploaded any tools yet. Click <strong>Upload Tool</strong> to share
-              equipment with the community.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {myTools.map((tool) => (
-                <div
-                  key={tool.id}
-                  className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 bg-slate-50/60 dark:bg-slate-900/40"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 flex items-center justify-center flex-shrink-0">
-                      <img
-                        src={resolveToolImage(tool)}
-                        alt={tool.name}
-                        className="max-h-full max-w-full object-contain rounded"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/equipment/fallback.svg';
-                        }}
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <Link
-                        to={`/catalog/${tool.id}`}
-                        className="font-semibold text-sm hover:underline block truncate"
-                      >
-                        {tool.name}
-                      </Link>
-                      <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
-                        <span>{tool.category}</span>
-                        <span>&bull;</span>
-                        <span>{formatPHP(tool.rental_fee_centavos)}/day</span>
-                      </div>
-                      <div className="mt-1">
-                        <Badge
-                          status={tool.availability_status}
-                          className="text-[10px] px-2 py-0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="Edit Tool"
-                      onClick={() => {
-                        setEditingTool(tool);
-                        setToolModalOpen(true);
-                      }}
-                    >
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="Delete Tool"
-                      className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                      onClick={() => handleDeleteOwnTool(tool)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <ToolFormModal
-        isOpen={toolModalOpen}
-        onClose={() => {
-          setToolModalOpen(false);
-          setEditingTool(null);
-        }}
-        tool={editingTool}
-        onSuccess={() => {
-          setMessage(
-            editingTool ? 'Your tool was updated.' : 'Your tool was uploaded to the catalog.',
-          );
-          fetchMyTools();
-        }}
-      />
     </div>
   );
 }

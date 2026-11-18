@@ -6,10 +6,18 @@ export interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
+  printable?: boolean;
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  maxWidth = 'md',
+  printable = false,
+}: ModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -34,26 +42,36 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }: Mod
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    '4xl': 'max-w-4xl',
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div
+      className={`fixed inset-0 z-50 overflow-y-auto ${printable ? 'print-modal-wrapper' : ''}`}
+    >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+      <div
+        className={`flex min-h-full items-center justify-center p-4 text-center sm:p-0 ${
+          printable ? 'print-modal-container' : ''
+        }`}
+      >
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          className={`relative transform overflow-hidden rounded-xl bg-white dark:bg-slate-800 text-left shadow-2xl transition-all w-full ${maxWidths[maxWidth]} border border-slate-200 dark:border-slate-700`}
+          className={`relative transform overflow-hidden rounded-xl bg-white dark:bg-slate-800 text-left shadow-2xl transition-all w-full ${maxWidths[maxWidth]} border border-slate-200 dark:border-slate-700 ${
+            printable ? 'print-modal-dialog' : ''
+          }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-6 py-4">
+          <div className="no-print flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-6 py-4">
             <h3
               id="modal-title"
               className="text-base font-semibold text-slate-900 dark:text-slate-100"
@@ -70,7 +88,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }: Mod
           </div>
 
           {/* Body */}
-          <div className="p-6">{children}</div>
+          <div className={`p-6 ${printable ? 'print-modal-body' : ''}`}>{children}</div>
         </div>
       </div>
     </div>

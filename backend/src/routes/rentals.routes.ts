@@ -7,10 +7,10 @@ export const rentalsRouter: Router = Router();
 rentalsRouter.get('/', requireAuth, RentalsController.list);
 rentalsRouter.get('/:id', requireAuth, RentalsController.getById);
 rentalsRouter.post(
-  '/checkout',
+  '/release',
   requireAuth,
   requireRole('Administrator', 'Municipal Staff'),
-  RentalsController.checkout,
+  RentalsController.release,
 );
 rentalsRouter.post(
   '/:id/return',

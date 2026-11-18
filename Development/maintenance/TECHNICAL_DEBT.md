@@ -22,12 +22,6 @@ This document tracks identified technical debt, historical remediation efforts, 
 
 ### 1. Code-Splitting for Frontend Routes
 
-- **Description**: All 14 React page components in `frontend/src/app/routes.tsx` are imported statically, causing Vite to build a single 516 kB JavaScript bundle.
+- **Description**: All React page components in `frontend/src/app/routes.tsx` are imported statically, causing Vite to bundle routes into a single initial chunk.
 - **Remediation Plan**: Refactor `routes.tsx` to use `React.lazy()` and `<Suspense>` to enable route-level chunk splitting.
 - **Priority**: Low (application loads in <200ms on municipal LAN).
-
-### 2. Digital Signature / Receipt Export to PDF
-
-- **Description**: The official municipal receipt modal renders a print-friendly HTML view.
-- **Remediation Plan**: Introduce a dedicated PDF generation service (e.g. `@react-pdf/renderer` or server-side headless rendering) to export digitally signed municipal clearance certificates.
-- **Priority**: Medium.

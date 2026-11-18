@@ -9,15 +9,11 @@ import { RegisterPage } from '../features/auth/RegisterPage';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { CatalogPage } from '../features/catalog/CatalogPage';
 import { ToolDetailPage } from '../features/catalog/ToolDetailPage';
-import { MyUploadedToolsPage } from '../features/catalog/MyUploadedToolsPage';
-import { WishlistPage } from '../features/wishlist/WishlistPage';
-import { CartPage } from '../features/cart/CartPage';
 import { MyReservationsPage } from '../features/reservations/MyReservationsPage';
 import { ReservationQueuePage } from '../features/reservations/ReservationQueuePage';
 import { MyRentalsPage } from '../features/rentals/MyRentalsPage';
 import { RentalDeskPage } from '../features/rentals/RentalDeskPage';
-import { MyPaymentsPage } from '../features/payments/MyPaymentsPage';
-import { PaymentVerificationPage } from '../features/payments/PaymentVerificationPage';
+import { BorrowingReceiptPage } from '../features/rentals/BorrowingReceiptPage';
 import { InventoryPage } from '../features/inventory/InventoryPage';
 import { MaintenancePage } from '../features/maintenance/MaintenancePage';
 import { FeedbackPage } from '../features/feedback/FeedbackPage';
@@ -37,8 +33,6 @@ export function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/catalog" element={<CatalogPage />} />
       <Route path="/catalog/:id" element={<ToolDetailPage />} />
-      <Route path="/wishlist" element={<WishlistPage />} />
-      <Route path="/cart" element={<CartPage />} />
       <Route path="/feedback" element={<FeedbackPage />} />
 
       {/* Authenticated All Roles */}
@@ -47,14 +41,6 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/my-tools"
-        element={
-          <ProtectedRoute>
-            <MyUploadedToolsPage />
           </ProtectedRoute>
         }
       />
@@ -75,10 +61,10 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/my-payments"
+        path="/borrowing-receipt"
         element={
           <ProtectedRoute>
-            <MyPaymentsPage />
+            <BorrowingReceiptPage />
           </ProtectedRoute>
         }
       />
@@ -121,14 +107,6 @@ export function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['Municipal Staff', 'Administrator']}>
             <InventoryPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/staff/payments"
-        element={
-          <ProtectedRoute allowedRoles={['Municipal Staff', 'Administrator']}>
-            <PaymentVerificationPage />
           </ProtectedRoute>
         }
       />

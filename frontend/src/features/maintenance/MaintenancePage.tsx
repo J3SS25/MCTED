@@ -11,7 +11,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { MaintenanceReportModal } from './MaintenanceReportModal';
 import { ClipboardList, PlusCircle, Wrench, CheckCircle } from 'lucide-react';
 import type { MaintenanceStatus } from '@mcteb/shared';
-import { formatPHP, formatDate } from '@mcteb/shared';
+import { formatDate } from '@mcteb/shared';
 
 const STATUS_OPTIONS: Array<{ value: MaintenanceStatus; label: string }> = [
   { value: 'Reported', label: 'Reported' },
@@ -29,7 +29,6 @@ export function MaintenancePage() {
   // Update modal state
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [newStatus, setNewStatus] = useState<MaintenanceStatus>('Completed');
-  const [actualCostPesos, setActualCostPesos] = useState<number>(0);
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [returnToService, setReturnToService] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +60,6 @@ export function MaintenancePage() {
         method: 'PATCH',
         body: JSON.stringify({
           status: newStatus,
-          actual_cost_centavos: Math.round(actualCostPesos * 100),
           resolution_notes: resolutionNotes,
           return_to_service: returnToService,
         }),
@@ -85,7 +83,7 @@ export function MaintenancePage() {
             Equipment Maintenance & Repair Board
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Track tool defects, repair schedules, parts costs, and return-to-service decisions.
+            Track tool defects, repair schedules, and return-to-service decisions.
           </p>
         </div>
 
@@ -136,7 +134,7 @@ export function MaintenancePage() {
 
                   {m.resolution_notes && (
                     <p className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded">
-                      Resolution: {m.resolution_notes} (Cost: {formatPHP(m.actual_cost_centavos)})
+                      Resolution: {m.resolution_notes}
                     </p>
                   )}
                 </div>
@@ -149,7 +147,6 @@ export function MaintenancePage() {
                       onClick={() => {
                         setSelectedRecord(m);
                         setNewStatus('Completed');
-                        setActualCostPesos(m.estimated_cost_centavos / 100);
                       }}
                     >
                       Update / Resolve Ticket
@@ -182,14 +179,6 @@ export function MaintenancePage() {
               options={STATUS_OPTIONS}
               value={newStatus}
               onChange={(e) => setNewStatus(e.target.value as MaintenanceStatus)}
-            />
-
-            <Input
-              label="Actual Repair / Parts Cost (₱)"
-              type="number"
-              min="0"
-              value={actualCostPesos}
-              onChange={(e) => setActualCostPesos(Number(e.target.value))}
             />
 
             <Input

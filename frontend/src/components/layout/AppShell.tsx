@@ -5,7 +5,6 @@ import {
   LayoutDashboard,
   CalendarCheck,
   ShoppingBag,
-  CreditCard,
   MessageSquare,
   Bell,
   User,
@@ -13,18 +12,15 @@ import {
   ShieldAlert,
   ClipboardList,
   SlidersHorizontal,
-  Heart,
-  ShoppingCart,
   Sun,
   Moon,
   LogOut,
   Menu,
   X,
-  Package,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { useTheme } from '../../lib/theme-context';
-import { useWishlistCart } from '../../lib/wishlist-cart-context';
 import { useProfilePicture } from '../../lib/local-storage';
 import { apiRequest } from '../../lib/api';
 import { Button } from '../ui/Button';
@@ -39,7 +35,6 @@ interface NavItem {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { wishlist, cartTotalItems } = useWishlistCart();
   const [localAvatar] = useProfilePicture(user?.id);
   const avatarSrc = localAvatar || user?.avatar_url || null;
 
@@ -80,18 +75,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (!user) {
     navItems = [
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
-      // {
-      //   label: 'Wishlist',
-      //   href: '/wishlist',
-      //   icon: <Heart className="h-5 w-5" />,
-      //   badge: wishlist.length,
-      // },
-      // {
-      //   label: 'Borrowing Cart',
-      //   href: '/cart',
-      //   icon: <ShoppingCart className="h-5 w-5" />,
-      //   badge: cartTotalItems,
-      // },
       {
         label: 'Community Feedback',
         href: '/feedback',
@@ -103,32 +86,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
       {
-        label: 'My Uploaded Tools & Equipment',
-        href: '/my-tools',
-        icon: <Package className="h-5 w-5" />,
-      },
-      {
-        label: 'Wishlist',
-        href: '/wishlist',
-        icon: <Heart className="h-5 w-5" />,
-        badge: wishlist.length,
-      },
-      {
-        label: 'Borrowing Cart',
-        href: '/cart',
-        icon: <ShoppingCart className="h-5 w-5" />,
-        badge: cartTotalItems,
-      },
-      {
         label: 'My Reservations',
         href: '/my-reservations',
         icon: <CalendarCheck className="h-5 w-5" />,
       },
       { label: 'My Rentals', href: '/my-rentals', icon: <ShoppingBag className="h-5 w-5" /> },
       {
-        label: 'Payments & Receipts',
-        href: '/my-payments',
-        icon: <CreditCard className="h-5 w-5" />,
+        label: 'Borrowing Receipt Form',
+        href: '/borrowing-receipt',
+        icon: <FileText className="h-5 w-5" />,
       },
       { label: 'Feedback', href: '/feedback', icon: <MessageSquare className="h-5 w-5" /> },
       {
@@ -148,32 +114,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
       {
-        label: 'Wishlist',
-        href: '/wishlist',
-        icon: <Heart className="h-5 w-5" />,
-        badge: wishlist.length,
-      },
-      {
-        label: 'Borrowing Cart',
-        href: '/cart',
-        icon: <ShoppingCart className="h-5 w-5" />,
-        badge: cartTotalItems,
-      },
-      {
         label: 'Reservation Queue',
         href: '/staff/reservations',
         icon: <CalendarCheck className="h-5 w-5" />,
       },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
       {
+        label: 'Borrowing Receipt Form',
+        href: '/borrowing-receipt',
+        icon: <FileText className="h-5 w-5" />,
+      },
+      {
         label: 'Inventory Management',
         href: '/staff/inventory',
         icon: <SlidersHorizontal className="h-5 w-5" />,
-      },
-      {
-        label: 'Payment Verification',
-        href: '/staff/payments',
-        icon: <CreditCard className="h-5 w-5" />,
       },
       {
         label: 'Maintenance Board',
@@ -203,32 +157,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       },
       { label: 'Equipment Catalog', href: '/catalog', icon: <Wrench className="h-5 w-5" /> },
       {
-        label: 'Wishlist',
-        href: '/wishlist',
-        icon: <Heart className="h-5 w-5" />,
-        badge: wishlist.length,
-      },
-      {
-        label: 'Borrowing Cart',
-        href: '/cart',
-        icon: <ShoppingCart className="h-5 w-5" />,
-        badge: cartTotalItems,
-      },
-      {
         label: 'Reservation Queue',
         href: '/staff/reservations',
         icon: <CalendarCheck className="h-5 w-5" />,
       },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
       {
+        label: 'Borrowing Receipt Form',
+        href: '/borrowing-receipt',
+        icon: <FileText className="h-5 w-5" />,
+      },
+      {
         label: 'Inventory Management',
         href: '/staff/inventory',
         icon: <SlidersHorizontal className="h-5 w-5" />,
-      },
-      {
-        label: 'Payment Verification',
-        href: '/staff/payments',
-        icon: <CreditCard className="h-5 w-5" />,
       },
       {
         label: 'Maintenance Board',
@@ -257,7 +199,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-hidden">
+    <div className="app-shell-root flex h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-hidden">
       {/* Desktop Persistent Sidebar */}
       <aside className="no-print hidden lg:flex flex-col w-64 bg-civic-forest text-white border-r border-civic-deep flex-shrink-0">
         <div className="h-16 flex items-center px-6 gap-3 border-b border-civic-deep/60">
@@ -347,7 +289,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="app-shell-content flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Fixed / Sticky Top Navigation Bar */}
         <header className="no-print sticky top-0 z-30 h-16 bg-white/95 dark:bg-slate-800/95 backdrop-blur border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -399,36 +341,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
-            {/* Wishlist Shortcut */}
-            <Link
-              to="/wishlist"
-              className="relative p-2 rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 focus:outline-none"
-              aria-label="View wishlist"
-              title="Wishlist"
-            >
-              <Heart className="h-5 w-5" />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
-                  {wishlist.length}
-                </span>
-              )}
-            </Link>
-
-            {/* Cart Shortcut */}
-            <Link
-              to="/cart"
-              className="relative p-2 rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 focus:outline-none"
-              aria-label="View borrowing cart"
-              title="Borrowing Cart"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartTotalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-civic-forest text-white text-[10px] font-bold flex items-center justify-center">
-                  {cartTotalItems}
-                </span>
-              )}
-            </Link>
-
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -600,7 +512,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
 
         {/* Scrollable Main View */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="app-shell-main flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

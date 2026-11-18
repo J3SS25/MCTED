@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tool Borrowing Receipt Form — Printable &amp; Digital Copy</title>
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --ink: #0f172a;
+        --muted: #475569;
+        --border: #cbd5e1;
+        --border-strong: #334155;
+        --section-bg: #f1f5f9;
+        --accent: #1b4332;
+        --accent-soft: #ecfdf5;
+        --warn-border: #d97706;
+        --warn-bg: #fffbeb;
+        --warn-title: #991b1b;
+      }
+
+      body {
+        margin: 0;
+        padding: 20px 16px 40px;
+        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        color: var(--ink);
+        background: #e2e8f0;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .toolbar {
+        max-width: 210mm;
+        margin: 0 auto 14px;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      }
+
+      .toolbar-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid var(--border-strong);
+        background: #ffffff;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      .btn:hover {
+        background: #f8fafc;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover {
+        background: #143326;
+      }
+
+      .a4-sheet {
+        width: 100%;
+        max-width: 210mm;
+        margin: 0 auto;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 14mm 14mm 12mm;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        border-bottom: 2px solid var(--ink);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+      }
+
+      .org-wrap {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .logo-box {
+        width: 54px;
+        height: 54px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+        padding: 4px;
+      }
+
+      .logo-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .logo-box.is-hidden {
+        display: none;
+      }
+
+      .org-details {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .org-kicker {
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 3px;
+      }
+
+      .org-name-input {
+        width: 100%;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--ink);
+        border: 1px dashed var(--border);
+        border-radius: 4px;
+        padding: 2px 6px;
+        margin-bottom: 4px;
+        background: transparent;
+      }
+
+      .org-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .receipt-box {
+        width: 190px;
+        flex-shrink: 0;
+        border: 1.5px solid var(--ink);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .receipt-box-title {
+        background: var(--ink);
+        color: #ffffff;
+        text-align: center;
+        font-weight: 800;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 5px 8px;
+      }
+
+      .receipt-box-body {
+        padding: 6px 8px;
+        background: #f8fafc;
+      }
+
+      .section {
+        border: 1px solid var(--border-strong);
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 9px;
+        break-inside: avoid;
+      }
+
+      .section-title {
+        margin: 0;
+        background: var(--section-bg);
+        border-bottom: 1px solid var(--border);
+        padding: 4px 9px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink);
+      }
+
+      .section-body {
+        padding: 7px 9px;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7px 14px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 6fr 4fr 2fr;
+        gap: 7px 12px;
+      }
+
+      .grid-two-col-sections {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 9px;
+      }
+
+      .grid-two-col-sections .section {
+        margin-bottom: 0;
+      }
+
+      .span-2 {
+        grid-column: span 2;
+      }
+
+      .field-label {
+        display: block;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        margin-bottom: 2px;
+      }
+
+      .field-input {
+        width: 100%;
+        font-family: inherit;
+        font-size: 11px;
+        color: var(--ink);
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 4px 7px;
+      }
+
+      .field-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        background: #ffffff;
+      }
+
+      .print-mirror {
+        display: none;
+        min-height: 20px;
+        border-bottom: 1px solid var(--border-strong);
+        padding: 2px 2px 1px;
+        font-size: 11px;
+      }
+
+      .checkbox-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        padding-top: 2px;
+      }
+
+      .checkbox-row.spread {
+        justify-content: space-between;
+      }
+
+      .check-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .check-item input[type='checkbox'] {
+        width: 13px;
+        height: 13px;
+        accent-color: var(--accent);
+        margin: 0;
+      }
+
+      .warning-section {
+        border: 1.5px solid var(--warn-border);
+        background: var(--warn-bg);
+      }
+
+      .warning-section .section-title {
+        background: #fef3c7;
+        border-bottom-color: #fcd34d;
+        color: #78350f;
+      }
+
+      .warning-heading {
+        margin: 0 0 4px;
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--warn-title);
+      }
+
+      .warning-text {
+        margin: 0 0 4px;
+        font-size: 10px;
+        line-height: 1.35;
+        color: #1e293b;
+      }
+
+      .warning-text:last-child {
+        margin-bottom: 0;
+        font-weight: 700;
+      }
+
+      .approval-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        padding-top: 10px;
+        align-items: end;
+      }
+
+      .sig-input {
+        width: 100%;
+        border: none;
+        border-bottom: 1px solid var(--ink);
+        background: transparent;
+        text-align: center;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 4px;
+        color: var(--ink);
+      }
+
+      .sig-input:focus {
+        outline: none;
+        border-bottom-color: var(--accent);
+      }
+
+      .sig-caption {
+        margin: 4px 0 0;
+        text-align: center;
+        font-size: 9.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+
+      .doc-footer {
+        margin-top: 6px;
+        padding-top: 5px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        font-size: 9px;
+        color: var(--muted);
+      }
+
+      body.preview-mode .org-name-input,
+      body.preview-mode .field-input {
+        border: none;
+        border-bottom: 1px solid var(--border-strong);
+        border-radius: 0;
+        background: transparent;
+        padding-left: 1px;
+        padding-right: 1px;
+      }
+
+      body.preview-mode input[type='date'].field-input,
+      body.preview-mode input[type='time'].field-input,
+      body.preview-mode input[type='date'].sig-input {
+        display: none;
+      }
+
+      body.preview-mode .print-mirror {
+        display: block;
+      }
+
+      @media print {
+        body {
+          background: #ffffff;
+          padding: 0;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+
+        .a4-sheet {
+          max-width: none;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
+          padding: 0;
+        }
+
+        .org-name-input,
+        .field-input {
+          border: none;
+          border-bottom: 1px solid var(--border-strong);
+          border-radius: 0;
+          background: transparent;
+          padding-left: 1px;
+          padding-right: 1px;
+        }
+
+        .org-name-input {
+          border-bottom: none;
+        }
+
+        input[type='date'].field-input,
+        input[type='time'].field-input,
+        input[type='date'].sig-input {
+          display: none !important;
+        }
+
+        .print-mirror {
+          display: block !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Digital Toolbar -->
+    <div class="toolbar no-print">
+      <div class="toolbar-group">
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+          Print / Save A4 PDF
+        </button>
+        <button type="button" class="btn" id="togglePreviewBtn" onclick="togglePreviewMode()">
+          A4 Print Preview
+        </button>
+        <label class="btn" style="display: inline-flex; align-items: center; gap: 6px">
+          Upload Logo
+          <input
+            type="file"
+            accept="image/*"
+            onchange="handleLogoChange(event)"
+            style="display: none"
+          />
+        </label>
+        <button type="button" class="btn" id="toggleLogoBtn" onclick="toggleLogo()">
+          Hide Logo
+        </button>
+      </div>
+      <div class="toolbar-group">
+        <button type="button" class="btn" onclick="clearForm()">Clear Blank Form</button>
+      </div>
+    </div>
+
+    <!-- A4 Printable & Editable Form -->
+    <main class="a4-sheet" id="receiptForm">
+      <!-- 1. Organization/School/Company Information -->
+      <header class="header">
+        <div class="org-wrap">
+          <div class="logo-box" id="logoBox">
+            <img
+              id="orgLogoImg"
+              src="/favicon.svg"
+              alt="Organization Logo"
+              onerror="this.style.display='none'"
+            />
+          </div>
+          <div class="org-details">
+            <p class="org-kicker">1. Organization / School / Company Information</p>
+            <input
+              type="text"
+              class="org-name-input"
+              aria-label="Name of Organization"
+              value="Municipal Community Tool and Equipment Bank (MCTEB)"
+              placeholder="Name of Organization / School / Company"
+            />
+            <div class="org-meta-grid">
+              <div>
+                <label class="field-label" for="orgAddress">Address</label>
+                <input
+                  id="orgAddress"
+                  type="text"
+                  class="field-input"
+                  value="Municipality of Basco, Province of Batanes 3900"
+                  placeholder="Address"
+                />
+              </div>
+              <div>
+                <label class="field-label" for="orgContact">Contact Information</label>
+                <input
+                  id="orgContact"
+                  type="text"
+                  class="field-input"
+                  value="mcteb@basco.gov.ph | (078) 555-0142"
+                  placeholder="Phone / Email"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="receipt-box">
+          <div class="receipt-box-title">Tool Borrowing Receipt</div>
+          <div class="receipt-box-body">
+            <label class="field-label" for="receiptNo">Receipt / Control No.</label>
+            <input
+              id="receiptNo"
+              type="text"
+              class="field-input"
+              style="font-family: monospace; font-weight: 700"
+              placeholder="TBR-2026-____"
+            />
+          </div>
+        </div>
+      </header>
+
+      <!-- 2. Borrower Information -->
+      <section class="section">
+        <h2 class="section-title">2. Borrower Information</h2>
+        <div class="section-body grid-2">
+          <div>
+            <label class="field-label" for="borrowerName">Full Name</label>
+            <input
+              id="borrowerName"
+              type="text"
+              class="field-input"
+              placeholder="Last Name, First Name, M.I."
+            />
+          </div>
+          <div>
+            <label class="field-label" for="borrowerId">Student / Employee ID</label>
+            <input id="borrowerId" type="text" class="field-input" placeholder="ID Number" />
+          </div>
+          <div>
+            <label class="field-label" for="borrowerDept">Department / Course</label>
+            <input
+              id="borrowerDept"
+              type="text"
+              class="field-input"
+              placeholder="Department, Course, or Barangay"
+            />
+          </div>
+          <div>
+            <label class="field-label" for="borrowerContact">Contact Number</label>
+            <input
+              id="borrowerContact"
+              type="text"
+              class="field-input"
+              placeholder="Mobile / Telephone Number"
+            />
+          </div>
+          <div class="span-2">
+            <label class="field-label" for="borrowerSignature">Signature</label>
+            <input
+              id="borrowerSignature"
+              type="text"
+              class="field-input"
+              placeholder="Digital signature or leave blank to sign on printed hard copy"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Tool/Equipment Information -->
+      <section class="section">
+        <h2 class="section-title">3. Tool / Equipment Information</h2>
+        <div class="section-body" style="display: flex; flex-direction: column; gap: 7px">
+          <div class="grid-3">
+            <div>
+              <label class="field-label" for="toolName">Tool / Equipment Name</label>
+              <input
+                id="toolName"
+                type="text"
+                class="field-input"
+                placeholder="Equipment name &amp; model"
+              />
+            </div>
+            <div>
+              <label class="field-label" for="serialNumber">Serial Number (if applicable)</label>
+              <input id="serialNumber" type="text" class="field-input" placeholder="S/N or N/A" />
+            </div>
+            <div>
+              <label class="field-label" for="quantity">Quantity</label>
+              <input id="quantity" type="number" min="1" class="field-input" value="1" />
+            </div>
+          </div>
+
+          <div class="grid-2" style="align-items: start">
+            <div>
+              <span class="field-label">Condition Before Borrowing</span>
+              <div class="checkbox-row">
+                <label class="check-item">
+                  <input type="checkbox" name="conditionBefore" value="Good" onclick="selectSingle(this)" />
+                  Good
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" name="conditionBefore" value="Fair" onclick="selectSingle(this)" />
+                  Fair
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" name="conditionBefore" value="Damaged" onclick="selectSingle(this)" />
+                  Damaged
+                </label>
+              </div>
+            </div>
+            <div>
+              <label class="field-label" for="toolRemarks">Remarks</label>
+              <input
+                id="toolRemarks"
+                type="text"
+                class="field-input"
+                placeholder="Included accessories, condition notes, or purpose"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Borrowing Schedule & 5. Return Details -->
+      <div class="grid-two-col-sections">
+        <section class="section">
+          <h2 class="section-title">4. Borrowing Schedule</h2>
+          <div class="section-body grid-2">
+            <div>
+              <label class="field-label" for="dateBorrowed">Date Borrowed</label>
+              <input id="dateBorrowed" type="date" class="field-input mirror-source" />
+              <div class="print-mirror" data-mirror="dateBorrowed">&nbsp;</div>
+            </div>
+            <div>
+              <label class="field-label" for="timeBorrowed">Time Borrowed</label>
+              <input id="timeBorrowed" type="time" class="field-input mirror-source" />
+              <div class="print-mirror" data-mirror="timeBorrowed">&nbsp;</div>
+            </div>
+            <div>
+              <label class="field-label" for="expectedReturnDate">Expected Return Date</label>
+              <input id="expectedReturnDate" type="date" class="field-input mirror-source" />
+              <div class="print-mirror" data-mirror="expectedReturnDate">&nbsp;</div>
+            </div>
+            <div>
+              <label class="field-label" for="expectedReturnTime">Expected Return Time</label>
+              <input id="expectedReturnTime" type="time" class="field-input mirror-source" />
+              <div class="print-mirror" data-mirror="expectedReturnTime">&nbsp;</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">5. Return Details</h2>
+          <div class="section-body" style="display: flex; flex-direction: column; gap: 6px">
+            <div class="grid-2">
+              <div>
+                <label class="field-label" for="actualReturnDate">Actual Return Date</label>
+                <input id="actualReturnDate" type="date" class="field-input mirror-source" />
+                <div class="print-mirror" data-mirror="actualReturnDate">&nbsp;</div>
+              </div>
+              <div>
+                <label class="field-label" for="actualReturnTime">Actual Return Time</label>
+                <input id="actualReturnTime" type="time" class="field-input mirror-source" />
+                <div class="print-mirror" data-mirror="actualReturnTime">&nbsp;</div>
+              </div>
+            </div>
+            <div>
+              <span class="field-label">Condition Upon Return</span>
+              <div class="checkbox-row">
+                <label class="check-item">
+                  <input type="checkbox" name="conditionUponReturn" value="Good" onclick="selectSingle(this)" />
+                  Good
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" name="conditionUponReturn" value="Fair" onclick="selectSingle(this)" />
+                  Fair
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" name="conditionUponReturn" value="Damaged" onclick="selectSingle(this)" />
+                  Damaged
+                </label>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label class="field-label" for="receivedBy">Received By</label>
+                <input id="receivedBy" type="text" class="field-input" placeholder="Staff / Custodian" />
+              </div>
+              <div>
+                <label class="field-label" for="returnRemarks">Remarks</label>
+                <input id="returnRemarks" type="text" class="field-input" placeholder="Return inspection notes" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 6. Status Section -->
+      <section class="section">
+        <h2 class="section-title">6. Status Section</h2>
+        <div class="section-body">
+          <div class="checkbox-row spread">
+            <label class="check-item"><input type="checkbox" name="status" value="Borrowed" /> Borrowed</label>
+            <label class="check-item"><input type="checkbox" name="status" value="Returned" /> Returned</label>
+            <label class="check-item"><input type="checkbox" name="status" value="Overdue" /> Overdue</label>
+            <label class="check-item"><input type="checkbox" name="status" value="Damaged" /> Damaged</label>
+            <label class="check-item"><input type="checkbox" name="status" value="Lost" /> Lost</label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. Terms, Warnings, and Penalties -->
+      <section class="section warning-section">
+        <h2 class="section-title">7. Terms, Warnings, and Penalties</h2>
+        <div class="section-body">
+          <p class="warning-heading">WARNING:</p>
+          <p class="warning-text">
+            The borrower is fully responsible for the borrowed tool/equipment during the borrowing period.
+          </p>
+          <p class="warning-text">
+            If any tool or equipment is broken, damaged, lost, misused, or returned in poor condition,
+            corresponding penalties and fees may apply based on the severity of the damage. The exact
+            fees will be discussed and settled in person with the responsible authority.
+          </p>
+          <p class="warning-text">
+            Failure to return the equipment on the scheduled date may result in additional sanctions and
+            temporary suspension of borrowing privileges.
+          </p>
+          <p class="warning-text">
+            By signing this receipt, the borrower acknowledges and agrees to comply with all borrowing
+            policies, responsibilities, and penalties.
+          </p>
+        </div>
+      </section>
+
+      <!-- 8. Approval Section -->
+      <section class="section">
+        <h2 class="section-title">8. Approval Section</h2>
+        <div class="section-body approval-grid">
+          <div>
+            <input
+              type="text"
+              class="sig-input"
+              aria-label="Borrower's Signature"
+              placeholder="Borrower signature / name"
+            />
+            <p class="sig-caption">Borrower&apos;s Signature</p>
+          </div>
+          <div>
+            <input
+              type="text"
+              class="sig-input"
+              aria-label="Authorized Personnel Signature"
+              placeholder="Authorized personnel name"
+            />
+            <p class="sig-caption">Authorized Personnel Signature</p>
+          </div>
+          <div>
+            <input
+              id="dateSigned"
+              type="date"
+              class="sig-input mirror-source"
+              aria-label="Date Signed"
+            />
+            <div class="print-mirror" data-mirror="dateSigned" style="text-align: center">&nbsp;</div>
+            <p class="sig-caption">Date Signed</p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="doc-footer">
+        <span>Tool Borrowing Receipt Form &bull; Digital Soft Copy &amp; Printable A4 Hard Copy</span>
+        <span>Keep a signed copy for borrower &amp; custodian records</span>
+      </footer>
+    </main>
+
+    <script>
+      function syncMirrors() {
+        document.querySelectorAll('.mirror-source').forEach(function (input) {
+          var mirror = document.querySelector('[data-mirror="' + input.id + '"]');
+          if (mirror) {
+            mirror.textContent = input.value ? input.value : '\u00A0';
+          }
+        });
+      }
+
+      document.querySelectorAll('.mirror-source').forEach(function (input) {
+        input.addEventListener('input', syncMirrors);
+        input.addEventListener('change', syncMirrors);
+      });
+
+      function selectSingle(checkbox) {
+        if (!checkbox.checked) return;
+        document.querySelectorAll('input[name="' + checkbox.name + '"]').forEach(function (other) {
+          if (other !== checkbox) other.checked = false;
+        });
+      }
+
+      function togglePreviewMode() {
+        syncMirrors();
+        var active = document.body.classList.toggle('preview-mode');
+        document.getElementById('togglePreviewBtn').textContent = active
+          ? 'Digital Edit Mode'
+          : 'A4 Print Preview';
+      }
+
+      function toggleLogo() {
+        var box = document.getElementById('logoBox');
+        var hidden = box.classList.toggle('is-hidden');
+        document.getElementById('toggleLogoBtn').textContent = hidden ? 'Show Logo' : 'Hide Logo';
+      }
+
+      function handleLogoChange(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          var img = document.getElementById('orgLogoImg');
+          img.src = reader.result;
+          img.style.display = 'block';
+          document.getElementById('logoBox').classList.remove('is-hidden');
+          document.getElementById('toggleLogoBtn').textContent = 'Hide Logo';
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function clearForm() {
+        var skipIds = { orgAddress: true, orgContact: true };
+        document.querySelectorAll('#receiptForm input').forEach(function (input) {
+          if (input.classList.contains('org-name-input') || skipIds[input.id]) return;
+          if (input.type === 'checkbox') {
+            input.checked = false;
+          } else {
+            input.value = '';
+          }
+        });
+        syncMirrors();
+      }
+
+      syncMirrors();
+    </script>
+  </body>
+</html>

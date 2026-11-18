@@ -5,7 +5,6 @@ import { Select, Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import type { ToolConditionStatus } from '@mcteb/shared';
-import { formatPHP } from '@mcteb/shared';
 
 const CONDITION_OPTIONS: Array<{ value: ToolConditionStatus; label: string }> = [
   { value: 'Excellent', label: 'Excellent - Like new' },
@@ -30,8 +29,6 @@ export function ReturnInspectionModal({
 }: ReturnInspectionModalProps) {
   const [returnedCondition, setReturnedCondition] = useState<ToolConditionStatus>('Good');
   const [inspectionNotes, setInspectionNotes] = useState('');
-  const [damagePenaltyPesos, setDamagePenaltyPesos] = useState<number>(0);
-  const [overduePenaltyPesos, setOverduePenaltyPesos] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,8 +43,6 @@ export function ReturnInspectionModal({
         body: JSON.stringify({
           returned_condition: returnedCondition,
           inspection_notes: inspectionNotes,
-          overdue_penalty_centavos: Math.round(overduePenaltyPesos * 100),
-          damage_penalty_centavos: Math.round(damagePenaltyPesos * 100),
         }),
       });
 
@@ -91,26 +86,6 @@ export function ReturnInspectionModal({
           value={inspectionNotes}
           onChange={(e) => setInspectionNotes(e.target.value)}
         />
-
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Overdue Penalty (₱)"
-            type="number"
-            min="0"
-            step="1"
-            value={overduePenaltyPesos}
-            onChange={(e) => setOverduePenaltyPesos(Number(e.target.value))}
-          />
-
-          <Input
-            label="Damage Penalty (₱)"
-            type="number"
-            min="0"
-            step="1"
-            value={damagePenaltyPesos}
-            onChange={(e) => setDamagePenaltyPesos(Number(e.target.value))}
-          />
-        </div>
 
         <div className="pt-2 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>

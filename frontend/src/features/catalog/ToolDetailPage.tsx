@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import { useWishlistCart } from '../../lib/wishlist-cart-context';
 import { resolveToolImages, setLocalToolImages } from '../../lib/local-storage';
 import { ToolImageGallery } from '../../components/catalog/ToolImageGallery';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -16,8 +15,7 @@ import {
   ArrowLeft,
   Star,
   MessageSquare,
-  Heart,
-  ShoppingCart,
+  CalendarCheck,
   Edit,
   Trash2,
   UserCheck,
@@ -27,12 +25,11 @@ import {
   Package,
 } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
-import { formatPHP, formatDateTime } from '@mcteb/shared';
+import { formatDateTime } from '@mcteb/shared';
 
 export function ToolDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { isInWishlist, isInCart, toggleWishlist, addToCart } = useWishlistCart();
   const navigate = useNavigate();
 
   const [tool, setTool] = useState<Tool | null>(null);
@@ -110,19 +107,9 @@ export function ToolDetailPage() {
   }
 
   const isAvailable = tool.availability_status === 'Available' && tool.available_quantity > 0;
-  const discountPercent = tool.discount_percent ?? 0;
-  const effectiveFeeCentavos =
-    discountPercent > 0
-      ? Math.round(tool.rental_fee_centavos * (1 - discountPercent / 100))
-      : tool.rental_fee_centavos;
   const canManage = Boolean(
-    user &&
-      (user.role === 'Administrator' ||
-        user.role === 'Municipal Staff' ||
-        (user.role === 'Borrower' && tool.owner_id && tool.owner_id === user.id)),
+    user && (user.role === 'Administrator' || user.role === 'Municipal Staff'),
   );
-  const inWishlist = isInWishlist(tool.id);
-  const inCart = isInCart(tool.id);
   const images = resolveToolImages(tool);
   const ownerLabel =
     tool.owner_name && tool.owner_role === 'Borrower'
@@ -167,7 +154,7 @@ export function ToolDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         {/* Tool Image Carousel & Gallery */}
         <div className="space-y-2">
-          <ToolImageGallery images={images} alt={tool.name} discountPercent={discountPercent} />
+          <ToolImageGallery images={images} alt={tool.name} />
         </div>
 
         {/* Tool Specifications & Actions */}
@@ -277,76 +264,31 @@ export function ToolDetailPage() {
             </div>
           )}
 
-          {/* Pricing and Stock Summary */}
-          <div className="grid grid-cols-3 gap-3 p-4 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900">
+          {/* Stock Summary */}
+          <div className="flex items-center justify-between p-4 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900">
             <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Daily Rate</p>
-              {discountPercent > 0 && (
-                <p className="text-xs text-slate-400 line-through">
-                  {formatPHP(tool.rental_fee_centavos)}
-                </p>
-              )}
-              <p className="text-lg font-bold text-civic-forest dark:text-civic-light">
-                {formatPHP(effectiveFeeCentavos)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Deposit</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Available Stock</p>
               <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
-                {formatPHP(tool.deposit_fee_centavos)}
+                {tool.available_quantity} / {tool.total_quantity} unit(s)
               </p>
             </div>
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Available</p>
-              <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
-                {tool.available_quantity} / {tool.total_quantity}
-              </p>
-            </div>
+            <Badge status={tool.availability_status} />
           </div>
 
           {/* Action buttons */}
           <div className="space-y-3 pt-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button
-                variant={inCart ? 'secondary' : 'primary'}
-                disabled={!isAvailable}
-                onClick={() => {
-                  addToCart(tool, 1);
-                  setBanner(`"${tool.name}" added to your Borrowing Cart.`);
-                }}
-                className="gap-2 w-full"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                {inCart ? 'Added to Cart (+1)' : isAvailable ? 'Add to Cart' : 'Unavailable'}
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  const added = toggleWishlist(tool);
-                  setBanner(
-                    added
-                      ? `"${tool.name}" saved to your Wishlist.`
-                      : `"${tool.name}" removed from your Wishlist.`,
-                  );
-                }}
-                className={`gap-2 w-full ${inWishlist ? 'border-rose-300 text-rose-600 dark:text-rose-400' : ''}`}
-              >
-                <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
-                {inWishlist ? 'Saved in Wishlist' : 'Add to Wishlist'}
-              </Button>
-            </div>
-
             {!user ? (
               <div className="space-y-2">
                 <Button
-                  variant="outline"
-                  className="w-full"
+                  variant="primary"
+                  className="w-full gap-2"
+                  disabled={!isAvailable}
                   onClick={() =>
                     navigate('/login', { state: { from: { pathname: `/catalog/${tool.id}` } } })
                   }
                 >
-                  Sign In for Direct Reservation
+                  <CalendarCheck className="h-4 w-4" />
+                  {isAvailable ? 'Sign In to Borrow' : 'Currently Unavailable'}
                 </Button>
                 <p className="text-center text-xs text-slate-500">
                   Residency in Basco required for equipment loans
@@ -354,12 +296,13 @@ export function ToolDetailPage() {
               </div>
             ) : user.role === 'Borrower' ? (
               <Button
-                className="w-full"
-                variant="secondary"
+                className="w-full gap-2"
+                variant="primary"
                 disabled={!isAvailable}
                 onClick={() => setReserveModalOpen(true)}
               >
-                {isAvailable ? 'Quick Reservation Request' : 'Currently Unavailable'}
+                <CalendarCheck className="h-4 w-4" />
+                {isAvailable ? 'Borrow Now' : 'Currently Unavailable'}
               </Button>
             ) : (
               <Link to="/staff/inventory" className="block w-full">
@@ -416,8 +359,8 @@ export function ToolDetailPage() {
         />
       )}
 
-      {/* Edit Tool Modal */}
-      {tool && (
+      {/* Edit Tool Modal (Municipal Staff & Administrator only) */}
+      {canManage && tool && (
         <ToolFormModal
           isOpen={editModalOpen}
           onClose={() => setEditModalOpen(false)}

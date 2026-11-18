@@ -7,14 +7,18 @@ import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Alert } from '../../components/ui/Alert';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { CalendarCheck, AlertCircle } from 'lucide-react';
-import { formatDate, formatPHP } from '@mcteb/shared';
+import { ToolBorrowingReceiptModal } from '../../components/receipt/ToolBorrowingReceiptModal';
+import { CalendarCheck, AlertCircle, FileText } from 'lucide-react';
+import { formatDate } from '@mcteb/shared';
 
 export function MyReservationsPage() {
   const [reservations, setReservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [receiptReservation, setReceiptReservation] = useState<Record<string, unknown> | null>(
+    null,
+  );
 
   const fetchReservations = async () => {
     try {
@@ -82,6 +86,7 @@ export function MyReservationsPage() {
         <div className="space-y-4">
           {reservations.map((res) => {
             const canCancel = res.status === 'Pending' || res.status === 'Approved';
+            const isApprovedForReceipt = res.status === 'Approved' || res.status === 'Completed';
 
             return (
               <Card key={res.id}>
@@ -123,7 +128,24 @@ export function MyReservationsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end md:self-center">
+                  <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+                    {isApprovedForReceipt ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => setReceiptReservation(res)}
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        Borrowing Receipt
+                      </Button>
+                    ) : (
+                      res.status === 'Pending' && (
+                        <span className="text-xs text-slate-500 dark:text-slate-400 italic">
+                          Receipt available after staff approval
+                        </span>
+                      )
+                    )}
                     {canCancel && (
                       <Button
                         variant="outline"
@@ -147,6 +169,12 @@ export function MyReservationsPage() {
           })}
         </div>
       )}
+
+      <ToolBorrowingReceiptModal
+        isOpen={!!receiptReservation}
+        onClose={() => setReceiptReservation(null)}
+        source={receiptReservation}
+      />
     </div>
   );
 }

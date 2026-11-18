@@ -102,7 +102,6 @@ frontend/
 │   │   ├── inventory/           # InventoryPage, ToolFormModal
 │   │   ├── maintenance/         # MaintenancePage, MaintenanceReportModal
 │   │   ├── notifications/       # NotificationsPage
-│   │   ├── payments/            # MyPaymentsPage, PaymentVerificationPage
 │   │   ├── profile/             # ProfilePage
 │   │   ├── rentals/             # RentalDeskPage, MyRentalsPage, ReturnInspectionModal
 │   │   └── reservations/        # ReservationQueuePage, MyReservationsPage

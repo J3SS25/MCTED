@@ -59,9 +59,9 @@ export class MaintenanceRepository {
     const stmt = db.prepare(`
       INSERT INTO maintenance (
         id, tool_id, rental_id, reported_by, issue_description, severity,
-        status, technician_name, estimated_cost_centavos, scheduled_date
+        status, technician_name, scheduled_date
       )
-      VALUES (?, ?, ?, ?, ?, ?, 'Reported', ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, 'Reported', ?, ?)
       RETURNING *
     `);
 
@@ -73,7 +73,6 @@ export class MaintenanceRepository {
       input.issue_description,
       input.severity,
       input.technician_name ?? null,
-      input.estimated_cost_centavos,
       input.scheduled_date ?? null,
     ) as Maintenance;
   }
@@ -92,10 +91,6 @@ export class MaintenanceRepository {
     if (input.technician_name !== undefined) {
       fields.push('technician_name = ?');
       values.push(input.technician_name);
-    }
-    if (input.actual_cost_centavos !== undefined) {
-      fields.push('actual_cost_centavos = ?');
-      values.push(input.actual_cost_centavos);
     }
     if (input.resolution_notes !== undefined) {
       fields.push('resolution_notes = ?');

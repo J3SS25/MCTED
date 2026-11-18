@@ -20,7 +20,7 @@ backend/
 │   ├── client.ts                # DatabaseSync singleton (WAL mode, pragmas, error handling)
 │   ├── init.ts                  # Creates Database/ directory and initial SQLite file
 │   ├── migrate.ts               # Schema migration runner (idempotent, safe re-run)
-│   ├── schema.sql               # Canonical schema definition for all 10 tables
+│   ├── schema.sql               # Canonical schema definition for all 9 tables
 │   └── seed/
 │       ├── seed.ts              # Idempotent fixture seeder (demo accounts + catalog tools)
 │       ├── reset-demo.ts        # Wipes and re-seeds demo data (development only)
@@ -48,7 +48,6 @@ backend/
     │   ├── feedback.repository.ts
     │   ├── maintenance.repository.ts
     │   ├── notifications.repository.ts
-    │   ├── payments.repository.ts
     │   ├── rentals.repository.ts
     │   ├── reservations.repository.ts
     │   ├── tools.repository.ts
@@ -61,7 +60,6 @@ backend/
     │   ├── tools.service.ts
     │   ├── reservations.service.ts
     │   ├── rentals.service.ts
-    │   ├── payments.service.ts
     │   ├── maintenance.service.ts
     │   ├── feedback.service.ts
     │   ├── notifications.service.ts
@@ -73,7 +71,6 @@ backend/
     │   ├── tools.controller.ts
     │   ├── reservations.controller.ts
     │   ├── rentals.controller.ts
-    │   ├── payments.controller.ts
     │   ├── maintenance.controller.ts
     │   ├── feedback.controller.ts
     │   ├── notifications.controller.ts
@@ -84,7 +81,6 @@ backend/
     │   ├── tools.routes.ts
     │   ├── reservations.routes.ts
     │   ├── rentals.routes.ts
-    │   ├── payments.routes.ts
     │   ├── maintenance.routes.ts
     │   ├── feedback.routes.ts
     │   ├── notifications.routes.ts
@@ -112,8 +108,7 @@ backend/
 | Users             | users         | users         | users         | GET/PATCH/DELETE /users                                  |
 | Tools & Equipment | tools         | tools         | tools         | GET/POST/PATCH/DELETE /tools                             |
 | Reservations      | reservations  | reservations  | reservations  | Full CRUD + status transitions                           |
-| Rentals           | rentals       | rentals       | rentals       | Checkout, return, inspection                             |
-| Payments          | payments      | payments      | payments      | Payment records + verification                           |
+| Rentals           | rentals       | rentals       | rentals       | Handover release, return, inspection                     |
 | Maintenance       | maintenance   | maintenance   | maintenance   | Maintenance reports                                      |
 | Feedback          | feedback      | feedback      | feedback      | Ratings and reviews                                      |
 | Notifications     | notifications | notifications | notifications | In-app notifications                                     |
@@ -127,12 +122,13 @@ backend/
 - Execute raw SQL against the `node:sqlite` DatabaseSync instance
 - Accept typed parameters, return typed rows
 - **No business logic.** No HTTP concepts.
-- Handle transactions internally for multi-statement operations
+- Handle atomic database blocks when deleting dependent entities
 
 ### Services (`src/services/`)
 
 - Implement MCTEB business rules and domain workflows
 - Call one or more repositories to fulfill a request
+- Open atomic blocks via `db.atomic()` for multi-statement mutations
 - Throw typed `AppError` instances for domain violations
 - **No HTTP concepts.** No `req`/`res`.
 
@@ -160,7 +156,7 @@ backend/
 ## Database
 
 - Driver: `node:sqlite` (Node.js 22.5+ built-in experimental API)
-- Schema: `backend/db/schema.sql` — 10 tables
+- Schema: `backend/db/schema.sql` — 8 core domain tables (+ `sessions`)
 - Migrations: `backend/db/migrate.ts` — idempotent, safe to re-run
 - Database file: `Database/app.db` at the monorepo root
 - WAL mode and foreign key enforcement enabled on every connection

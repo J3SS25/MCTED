@@ -117,100 +117,78 @@ describe('MCTEB API Integration Tests', () => {
     expect(res.body.user.age).toBe(22);
   });
 
-  it('Borrower can upload, edit, and delete their own tool without staff approval, but cannot edit municipal tools', async () => {
-    const loginRes = await request(app).post('/api/v1/auth/login').send({
+  it('Borrower cannot upload, edit, or delete tools (403), while Municipal Staff can create, edit, and delete catalog tools', async () => {
+    const borrowerLoginRes = await request(app).post('/api/v1/auth/login').send({
       email: 'borrower@basco.gov.ph',
       password: 'Basco@2026!',
     });
-    const token = loginRes.body.token;
+    const borrowerToken = borrowerLoginRes.body.token as string;
 
-    // 1. Borrower cannot update a municipal tool owned by the system (owner_id = null)
+    // 1. Borrower cannot create a tool
+    const forbiddenCreate = await request(app)
+      .post('/api/v1/tools')
+      .set('Authorization', `Bearer ${borrowerToken}`)
+      .send({
+        name: 'Borrower Unauthorized Drill',
+        category: 'Carpentry',
+        description: 'Borrowers are not allowed to upload tools.',
+        total_quantity: 1,
+      });
+    expect(forbiddenCreate.status).toBe(403);
+
+    // 2. Borrower cannot update a municipal tool
     const forbiddenPatch = await request(app)
       .patch('/api/v1/tools/b0000000-0000-4000-8000-000000000001')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${borrowerToken}`)
       .send({ name: 'Hijacked Tool' });
     expect(forbiddenPatch.status).toBe(403);
 
-    // 2. Borrower uploads their own tool with image & discount
+    // 3. Borrower cannot delete a municipal tool
+    const forbiddenDelete = await request(app)
+      .delete('/api/v1/tools/b0000000-0000-4000-8000-000000000001')
+      .set('Authorization', `Bearer ${borrowerToken}`);
+    expect(forbiddenDelete.status).toBe(403);
+
+    // 4. Municipal Staff CAN create, edit, and delete catalog tools
+    const staffLoginRes = await request(app).post('/api/v1/auth/login').send({
+      email: 'staff@basco.gov.ph',
+      password: 'Basco@2026!',
+    });
+    const staffToken = staffLoginRes.body.token as string;
+
     const createRes = await request(app)
       .post('/api/v1/tools')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${staffToken}`)
       .send({
-        name: 'Borrower Cordless Drill',
+        name: 'Staff Cordless Drill',
         category: 'Carpentry',
-        description: '18V cordless hammer drill shared by community member.',
-        rental_fee_centavos: 15000,
-        deposit_fee_centavos: 50000,
-        discount_percent: 10,
+        description: '18V cordless hammer drill managed by municipal staff.',
         total_quantity: 1,
         image_url:
           'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       });
 
     expect(createRes.status).toBe(201);
-    expect(createRes.body.owner_id).toBe(loginRes.body.user.id);
-    expect(createRes.body.discount_percent).toBe(10);
+    expect(createRes.body.owner_id).toBe(staffLoginRes.body.user.id);
     const createdToolId = createRes.body.id;
 
-    // 3. Borrower edits their own tool
+    // 5. Staff edits the created tool
     const editRes = await request(app)
       .patch(`/api/v1/tools/${createdToolId}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'Borrower Cordless Drill Pro', availability_status: 'Reserved' });
+      .set('Authorization', `Bearer ${staffToken}`)
+      .send({ name: 'Staff Cordless Drill Pro', availability_status: 'Reserved' });
     expect(editRes.status).toBe(200);
-    expect(editRes.body.name).toBe('Borrower Cordless Drill Pro');
+    expect(editRes.body.name).toBe('Staff Cordless Drill Pro');
     expect(editRes.body.availability_status).toBe('Reserved');
 
-    // 4. Borrower deletes their own tool without staff/admin approval
+    // 6. Staff deletes the created tool
     const deleteRes = await request(app)
       .delete(`/api/v1/tools/${createdToolId}`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${staffToken}`);
     expect(deleteRes.status).toBe(200);
     expect(deleteRes.body.deleted).toBe(true);
 
     const getDeleted = await request(app).get(`/api/v1/tools/${createdToolId}`);
     expect(getDeleted.status).toBe(404);
-  });
-
-  it('POST /api/v1/payments supports demo payment methods (GCash, LANDBANK, Maya (PayMaya), BDO) and receipt metadata', async () => {
-    const loginRes = await request(app).post('/api/v1/auth/login').send({
-      email: 'borrower@basco.gov.ph',
-      password: 'Basco@2026!',
-    });
-    const token = loginRes.body.token;
-
-    for (const method of ['GCash', 'LANDBANK', 'Maya (PayMaya)', 'BDO']) {
-      const payRes = await request(app)
-        .post('/api/v1/payments')
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          tool_id: 'b0000000-0000-4000-8000-000000000001',
-          amount_centavos: 150000,
-          payment_method: method,
-          status: 'Paid',
-          pickup_date: '2026-11-20',
-          return_date: '2026-11-22',
-          duration_days: 3,
-          remarks: `Demo payment via ${method}`,
-          items_json: JSON.stringify([
-            {
-              tool_id: 'b0000000-0000-4000-8000-000000000001',
-              tool_name: 'Agricultural Hand Tiller',
-              quantity: 1,
-              unit_cost_centavos: 50000,
-              deposit_fee_centavos: 0,
-              duration_days: 3,
-              subtotal_centavos: 150000,
-            },
-          ]),
-        });
-
-      expect(payRes.status).toBe(201);
-      expect(payRes.body.payment_method).toBe(method);
-      expect(payRes.body.status).toBe('Paid');
-      expect(payRes.body.duration_days).toBe(3);
-      expect(payRes.body.payer_province).toBeDefined();
-      expect(payRes.body.items_json).toContain('Agricultural Hand Tiller');
-    }
   });
 });

@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import { useWishlistCart } from '../../lib/wishlist-cart-context';
 import { setLocalToolImages } from '../../lib/local-storage';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Input';
@@ -14,7 +13,7 @@ import { ToolCard } from '../../components/catalog/ToolCard';
 import { ToolDetailsModal } from '../../components/catalog/ToolDetailsModal';
 import { ToolFormModal } from '../inventory/ToolFormModal';
 import { ReservationFormModal } from '../reservations/ReservationFormModal';
-import { Search, Plus, ArrowUpDown, SlidersHorizontal, Package } from 'lucide-react';
+import { Search, Plus, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
 import type { Tool } from '@mcteb/shared';
 
 const AVAILABILITY_FILTERS = [
@@ -29,15 +28,13 @@ const AVAILABILITY_FILTERS = [
 const SORT_OPTIONS = [
   { value: 'name_asc', label: 'Name (A – Z)' },
   { value: 'name_desc', label: 'Name (Z – A)' },
-  { value: 'price_asc', label: 'Rental Fee: Low to High' },
-  { value: 'price_desc', label: 'Rental Fee: High to Low' },
   { value: 'availability', label: 'Availability Priority' },
   { value: 'newest', label: 'Newest Added' },
 ];
 
 export function CatalogPage() {
   const { user } = useAuth();
-  const { isInWishlist, isInCart, toggleWishlist, addToCart } = useWishlistCart();
+  const navigate = useNavigate();
 
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +112,14 @@ export function CatalogPage() {
 
   const isStaffOrAdmin = user?.role === 'Municipal Staff' || user?.role === 'Administrator';
 
+  const handleBorrowNow = (tool: Tool) => {
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: '/catalog' } } });
+      return;
+    }
+    setReserveTool(tool);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -124,20 +129,13 @@ export function CatalogPage() {
             Shared Equipment Catalog
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Browse municipal and community-shared tools across agriculture, marine, carpentry, and
+            Browse municipal tools and equipment across agriculture, marine, carpentry, and
             emergency response.
           </p>
         </div>
 
-        {user && (
+        {isStaffOrAdmin && (
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-            {user.role === 'Borrower' && (
-              <Link to="/my-tools">
-                <Button variant="outline" size="sm" className="gap-1.5">
-                  <Package className="h-4 w-4" /> My Uploaded Tools &amp; Equipment
-                </Button>
-              </Link>
-            )}
             <Button
               size="sm"
               onClick={() => {
@@ -147,7 +145,7 @@ export function CatalogPage() {
               className="gap-1.5"
             >
               <Plus className="h-4 w-4" />
-              {user.role === 'Borrower' ? 'Upload Tool / Equipment' : 'Add Equipment'}
+              Add Equipment
             </Button>
           </div>
         )}
@@ -236,22 +234,9 @@ export function CatalogPage() {
               <ToolCard
                 key={tool.id}
                 tool={tool}
-                inWishlist={isInWishlist(tool.id)}
-                inCart={isInCart(tool.id)}
                 canManage={canManage}
                 onSelect={(item) => setSelectedTool(item)}
-                onToggleWishlist={(item) => {
-                  const added = toggleWishlist(item);
-                  setFeedbackBanner(
-                    added
-                      ? `"${item.name}" saved to your Wishlist.`
-                      : `"${item.name}" removed from your Wishlist.`,
-                  );
-                }}
-                onAddToCart={(item) => {
-                  addToCart(item, 1);
-                  setFeedbackBanner(`"${item.name}" added to your Borrowing Cart.`);
-                }}
+                onBorrowNow={!isStaffOrAdmin ? handleBorrowNow : undefined}
                 onEdit={(item) => {
                   setEditingTool(item);
                   setIsModalOpen(true);
@@ -274,23 +259,24 @@ export function CatalogPage() {
           setIsModalOpen(true);
         }}
         onDelete={handleDeleteTool}
-        onReserve={(item) => setReserveTool(item)}
-        onActionNotice={(msg) => setFeedbackBanner(msg)}
+        onBorrowNow={!isStaffOrAdmin ? handleBorrowNow : undefined}
       />
 
-      {/* Add / Edit Tool Modal */}
-      <ToolFormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingTool(null);
-        }}
-        tool={editingTool}
-        onSuccess={() => {
-          setFeedbackBanner(editingTool ? 'Tool details updated.' : 'Tool added to catalog.');
-          fetchCatalog();
-        }}
-      />
+      {/* Add / Edit Tool Modal (Municipal Staff & Administrator only) */}
+      {isStaffOrAdmin && (
+        <ToolFormModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingTool(null);
+          }}
+          tool={editingTool}
+          onSuccess={() => {
+            setFeedbackBanner(editingTool ? 'Tool details updated.' : 'Tool added to catalog.');
+            fetchCatalog();
+          }}
+        />
+      )}
 
       {/* Quick Reservation Modal */}
       {reserveTool && (

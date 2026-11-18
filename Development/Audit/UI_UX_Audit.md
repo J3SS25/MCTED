@@ -48,15 +48,14 @@ The application adapts dynamically across mobile, tablet, and desktop viewports:
 
 ### 1. Resident Borrower Experience
 
-- Simplified advance booking modal with date range pickers and automated rental fee computation.
+- Simplified advance booking modal with date range pickers and borrowing duration calculation.
 - Clear loan status tracking ("Reserved", "Borrowed", "Due in 3 days").
-- Printable official municipal receipts for treasury submissions.
 
 ### 2. Municipal Staff Desk Experience
 
 - Rapid-access review queue for incoming advance reservation requests.
-- Streamlined equipment checkout modal with initial condition tagging.
-- Return inspection modal with automated late penalty calculation and damage defect ticket creation.
+- Streamlined equipment handover modal with initial condition tagging.
+- Return inspection modal with condition tagging and defect ticket creation.
 
 ### 3. Administrator Experience
 

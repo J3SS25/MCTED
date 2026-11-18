@@ -17,6 +17,14 @@ interface ToolActor {
   role: string;
 }
 
+function assertStaffOrAdmin(actor: ToolActor): void {
+  if (actor.role !== 'Municipal Staff' && actor.role !== 'Administrator') {
+    throw AppError.forbidden(
+      'Only Municipal Staff and Administrators can upload, update, archive, or delete tools and equipment.',
+    );
+  }
+}
+
 function validateToolImagesInput(input: {
   image_urls?: string[];
   image_url?: string;
@@ -82,6 +90,8 @@ export class ToolsService {
   }
 
   static createTool(input: CreateToolInput, actor: ToolActor): Tool {
+    assertStaffOrAdmin(actor);
+
     const serialTrimmed = input.serial_number?.trim();
     if (serialTrimmed) {
       const duplicate = ToolsRepository.findBySerialNumber(serialTrimmed);
@@ -117,13 +127,9 @@ export class ToolsService {
   }
 
   static updateTool(id: string, input: UpdateToolInput, actor: ToolActor): Tool {
-    const current = this.getToolById(id);
+    assertStaffOrAdmin(actor);
 
-    if (actor.role === 'Borrower' && (!current.owner_id || current.owner_id !== actor.id)) {
-      throw AppError.forbidden(
-        'Borrowers can only edit, update, or delete tools and equipment that they personally uploaded.',
-      );
-    }
+    const current = this.getToolById(id);
 
     const serialTrimmed = input.serial_number?.trim();
     if (serialTrimmed) {
@@ -176,13 +182,9 @@ export class ToolsService {
   }
 
   static archiveTool(id: string, actor: ToolActor): Tool {
-    const tool = this.getToolById(id);
+    assertStaffOrAdmin(actor);
 
-    if (actor.role === 'Borrower' && (!tool.owner_id || tool.owner_id !== actor.id)) {
-      throw AppError.forbidden(
-        'Borrowers can only archive tools and equipment that they personally uploaded.',
-      );
-    }
+    const tool = this.getToolById(id);
 
     if (tool.available_quantity < tool.total_quantity) {
       throw AppError.badRequest(
@@ -216,13 +218,9 @@ export class ToolsService {
   }
 
   static deleteTool(id: string, actor: ToolActor): void {
-    const tool = this.getToolById(id);
+    assertStaffOrAdmin(actor);
 
-    if (actor.role === 'Borrower' && (!tool.owner_id || tool.owner_id !== actor.id)) {
-      throw AppError.forbidden(
-        'Borrowers can only edit, update, or delete tools and equipment that they personally uploaded.',
-      );
-    }
+    const tool = this.getToolById(id);
 
     if (ToolsRepository.hasActiveBorrowedRentals(id)) {
       throw AppError.badRequest('Cannot delete tool while units are currently borrowed');

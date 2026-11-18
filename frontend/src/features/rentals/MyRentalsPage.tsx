@@ -5,12 +5,14 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { ShoppingBag, AlertTriangle, CheckCircle } from 'lucide-react';
-import { formatDate, formatPHP } from '@mcteb/shared';
+import { ToolBorrowingReceiptModal } from '../../components/receipt/ToolBorrowingReceiptModal';
+import { ShoppingBag, AlertTriangle, FileText } from 'lucide-react';
+import { formatDate } from '@mcteb/shared';
 
 export function MyRentalsPage() {
   const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [receiptRental, setReceiptRental] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     async function fetchRentals() {
@@ -51,14 +53,14 @@ export function MyRentalsPage() {
         <EmptyState
           icon={<ShoppingBag className="h-12 w-12 text-slate-400 stroke-1" />}
           title="No loan records"
-          description="You do not currently have any active tool checkouts or past loan history."
+          description="You do not currently have any active tool loans or past borrowing history."
           actionText="Browse Catalog"
           onAction={() => (window.location.href = '/catalog')}
         />
       ) : (
         <div className="space-y-4">
           {rentals.map((rental) => {
-            const isOverdue =
+            const isPastDue =
               rental.status === 'Borrowed' && new Date(rental.due_date) < new Date();
 
             return (
@@ -82,9 +84,9 @@ export function MyRentalsPage() {
                           {rental.tool_name}
                         </h3>
                         <Badge status={rental.status} />
-                        {isOverdue && (
+                        {isPastDue && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300 flex items-center gap-1">
-                            <AlertTriangle className="h-3 w-3" /> OVERDUE
+                            <AlertTriangle className="h-3 w-3" /> PAST DUE
                           </span>
                         )}
                       </div>
@@ -104,24 +106,25 @@ export function MyRentalsPage() {
                           Staff notes: "{rental.inspection_notes}"
                         </p>
                       )}
-
-                      {(rental.overdue_penalty_centavos > 0 ||
-                        rental.damage_penalty_centavos > 0) && (
-                        <p className="text-xs font-semibold text-red-600">
-                          Total Penalties:{' '}
-                          {formatPHP(
-                            rental.overdue_penalty_centavos + rental.damage_penalty_centavos,
-                          )}
-                        </p>
-                      )}
                     </div>
                   </div>
 
-                  <div className="text-right self-end md:self-center">
-                    <p className="text-xs text-slate-400">Reference ID</p>
-                    <p className="text-xs font-mono text-slate-700 dark:text-slate-300">
-                      {rental.id.slice(0, 8)}
-                    </p>
+                  <div className="flex flex-col sm:items-end gap-2 self-end md:self-center">
+                    <div className="text-right">
+                      <p className="text-xs text-slate-400">Reference ID</p>
+                      <p className="text-xs font-mono text-slate-700 dark:text-slate-300">
+                        {rental.id.slice(0, 8)}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => setReceiptRental(rental)}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Borrowing Receipt
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -129,6 +132,12 @@ export function MyRentalsPage() {
           })}
         </div>
       )}
+
+      <ToolBorrowingReceiptModal
+        isOpen={!!receiptRental}
+        onClose={() => setReceiptRental(null)}
+        source={receiptRental}
+      />
     </div>
   );
 }

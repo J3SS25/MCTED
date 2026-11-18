@@ -29,7 +29,6 @@ export function MaintenanceReportModal({
   const [severity, setSeverity] = useState<MaintenanceSeverity>('Moderate');
   const [description, setDescription] = useState('');
   const [technicianName, setTechnicianName] = useState('');
-  const [estimatedCostPesos, setEstimatedCostPesos] = useState<number>(0);
   const [scheduledDate, setScheduledDate] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
@@ -65,7 +64,6 @@ export function MaintenanceReportModal({
           issue_description: description,
           severity,
           technician_name: technicianName || undefined,
-          estimated_cost_centavos: Math.round(estimatedCostPesos * 100),
           scheduled_date: scheduledDate || undefined,
         }),
       });
@@ -110,7 +108,7 @@ export function MaintenanceReportModal({
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Assigned Technician"
             placeholder="e.g. Basco Motorpool / Engr. Gari"
@@ -119,20 +117,12 @@ export function MaintenanceReportModal({
           />
 
           <Input
-            label="Est. Repair Cost (₱)"
-            type="number"
-            min="0"
-            value={estimatedCostPesos}
-            onChange={(e) => setEstimatedCostPesos(Number(e.target.value))}
+            label="Scheduled Repair Date"
+            type="date"
+            value={scheduledDate}
+            onChange={(e) => setScheduledDate(e.target.value)}
           />
         </div>
-
-        <Input
-          label="Scheduled Repair Date"
-          type="date"
-          value={scheduledDate}
-          onChange={(e) => setScheduledDate(e.target.value)}
-        />
 
         <p className="text-xs text-amber-600 dark:text-amber-400">
           Note: If severity is Severe or Critical, the item will automatically be taken out of

@@ -25,7 +25,7 @@ Code must strictly respect the layered pattern:
 3. **Services (`backend/src/services/*.service.ts`, `backend/src/admin/*.service.ts`)**:
 
    - Encapsulate all domain business rules.
-   - Open and manage atomic database transactions (`db.transaction()`).
+   - Open and manage atomic database operations (`db.atomic()`).
    - Trigger side-effects (e.g., dispatching notifications, recording audit log entries).
    - Never interact with Express `req` or `res` objects.
 
@@ -89,36 +89,18 @@ The centralized error middleware catches all thrown `AppError` instances, logs t
   import { logger } from '../../utils/logger.js';
 
   // Informational message
-  logger.info({ userId, toolId }, 'Tool successfully checked out');
+  logger.info({ userId, toolId }, 'Tool successfully released');
 
   // Warning
   logger.warn({ email, attempts }, 'Failed login attempt recorded');
 
   // Error with stack trace
-  logger.error({ error, reservationId }, 'Failed to complete reservation transaction');
+  logger.error({ error, reservationId }, 'Failed to complete reservation operation');
   ```
 
 ---
 
-## 4. Financial Calculations
-
-- Every fee, deposit, penalty, or reimbursement must be stored and computed as **integer centavos**.
-- Never perform floating-point divisions (`/ 100`) inside backend services or database queries.
-- Format for presentation exclusively using `formatPHP(centavos)` from `@mcteb/shared`.
-
-```typescript
-// Correct:
-const dailyFeeCentavos = 15000; // 150.00 PHP
-const days = 3;
-const totalCentavos = dailyFeeCentavos * days; // 45000
-
-// Forbidden in backend services:
-const totalPesos = 150.0 * 3; // Float arithmetic!
-```
-
----
-
-## 5. Localized Date Conventions
+## 4. Localized Date Conventions
 
 - **Storage**: All timestamps and date strings in SQLite are stored as ISO 8601 strings (`2026-11-20T10:30:00Z`) or standard date strings (`YYYY-MM-DD`).
 - **Presentation**: Localized to Philippine Standard Time (`Asia/Manila`) via `formatDate()` and `formatDateTime()` in `@mcteb/shared/src/dates.ts`.

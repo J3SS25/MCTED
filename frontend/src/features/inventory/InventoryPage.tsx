@@ -9,7 +9,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ToolFormModal } from './ToolFormModal';
 import { SlidersHorizontal, Plus, Edit, Archive, Trash2, Search } from 'lucide-react';
-import { TOOL_CATEGORIES, formatPHP, type Tool } from '@mcteb/shared';
+import { TOOL_CATEGORIES, type Tool } from '@mcteb/shared';
 
 const CATEGORY_FILTER_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -28,8 +28,6 @@ const AVAILABILITY_FILTER_OPTIONS = [
 const SORT_OPTIONS = [
   { value: 'name_asc', label: 'Name (A – Z)' },
   { value: 'name_desc', label: 'Name (Z – A)' },
-  { value: 'price_asc', label: 'Daily Fee: Low to High' },
-  { value: 'price_desc', label: 'Daily Fee: High to Low' },
   { value: 'availability', label: 'Status Priority' },
   { value: 'newest', label: 'Newest Added' },
 ];
@@ -203,7 +201,6 @@ export function InventoryPage() {
                   <th className="px-4 py-3">Availability</th>
                   <th className="px-4 py-3">Condition</th>
                   <th className="px-4 py-3">Available / Total</th>
-                  <th className="px-4 py-3">Daily Fee</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -244,14 +241,6 @@ export function InventoryPage() {
                     </td>
                     <td className="px-4 py-3 font-medium">
                       {tool.available_quantity} / {tool.total_quantity}
-                    </td>
-                    <td className="px-4 py-3 font-bold text-civic-forest dark:text-civic-light">
-                      {formatPHP(tool.rental_fee_centavos)}
-                      {(tool.discount_percent ?? 0) > 0 && (
-                        <span className="ml-1.5 text-[10px] text-amber-600 dark:text-amber-400">
-                          (-{tool.discount_percent}%)
-                        </span>
-                      )}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap space-x-1">
                       <Button

@@ -11,9 +11,9 @@ MCTEB implements a multi-tier automated test suite covering all three monorepo p
 ```mermaid
 flowchart TD
     subgraph TestingPyramid ["Test Coverage Distribution"]
-        Integration["Backend Integration Tests<br/>(backend: Vitest + Supertest + In-Memory SQLite)<br/>• Route handling & RBAC<br/>• Age verification<br/>• Multi-row transactions"]
+        Integration["Backend Integration Tests<br/>(backend: Vitest + Supertest + In-Memory SQLite)<br/>• Route handling & RBAC<br/>• Age verification<br/>• Multi-row atomic operations"]
         Component["Frontend Component Tests<br/>(frontend: Vitest + React Testing Library + jsdom)<br/>• UI state rendering<br/>• Accessibility and button actions"]
-        Unit["Shared Utility Unit Tests<br/>(packages/shared: Vitest)<br/>• Integer centavos calculations<br/>• Date localization & timezone formatting"]
+        Unit["Shared Utility Unit Tests<br/>(packages/shared: Vitest)<br/>• Image content moderation<br/>• Date localization & timezone formatting"]
     end
 ```
 
@@ -88,28 +88,4 @@ describe('Button component', () => {
 
 ## 5. Shared Utility Unit Testing (`packages/shared/src/**/*.test.ts`)
 
-Validates pure functional calculations, currency conversions, and date parsing.
-
-### Example: Integer Centavos Conversions (`money.test.ts`)
-
-```typescript
-import { describe, it, expect } from 'vitest';
-import { centavosToPesos, pesosToCentavos, formatPHP } from './money.js';
-
-describe('money utilities', () => {
-  it('centavosToPesos correctly converts integer centavos to decimal pesos', () => {
-    expect(centavosToPesos(10000)).toBe(100);
-    expect(centavosToPesos(2550)).toBe(25.5);
-  });
-
-  it('pesosToCentavos correctly converts decimal pesos to integer centavos', () => {
-    expect(pesosToCentavos(100)).toBe(10000);
-    expect(pesosToCentavos(25.5)).toBe(2550);
-  });
-
-  it('formatPHP formats centavos into Philippine Peso currency representation', () => {
-    const formatted = formatPHP(15000);
-    expect(formatted).toMatch(/150\.00/);
-  });
-});
-```
+Validates pure functional rules, image moderation, and date parsing (`packages/shared/src/image-moderation.test.ts`).

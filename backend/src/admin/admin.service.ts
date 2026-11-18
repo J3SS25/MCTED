@@ -7,7 +7,6 @@ export interface AdminOverviewStats {
   totalTools: number;
   activeRentals: number;
   pendingReservations: number;
-  pendingPayments: number;
   openMaintenance: number;
   recentAuditLogsCount: number;
 }
@@ -39,11 +38,6 @@ export class AdminService {
         count: number;
       }
     ).count;
-    const paymentsCount = (
-      db.prepare("SELECT COUNT(*) as count FROM payments WHERE status = 'Pending'").get() as {
-        count: number;
-      }
-    ).count;
     const maintenanceCount = (
       db
         .prepare(
@@ -60,7 +54,6 @@ export class AdminService {
       totalTools: toolsCount,
       activeRentals: rentalsCount,
       pendingReservations: reservationsCount,
-      pendingPayments: paymentsCount,
       openMaintenance: maintenanceCount,
       recentAuditLogsCount: auditCount,
     };

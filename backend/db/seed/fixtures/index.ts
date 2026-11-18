@@ -3,9 +3,9 @@
  * Municipality of Basco, Batanes
  *
  * Covers: 4 demo users, 7 catalog tools, 2 reservations, 1 active rental,
- * 1 verified payment, 1 public feedback entry.
+ * and 1 public feedback entry.
  *
- * All monetary values in centavos (integer). Dates as ISO-8601 strings.
+ * Dates as ISO-8601 strings.
  * UUIDs are deterministic v4-compatible fixed values for idempotent re-seeds.
  */
 
@@ -75,8 +75,6 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 50000, // PHP 500.00
-    deposit_fee_centavos: 200000, // PHP 2,000.00
     total_quantity: 2,
     available_quantity: 2,
     serial_number: 'TLR-2024-001',
@@ -97,8 +95,6 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Excellent',
-    rental_fee_centavos: 80000, // PHP 800.00
-    deposit_fee_centavos: 500000, // PHP 5,000.00
     total_quantity: 3,
     available_quantity: 2,
     serial_number: 'GEN-2024-001',
@@ -118,8 +114,6 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 60000, // PHP 600.00
-    deposit_fee_centavos: 300000, // PHP 3,000.00
     total_quantity: 2,
     available_quantity: 2,
     serial_number: 'CMX-2024-001',
@@ -139,8 +133,6 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 40000, // PHP 400.00
-    deposit_fee_centavos: 150000, // PHP 1,500.00
     total_quantity: 4,
     available_quantity: 4,
     serial_number: 'WPM-2024-001',
@@ -160,8 +152,6 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 25000, // PHP 250.00
-    deposit_fee_centavos: 100000, // PHP 1,000.00
     total_quantity: 3,
     available_quantity: 3,
     serial_number: 'SAW-2024-001',
@@ -180,8 +170,6 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Good',
-    rental_fee_centavos: 10000, // PHP 100.00
-    deposit_fee_centavos: 50000, // PHP 500.00
     total_quantity: 10,
     available_quantity: 9,
     serial_number: 'SPR-2024-001',
@@ -201,8 +189,6 @@ export const SEED_TOOLS = [
     }),
     availability_status: 'Available',
     condition_status: 'Excellent',
-    rental_fee_centavos: 20000, // PHP 200.00
-    deposit_fee_centavos: 80000, // PHP 800.00
     total_quantity: 5,
     available_quantity: 5,
     serial_number: 'GPS-2024-001',
@@ -256,29 +242,8 @@ export const SEED_RENTALS = [
     initial_condition: 'Good',
     returned_condition: null,
     inspection_notes: 'Engine oil checked, all tines intact, fully fueled.',
-    overdue_penalty_centavos: 0,
-    damage_penalty_centavos: 0,
     released_by: 'a0000000-0000-4000-8000-000000000002', // Juan dela Cruz
     received_by: null,
-  },
-];
-
-// ─── PAYMENTS ─────────────────────────────────────────────────────────────────
-
-export const SEED_PAYMENTS = [
-  {
-    id: 'e0000000-0000-4000-8000-000000000001',
-    receipt_reference: 'OR-2026-00001',
-    user_id: 'a0000000-0000-4000-8000-000000000003', // Ana Reyes
-    reservation_id: 'c0000000-0000-4000-8000-000000000001',
-    rental_id: 'd0000000-0000-4000-8000-000000000001',
-    tool_id: 'b0000000-0000-4000-8000-000000000001', // Hand Tiller
-    amount_centavos: 250000, // PHP 2,500.00 (500 rental + 2,000 deposit)
-    payment_method: 'GCash',
-    status: 'Paid',
-    proof_url: null,
-    verified_by: 'a0000000-0000-4000-8000-000000000002', // Juan dela Cruz
-    verified_at: '2026-11-10T08:30:00.000Z',
   },
 ];
 

@@ -26,31 +26,11 @@ Adopt SQLite using Node.js's built-in `node:sqlite` (`DatabaseSync`) module, run
 - **Positive**: Zero external binaries, zero C++ compilation during `pnpm install`, 100% portable across Windows, macOS, and Linux.
 - **Positive**: Atomic multi-row mutations via `BEGIN IMMEDIATE` / `COMMIT`.
 - **Positive**: Online hot backups supported via SQLite's `VACUUM INTO`.
-- **Negative**: Single-writer constraint requires short-lived write transactions (fully mitigated by WAL mode and in-process execution).
+- **Negative**: Single-writer constraint requires short-lived write operations (fully mitigated by WAL mode and in-process execution).
 
 ---
 
-## ADR-0002: Integer Centavos Currency Representation
-
-### Status: Accepted
-
-### Context
-
-Financial assessments in municipal operations include rental rates, deposit guarantees, overdue penalties, and assessed damage fees. Standard JavaScript floating-point arithmetic (`0.1 + 0.2 !== 0.3`) causes precision errors that lead to audit discrepancies.
-
-### Decision
-
-Store all financial values in the database, API contracts, and domain business calculations as **integers representing centavos** (1 PHP = 100 centavos). Conversion to pesos (`centavos / 100`) and localized currency formatting (`formatPHP`) occurs exclusively at the presentation layer.
-
-### Consequences
-
-- **Positive**: Complete avoidance of rounding errors in penalties, fee totals, and treasury receipts.
-- **Positive**: Clean integer arithmetic without external BigNumber dependencies.
-- **Negative**: Developers must remember not to divide or multiply by 100 prematurely in backend logic.
-
----
-
-## ADR-0003: pnpm Workspace Monorepo Architecture
+## ADR-0002: pnpm Workspace Monorepo Architecture
 
 ### Status: Accepted
 
@@ -77,13 +57,13 @@ Standardize on a **pnpm workspace monorepo** with three packages:
 
 ---
 
-## ADR-0004: Strict Layered Backend Architecture
+## ADR-0003: Strict Layered Backend Architecture
 
 ### Status: Accepted
 
 ### Context
 
-Mixing HTTP handling, business validation, transaction boundaries, and raw SQL queries inside route handlers makes applications unmaintainable, untestable, and prone to security vulnerabilities.
+Mixing HTTP handling, business validation, atomic boundaries, and raw SQL queries inside route handlers makes applications unmaintainable, untestable, and prone to security vulnerabilities.
 
 ### Decision
 
@@ -92,18 +72,18 @@ Enforce a four-tier architecture across all backend domain modules:
 
 - **Routes**: URL endpoint definitions and validation middleware.
 - **Controllers**: HTTP parameter parsing and response code translation.
-- **Services**: Business rules, atomic transactions, notifications, and audit logging.
+- **Services**: Business rules, atomic database operations, notifications, and audit logging.
 - **Repositories**: Parameterized SQL queries and database interaction.
 
 ### Consequences
 
 - **Positive**: High testability — services can be tested with in-memory fixtures; repositories can be tested independently.
-- **Positive**: Clear boundary for database transactions (handled exclusively in services).
+- **Positive**: Clear boundary for atomic database operations (handled exclusively in services).
 - **Positive**: Prevents SQL injection by restricting all queries to parameterized statements.
 
 ---
 
-## ADR-0005: Dual-Level Validation (Zod + Database CHECK Constraints)
+## ADR-0004: Dual-Level Validation (Zod + Database CHECK Constraints)
 
 ### Status: Accepted
 
@@ -125,7 +105,7 @@ Implement dual-level validation:
 
 ---
 
-## ADR-0006: Server-Enforced RBAC & Timing-Safe Hashing
+## ADR-0005: Server-Enforced RBAC & Timing-Safe Hashing
 
 ### Status: Accepted
 
@@ -147,7 +127,7 @@ Civic applications require strict access control between resident borrowers, mun
 
 ---
 
-## ADR-0007: Comprehensive TypeScript Standardization
+## ADR-0006: Comprehensive TypeScript Standardization
 
 ### Status: Accepted
 

@@ -13,4 +13,5 @@ reservationsRouter.patch(
   requireRole('Administrator', 'Municipal Staff'),
   ReservationsController.review,
 );
+reservationsRouter.post('/:id/cancel', requireAuth, ReservationsController.cancel);
 reservationsRouter.patch('/:id/cancel', requireAuth, ReservationsController.cancel);

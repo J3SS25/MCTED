@@ -8,7 +8,6 @@ export function resetDemoData(force = false): {
   toolsRemoved: number;
   reservationsRemoved: number;
   rentalsRemoved: number;
-  paymentsRemoved: number;
   maintenanceRemoved: number;
   feedbackRemoved: number;
   notificationsRemoved: number;
@@ -32,7 +31,6 @@ export function resetDemoData(force = false): {
     toolsRemoved: 0,
     reservationsRemoved: 0,
     rentalsRemoved: 0,
-    paymentsRemoved: 0,
     maintenanceRemoved: 0,
     feedbackRemoved: 0,
     notificationsRemoved: 0,
@@ -42,7 +40,7 @@ export function resetDemoData(force = false): {
   const userIds = SEED_USERS.map((u) => u.id);
   const toolIds = SEED_TOOLS.map((t) => t.id);
 
-  const resetTx = db.transaction(() => {
+  const resetBatch = db.atomic(() => {
     // 1. Remove notifications for demo users
     const notifStmt = db.prepare('DELETE FROM notifications WHERE user_id = ?');
     for (const uid of userIds) {
@@ -73,14 +71,7 @@ export function resetDemoData(force = false): {
       counts.maintenanceRemoved += Number(res.changes);
     }
 
-    // 5. Remove payments for demo users
-    const payStmt = db.prepare('DELETE FROM payments WHERE user_id = ?');
-    for (const uid of userIds) {
-      const res = payStmt.run(uid);
-      counts.paymentsRemoved += Number(res.changes);
-    }
-
-    // 6. Remove rentals for demo users or tools
+    // 5. Remove rentals for demo users or tools
     const rentalStmt = db.prepare('DELETE FROM rentals WHERE user_id = ? OR tool_id = ?');
     for (const uid of userIds) {
       for (const tid of toolIds) {
@@ -89,7 +80,7 @@ export function resetDemoData(force = false): {
       }
     }
 
-    // 7. Remove reservations for demo users or tools
+    // 6. Remove reservations for demo users or tools
     const resStmt = db.prepare('DELETE FROM reservations WHERE user_id = ? OR tool_id = ?');
     for (const uid of userIds) {
       for (const tid of toolIds) {
@@ -98,14 +89,14 @@ export function resetDemoData(force = false): {
       }
     }
 
-    // 8. Remove demo tools
+    // 7. Remove demo tools
     const toolDelStmt = db.prepare('DELETE FROM tools WHERE id = ?');
     for (const tid of toolIds) {
       const res = toolDelStmt.run(tid);
       counts.toolsRemoved += Number(res.changes);
     }
 
-    // 9. Remove demo users
+    // 8. Remove demo users
     const userDelStmt = db.prepare('DELETE FROM users WHERE id = ?');
     for (const uid of userIds) {
       const res = userDelStmt.run(uid);
@@ -113,7 +104,7 @@ export function resetDemoData(force = false): {
     }
   });
 
-  resetTx();
+  resetBatch();
 
   logger.info(counts, 'Demo data reset completed successfully');
   return counts;

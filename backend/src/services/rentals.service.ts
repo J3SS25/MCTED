@@ -4,7 +4,7 @@ import { ReservationsRepository } from '../repositories/reservations.repository.
 import { AuditService } from './audit.service.js';
 import { NotificationsService } from './notifications.service.js';
 import { AppError } from '../utils/errors.js';
-import type { CheckoutRentalInput, ReturnRentalInput, RentalStatus } from '@mcteb/shared';
+import type { ReleaseRentalInput, ReturnRentalInput, RentalStatus } from '@mcteb/shared';
 import db from '../../db/client.js';
 
 export class RentalsService {
@@ -24,8 +24,8 @@ export class RentalsService {
     return RentalsRepository.findAll(status);
   }
 
-  static checkout(
-    input: CheckoutRentalInput,
+  static release(
+    input: ReleaseRentalInput,
     staff: { id: string; name: string },
   ): RentalWithDetails {
     const tool = ToolsRepository.findById(input.tool_id);
@@ -35,14 +35,14 @@ export class RentalsService {
 
     if (tool.available_quantity < input.quantity) {
       throw AppError.conflict(
-        `Insufficient stock for checkout. Available: ${tool.available_quantity}, requested: ${input.quantity}`,
+        `Insufficient stock for release. Available: ${tool.available_quantity}, requested: ${input.quantity}`,
       );
     }
 
-    // Atomic Checkout Transaction
-    const checkoutTx = db.transaction(() => {
+    // Atomic Handover Release
+    const releaseBatch = db.atomic(() => {
       // 1. Create rental record
-      const rental = RentalsRepository.createCheckout(input, staff.id);
+      const rental = RentalsRepository.createRelease(input, staff.id);
 
       // 2. Adjust available tool stock
       ToolsRepository.adjustAvailableQuantity(input.tool_id, -input.quantity);
@@ -56,7 +56,7 @@ export class RentalsService {
       AuditService.record({
         actor_id: staff.id,
         actor_name: staff.name,
-        action: 'RENTAL_CHECKOUT',
+        action: 'RENTAL_RELEASED',
         target_type: 'rental',
         target_id: rental.id,
         details: `Released ${input.quantity} unit(s) of "${tool.name}" to borrower (User ID: ${input.user_id}). Initial condition: ${input.initial_condition}`,
@@ -74,7 +74,7 @@ export class RentalsService {
       return rental;
     });
 
-    const res = checkoutTx();
+    const res = releaseBatch();
     return this.getById(res.id);
   }
 
@@ -90,8 +90,8 @@ export class RentalsService {
       );
     }
 
-    // Atomic Return Transaction
-    const returnTx = db.transaction(() => {
+    // Atomic Return Processing
+    const returnBatch = db.atomic(() => {
       // 1. Process return inspection
       const updated = RentalsRepository.processReturn(id, input, staff.id);
       if (!updated) {
@@ -113,14 +113,13 @@ export class RentalsService {
       }
 
       // 4. Audit Log
-      const penaltyTotal = (input.overdue_penalty_centavos + input.damage_penalty_centavos) / 100;
       AuditService.record({
         actor_id: staff.id,
         actor_name: staff.name,
         action: 'RENTAL_RETURNED',
         target_type: 'rental',
         target_id: id,
-        details: `Inspected return of "${existing.tool_name}". Condition: ${input.returned_condition}. Penalties: ₱${penaltyTotal.toFixed(2)}`,
+        details: `Inspected return of "${existing.tool_name}". Condition: ${input.returned_condition}`,
       });
 
       // 5. Notify Borrower
@@ -135,7 +134,7 @@ export class RentalsService {
       return updated;
     });
 
-    returnTx();
+    returnBatch();
     return this.getById(id);
   }
 }

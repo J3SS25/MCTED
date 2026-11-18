@@ -6,7 +6,6 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import type { Tool } from '@mcteb/shared';
-import { formatPHP } from '@mcteb/shared';
 
 interface ReservationFormModalProps {
   isOpen: boolean;
@@ -32,14 +31,13 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Calculate estimated days & fee
+  // Calculate borrowing duration in days
   const days = Math.max(
     1,
     Math.ceil(
       (new Date(returnDate).getTime() - new Date(pickupDate).getTime()) / (1000 * 60 * 60 * 24),
     ) + 1,
   );
-  const estimatedRentalTotal = tool.rental_fee_centavos * days * quantity;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +70,7 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Reserve ${tool.name}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={`Borrow Now: ${tool.name}`}>
       {error && (
         <Alert variant="error" className="mb-4">
           {error}
@@ -117,22 +115,16 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
           onChange={(e) => setPurpose(e.target.value)}
         />
 
-        {/* Estimated Fee Summary */}
+        {/* Borrowing Duration Summary */}
         <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs space-y-1.5 border border-slate-200 dark:border-slate-800">
           <div className="flex justify-between text-slate-600 dark:text-slate-400">
-            <span>Duration:</span>
+            <span>Borrowing Duration:</span>
             <span className="font-semibold text-slate-800 dark:text-slate-200">{days} day(s)</span>
           </div>
           <div className="flex justify-between text-slate-600 dark:text-slate-400">
-            <span>Estimated Rental Fee:</span>
+            <span>Quantity Requested:</span>
             <span className="font-semibold text-slate-800 dark:text-slate-200">
-              {formatPHP(estimatedRentalTotal)}
-            </span>
-          </div>
-          <div className="flex justify-between text-slate-600 dark:text-slate-400">
-            <span>Refundable Deposit:</span>
-            <span className="font-semibold text-slate-800 dark:text-slate-200">
-              {formatPHP(tool.deposit_fee_centavos * quantity)}
+              {quantity} unit(s)
             </span>
           </div>
         </div>
@@ -142,7 +134,7 @@ export function ReservationFormModal({ isOpen, onClose, tool }: ReservationFormM
             Cancel
           </Button>
           <Button type="submit" isLoading={loading}>
-            Submit Request
+            Submit Borrowing Request
           </Button>
         </div>
       </form>

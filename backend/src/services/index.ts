@@ -4,7 +4,6 @@ export * from './users.service.js';
 export * from './tools.service.js';
 export * from './reservations.service.js';
 export * from './rentals.service.js';
-export * from './payments.service.js';
 export * from './maintenance.service.js';
 export * from './feedback.service.js';
 export * from './notifications.service.js';
