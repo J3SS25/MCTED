@@ -1,12 +1,21 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import React from 'react';
 import { ToolBorrowingReceiptForm } from './ToolBorrowingReceiptForm';
+import {
+  ToolBorrowingReceiptModal,
+  useReservationApprovalReceipt,
+} from './ToolBorrowingReceiptModal';
+import { apiRequest } from '../../lib/api';
 import {
   createDefaultBorrowingReceipt,
   generateBorrowingReceiptPdfBytes,
   RECEIPT_WARNING_TEXT,
 } from '../../lib/borrowing-receipt';
+
+vi.mock('../../lib/api', () => ({
+  apiRequest: vi.fn(),
+}));
 
 afterEach(() => {
   cleanup();
@@ -61,11 +70,11 @@ describe('ToolBorrowingReceiptForm', () => {
     expect(screen.getByLabelText('Serial Number (if applicable)')).toBeDefined();
     expect(screen.getByLabelText('Quantity')).toBeDefined();
     expect(screen.getByLabelText('Date Borrowed')).toBeDefined();
-    expect(screen.getByLabelText('Time Borrowed')).toBeDefined();
     expect(screen.getByLabelText('Expected Return Date')).toBeDefined();
-    expect(screen.getByLabelText('Expected Return Time')).toBeDefined();
     expect(screen.getByLabelText('Actual Return Date')).toBeDefined();
-    expect(screen.getByLabelText('Actual Return Time')).toBeDefined();
+    expect(screen.queryByLabelText('Time Borrowed')).toBeNull();
+    expect(screen.queryByLabelText('Expected Return Time')).toBeNull();
+    expect(screen.queryByLabelText('Actual Return Time')).toBeNull();
     expect(screen.getByLabelText('Received By')).toBeDefined();
     expect(screen.getByLabelText("Borrower's Signature")).toBeDefined();
     expect(screen.getByLabelText('Authorized Personnel Signature')).toBeDefined();
@@ -151,6 +160,12 @@ describe('ToolBorrowingReceiptForm', () => {
     expect(decoded).toContain(
       'The borrower is fully responsible for the borrowed tool/equipment during the borrowing period.',
     );
+    expect(decoded).toContain('Date Borrowed');
+    expect(decoded).toContain('Expected Return Date');
+    expect(decoded).toContain('Actual Return Date');
+    expect(decoded).not.toContain('Time Borrowed');
+    expect(decoded).not.toContain('Expected Return Time');
+    expect(decoded).not.toContain('Actual Return Time');
   });
 
   it('pre-populates an Approved reservation receipt with Borrowed status, staff signer, and combined remarks', () => {
@@ -185,5 +200,79 @@ describe('ToolBorrowingReceiptForm', () => {
     );
     expect(receipt.dateBorrowed).toBe('2026-11-20');
     expect(receipt.dateSigned).toBe('2026-11-18');
+  });
+
+  it('renders only the receipt modal without the review banner when approving a reservation', async () => {
+    const onApprovedSpy = vi.fn();
+    const pendingReservation = {
+      id: '44444444-4444-4444-8444-444444444444',
+      user_id: 'a0000000-0000-4000-8000-000000000003',
+      tool_id: '11111111-1111-4111-8111-111111111111',
+      tool_name: 'Backpack Sprayer 20L',
+      tool_serial_number: 'BPS-20-09',
+      tool_condition_status: 'Good',
+      quantity: 1,
+      status: 'Pending',
+      pickup_date: '2026-11-20',
+      return_date: '2099-12-31',
+      created_at: '2026-11-18T01:00:00.000Z',
+      purpose: 'Barangay agricultural spraying',
+      borrower_name: 'Pedro Batanes',
+      borrower_phone: '09171234567',
+      borrower_barangay: 'Kaychanarianan',
+    };
+
+    const approvedResponse = {
+      ...pendingReservation,
+      status: 'Approved',
+      reviewed_by_name: 'Admin Elena',
+      reviewed_at: '2026-11-18T08:30:00.000Z',
+    };
+
+    vi.mocked(apiRequest).mockResolvedValueOnce(approvedResponse);
+
+    function ApprovalModalHarness() {
+      const approvalFlow = useReservationApprovalReceipt({
+        reviewerName: 'Admin Elena',
+        onApproved: onApprovedSpy,
+      });
+
+      return (
+        <>
+          <button type="button" onClick={() => approvalFlow.openApproval(pendingReservation)}>
+            Approve
+          </button>
+          <ToolBorrowingReceiptModal
+            isOpen={approvalFlow.isApproving}
+            onClose={approvalFlow.closeApproval}
+            source={approvalFlow.source}
+          />
+        </>
+      );
+    }
+
+    render(<ApprovalModalHarness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+
+    expect(screen.getByText('Tool Borrowing Receipt Form')).toBeDefined();
+    expect(screen.queryByText(/Reviewing request for/i)).toBeNull();
+    expect(screen.queryByRole('button', { name: /Confirm & Approve Reservation/i })).toBeNull();
+
+    const borrowerInput = screen.getByLabelText<HTMLInputElement>('Full Name');
+    const toolInput = screen.getByLabelText<HTMLInputElement>('Tool / Equipment Name');
+    expect(borrowerInput.value).toBe('Pedro Batanes');
+    expect(toolInput.value).toBe('Backpack Sprayer 20L');
+
+    await waitFor(() => {
+      expect(apiRequest).toHaveBeenCalledWith(
+        '/reservations/44444444-4444-4444-8444-444444444444/review',
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ decision: 'Approved' }),
+        },
+      );
+      expect(onApprovedSpy).toHaveBeenCalledWith(approvedResponse);
+    });
   });
 });

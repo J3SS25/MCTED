@@ -1,0 +1,1238 @@
+================================================================================
+MUNICIPAL COMMUNITY TOOL AND EQUIPMENT BANK (MCTEB)
+COMPLETE SYSTEM DOCUMENTATION & TECHNICAL REVIEWER
+Municipality of Basco, Province of Batanes
+Repository: MCTED (Workspace Package Scope: @mcteb/*)
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+ 1. Project Title and System Overview
+ 2. Background of the Project and Problem Statement
+ 3. Project Objectives
+ 4. Scope and Limitations
+ 5. Functional and Non-Functional Requirements
+ 6. System Architecture Diagram
+ 7. System Design and Component Descriptions
+ 8. Database Design and Entity Relationship Diagram (ERD)
+ 9. System Integration and Communication Explanation
+10. APIs, Middleware, Protocols, and Integration Technologies Used
+11. Security Implementation
+12. Testing Procedures and Results
+13. Deployment Information and User Instructions
+14. Conclusion and Recommendations
+
+
+================================================================================
+1. PROJECT TITLE AND SYSTEM OVERVIEW
+================================================================================
+
+Project Title:
+  Municipal Community Tool and Equipment Bank (MCTEB)
+  Municipality of Basco, Province of Batanes
+
+System Overview:
+  The Municipal Community Tool and Equipment Bank (MCTEB) is a standardized,
+  100% TypeScript civic resource, inventory, reservation, and asset-preservation
+  web platform developed for the Local Government Unit (LGU) of Basco, Batanes.
+  It enables adult residents across the six barangays of Basco (Chanarian,
+  Ihubok I [Kayvaluganan], Ihubok II [Kaychanarianan], Kayhuvokan, San Antonio,
+  and San Joaquin) to discover, reserve, and borrow shared agricultural
+  machinery, fishing gear, carpentry and construction tools, electrical repair
+  equipment, power generators, and emergency storm-response implements at zero
+  cost.
+
+Core Architectural Pillars:
+  1. End-to-End TypeScript Monorepo:
+     Managed via pnpm v12.15.0 workspaces across three TypeScript packages:
+     - packages/shared   (@mcteb/shared)   : Authoritative Zod schemas, domain
+       enums, RBAC permission matrices, Manila timezone date helpers, and image
+       content moderation rules.
+     - backend           (@mcteb/backend)  : Express 4 REST API enforcing a
+       strict 4-tier architecture (routes -> controllers -> services ->
+       repositories -> db) plus an isolated /api/v1/admin perimeter.
+     - frontend          (@mcteb/frontend) : React 19 + Vite 6 + Tailwind CSS
+       Single-Page Application (SPA) using TanStack Query v5 and React Router
+       v7, with responsive sidebar/mobile drawer navigation, light/dark themes,
+       and interactive Tool Borrowing Receipt export (A4 PDF & .doc).
+
+  2. Resilient Local-First Embedded Storage:
+     Built on Node.js (>= 20) native node:sqlite (DatabaseSync) running in
+     Write-Ahead Logging (WAL) mode with strict foreign key enforcement
+     (PRAGMA foreign_keys = ON) and a 5,000 ms busy timeout. Eliminates external
+     database daemons and C++ native build compilation (node-gyp), while
+     supporting atomic multi-row updates (db.atomic()) and online hot backups
+     via VACUUM INTO.
+
+  3. Civic Governance & Traceability:
+     Provides server-enforced Role-Based Access Control (RBAC) across Borrower,
+     Municipal Staff, and Administrator roles, minimum 18-year-old borrower
+     eligibility checks, immutable security audit logging, and standardized
+     digital/printable Tool Borrowing Receipt forms.
+
+
+================================================================================
+2. BACKGROUND OF THE PROJECT AND PROBLEM STATEMENT
+================================================================================
+
+Background:
+  Basco is the capital municipality of Batanes, an archipelagic island province
+  in the northernmost Philippines frequently exposed to severe typhoons,
+  monsoonal squalls, maritime supply disruptions, and intermittent internet and
+  cellular connectivity. Local farmers, fisherfolk, carpenters, households, and
+  barangay disaster-response teams regularly require costly equipment (such as
+  hand tillers, 3.5kVA generators, water pumps, concrete mixers, circular saws,
+  and marine GPS units) for agricultural livelihood, home repair, and post-storm
+  recovery.
+
+  To promote equitable access and disaster readiness without imposing rental
+  fees on citizens, the Municipality of Basco operates a shared Community Tool
+  and Equipment Bank. However, managing shared civic equipment manually or with
+  disconnected spreadsheets introduces operational, accountability, and
+  infrastructure failures.
+
+Problem Statement:
+  1. Manual Record-Keeping and Custody Loss:
+     Paper logbooks at the municipal lending desk make it difficult to track
+     real-time shelf availability versus active loans, detect scheduling
+     conflicts across advance reservations, or enforce custody accountability
+     when tools are overdue or damaged.
+
+  2. Uncontrolled Equipment Degradation:
+     Without structured pre-release and post-return condition inspections
+     coupled with maintenance defect tickets, worn or damaged tools risk being
+     re-issued to subsequent borrowers, creating safety hazards and shortening
+     equipment lifespan.
+
+  3. Connectivity and Infrastructure Constraints:
+     Cloud-hosted platforms or systems requiring external database servers
+     (PostgreSQL/MySQL) fail during typhoon-induced WAN outages and create
+     installation and maintenance barriers on municipal office workstations.
+
+  4. Policy Verification and Audit Gaps:
+     Manual workflows cannot reliably verify borrower eligibility (e.g., legal
+     age >= 18 for custody agreements and Basco barangay residency), prevent
+     unauthorized catalog tampering, or preserve an immutable security audit
+     trail of administrative and desk actions.
+
+
+================================================================================
+3. PROJECT OBJECTIVES
+================================================================================
+
+General Objective:
+  To design, implement, and verify a resilient, local-first, role-based
+  Municipal Community Tool and Equipment Bank (MCTEB) web platform for the
+  Municipality of Basco, Batanes that digitizes equipment cataloging, advance
+  reservations, physical handover and return inspections, borrowing receipts,
+  maintenance tracking, and municipal governance.
+
+Specific Objectives:
+  1. Centralize Equipment Cataloging & Stock Visibility:
+     Provide a searchable, filterable equipment registry across seven municipal
+     categories (Agriculture, Fishing, Carpentry, Construction, Electrical,
+     Power Equipment, and Emergency Response) showing real-time total versus
+     available quantities, serial numbers, specifications, and moderated galleries
+     of up to 5 images per tool.
+
+  2. Digitize the Reservation & Rental Lifecycle Atomically:
+     Support advance resident booking requests with date-range conflict checks,
+     municipal staff approval/rejection queues, desk handover release, and
+     post-return inspection—using atomic SQLite transactions (db.atomic()) so
+     inventory counts, rental statuses, reservation completion, notifications,
+     and audit logs remain strictly consistent.
+
+  3. Standardize Borrowing Custody via Tool Borrowing Receipts:
+     Provide an interactive 8-section Tool Borrowing Receipt Form pre-populated
+     from loan or approved reservation records, supporting digital editing,
+     in-browser printing, and client-side generation of A4 PDF (%PDF-1.4) and
+     Microsoft Word (.doc) soft copies containing mandatory liability warnings.
+
+  4. Automate Equipment Maintenance & Quarantine:
+     Enable maintenance defect reporting (Minor, Moderate, Severe, Critical)
+     and return-inspection damage flags that automatically remove compromised
+     tools from borrowable stock until repaired and certified back to service.
+
+  5. Enforce Municipal Security, Privacy, and Governance:
+     Implement scrypt password hashing, timing-safe comparison, brute-force
+     account lockouts, server-enforced RBAC with IDOR protection, administrative
+     self-lockout safeguards, surname-masked public community feedback, and an
+     immutable audit log.
+
+  6. Deliver Zero-Dependency Local Resilience:
+     Operate natively on Node.js >= 20 built-in node:sqlite in WAL mode with
+     one-command automated setup, idempotent migrations/seeding, and online hot
+     backups (VACUUM INTO).
+
+
+================================================================================
+4. SCOPE AND LIMITATIONS
+================================================================================
+
+Project Scope:
+  - Geographic & Policy Scope:
+    Designed specifically for the Municipality of Basco, Province of Batanes,
+    supporting its six official barangays (Chanarian, Ihubok I [Kayvaluganan],
+    Ihubok II [Kaychanarianan], Kayhuvokan, San Antonio, San Joaquin) and
+    enforcing minimum age >= 18 for borrower registration.
+  - User Roles Covered:
+    * Guest (unauthenticated catalog and public feedback browsing)
+    * Borrower (resident account registration, catalog browsing, advance
+      reservations, active loan/receipt viewing, notifications, 3-axis feedback)
+    * Municipal Staff (catalog/inventory CRUD, reservation review queue, rental
+      desk handover/return inspection, borrowing receipts, maintenance board,
+      audit view)
+    * Administrator (full system oversight, isolated /api/v1/admin dashboard and
+      health diagnostics, user role/status management, feedback moderation, and
+      immutable audit logs)
+  - Functional Modules Implemented:
+    9 domain modules (Authentication, Users, Tools/Catalog, Reservations, Rentals
+    & Receipts, Maintenance, Feedback, Notifications, Audit Logs) plus the
+    isolated Admin perimeter.
+  - Operational Tooling:
+    Cross-platform setup scripts (setup.bat, setup.ps1, setup.sh), database
+    init/migrate/seed/reset-demo/hot-backup commands, and automated Vitest
+    test suites across all three workspace packages.
+
+Project Limitations:
+  1. In-App Notifications Only (No Live SMS Gateway):
+     Reservation approvals, handover confirmations, and return inspection alerts
+     are currently delivered exclusively through the in-app notification center
+     (/api/v1/notifications). External cellular SMS dispatch (e.g., Semaphore or
+     Twilio) is deferred to Phase 3 due to intermittent cellular coverage and
+     external gateway subscription requirements.
+
+  2. Single-Node SQLite Write Concurrency:
+     SQLite enforces a single-writer lock. While WAL mode enables concurrent
+     reads alongside writes and a 5,000 ms busy_timeout queues brief write
+     contention, MCTEB targets a single municipal server (~9,000 residents and
+     ~10 concurrent desk staff). Scaling to a multi-server province-wide
+     deployment across all Batanes municipalities would require swapping the
+     repository SQL layer to PostgreSQL.
+
+  3. Free Civic Lending Model (No Financial/Payment Gateway):
+     By municipal policy, tool borrowing is free of rental fees or deposits. All
+     legacy fee/deposit/penalty/payment tables and columns were explicitly purged
+     in schema migrations (backend/db/migrate.ts); online payment gateways are
+     out of scope.
+
+  4. Local Image Storage & Keyword-Based Image Moderation:
+     Equipment photos (up to 5 per tool) and user avatars support URLs or Base64
+     data URLs stored in SQLite/localStorage, and automated image moderation
+     (packages/shared/src/image-moderation.ts) performs MIME-type checks,
+     SVG XSS/script sanitization, and filename/payload keyword filtering rather
+     than external cloud vision AI inference (ensuring offline autonomy).
+
+  5. Static Frontend Route Bundling:
+     Page components in frontend/src/app/routes.tsx are imported statically
+     rather than code-split with React.lazy(), resulting in a single minified
+     frontend bundle (~516 kB) that loads in <200 ms on local LANs.
+
+
+================================================================================
+5. FUNCTIONAL AND NON-FUNCTIONAL REQUIREMENTS
+================================================================================
+
+5.1 Functional Requirements (FR)
+--------------------------------
+  FR-1  Resident Registration & Eligibility Verification:
+        Users can register as Borrowers by providing full name, email, password
+        (min 8 chars), phone, birth_date (YYYY-MM-DD), Basco barangay, province
+        (default 'Batanes'), and residential address. The system rejects
+        registrants under 18 years old both in Zod validation and AuthService.
+
+  FR-2  Authentication, Sessions & Brute-Force Protection:
+        Users log in via email and password. Sessions issue a 32-byte random
+        token stored in SQLite (sessions) for 7 days and delivered via HTTP-only
+        cookie (mcteb_session) and JSON bearer token. Logout deletes the session
+        immediately. Five consecutive failed login attempts lock the account for
+        15 minutes.
+
+  FR-3  Equipment Catalog Discovery & Inventory Management:
+        Guests and authenticated users can search, filter (by category,
+        availability, condition, owner), and sort catalog tools, and inspect
+        multi-image galleries (up to 5 photos), serial numbers, quantities, and
+        specifications. Municipal Staff and Administrators can create, edit,
+        verify serial number uniqueness, archive, and delete tools. Borrowers
+        are strictly blocked (403 Forbidden) from modifying catalog inventory.
+
+  FR-4  Advance Reservation Lifecycle:
+        Borrowers submit reservation requests specifying tool, quantity, pickup
+        and return dates, and purpose. The backend checks tool status (blocking
+        Archived/Damaged tools) and overlapping date inventory capacity. Staff
+        review Pending requests (Approve or Reject with notes), while borrowers
+        or staff can cancel Pending/Approved bookings.
+
+  FR-5  Physical Handover Desk & Return Inspection:
+        At the physical desk, Municipal Staff or Administrators release tools
+        (with optional reservation linkage), atomically decrementing
+        available_quantity, creating a Borrowed rental record, and marking the
+        originating reservation Completed. Upon return, staff record returned
+        condition and inspection notes, incrementing available_quantity and
+        flagging damaged/needs-repair tools to 'Maintenance' availability.
+
+  FR-6  Tool Borrowing Receipt Generation & Export:
+        Borrowers and staff can open, edit, print, and download an 8-section
+        Tool Borrowing Receipt Form pre-filled from rental or approved
+        reservation records (Organization Info, Borrower Info, Tool Info,
+        Borrowing Schedule, Return Details, Status Flags, Warning/Penalty Terms,
+        and Approval Signatures) as an A4 PDF soft copy or Word (.doc) file.
+
+  FR-7  Equipment Maintenance & Repair Board:
+        Staff and Administrators can file maintenance defect reports with
+        severity levels (Minor, Moderate, Severe, Critical). Severe/Critical
+        reports automatically switch the tool to Maintenance / Needs Repair.
+        Updating a ticket to Completed with return_to_service=true restores the
+        tool to Available / Good.
+
+  FR-8  Community Feedback & Privacy-Preserving Moderation:
+        Borrowers submit 3-axis ratings (overall_rating, tool_condition_rating,
+        service_rating, 1-5) and comments. The public endpoint masks reviewer
+        surnames (e.g., "Ana R."). Administrators can moderate public visibility
+        (is_public).
+
+  FR-9  In-App Notifications:
+        The system dispatches alerts to users upon registration, reservation
+        submission/approval/rejection/cancellation, rental release, return
+        inspection, and role/status updates, with unread counters and deep
+        links.
+
+  FR-10 Administrative Perimeter & Audit Trail:
+        Administrators access /api/v1/admin/overview, /api/v1/admin/health, user
+        management (role/status changes with self-suspension and sole-admin
+        demotion safeguards), and read-only security audit logs (audit_logs).
+
+5.2 Non-Functional Requirements (NFR)
+------------------------------------
+  NFR-1 Reliability & Data Atomicity:
+        All multi-table mutations execute within BEGIN IMMEDIATE ... COMMIT /
+        ROLLBACK atomic wrappers (db.atomic()). SQLite runs in WAL mode with
+        foreign_keys=ON, synchronous=NORMAL, and busy_timeout=5000.
+
+  NFR-2 Security & Access Control:
+        Passwords use node:crypto scrypt with 16-byte random salts and 64-byte
+        keys verified via crypto.timingSafeEqual. All SQL queries use
+        parameterized prepared statements. Helmet CSP, CORS origin allowlisting,
+        IP rate limiting, and Zod payload validation protect all endpoints.
+
+  NFR-3 Maintainability & Type Safety:
+        100% TypeScript (.ts/.tsx) application code compiled under strict flags
+        (strict: true, noImplicitAny: true, strictNullChecks: true). Single
+        source of truth for DTOs and schemas in @mcteb/shared.
+
+  NFR-4 Portability & Zero Native Build Overhead:
+        Uses Node.js >= 20 built-in node:sqlite (DatabaseSync), requiring no
+        external database service or C++ compiler across Windows 10/11, macOS,
+        and Ubuntu Linux.
+
+  NFR-5 Usability & Responsiveness:
+        Responsive UI built with Tailwind CSS v3.4 supporting desktop sidebar
+        and mobile drawer layouts, dark/light theme persistence, accessible form
+        labels, and clear feedback states (Alert, Badge, Skeleton, EmptyState).
+
+
+================================================================================
+6. SYSTEM ARCHITECTURE DIAGRAM
+================================================================================
+
+6.1 Monorepo Workspace Architecture (ASCII Diagram)
+---------------------------------------------------
++-----------------------------------------------------------------------------+
+|                        MCTEB PNPM WORKSPACE MONOREPO                        |
+|                                                                             |
+|  +-----------------------------------------------------------------------+  |
+|  |                 packages/shared  (@mcteb/shared)                      |  |
+|  |  - Zod Validation Schemas (user, tool, reservation, rental, etc.)     |  |
+|  |  - Domain Enums (UserRole, Barangay, ToolCategory, Status Enums)      |  |
+|  |  - RBAC Permission Matrix (Permissions, hasPermission)                |  |
+|  |  - Utilities (dates.ts [Asia/Manila], image-moderation.ts)            |  |
+|  +-----------------------------------------------------------------------+  |
+|               |                                             |               |
+|      imported | (types, schemas,                   imported | (types, enums,|
+|       enums)  v                                     schemas)| permissions)  |
+|  +-------------------------------+        +------------------------------+  |
+|  |   frontend (@mcteb/frontend)  |        |   backend (@mcteb/backend)   |  |
+|  |   React 19 + Vite 6 SPA       | HTTP/  |   Express 4 + TypeScript     |  |
+|  |   - Port: 5173 (dev proxy)    | JSON   |   - Port: 3000 (/api/v1)     |  |
+|  |   - React Router v7           |------->|   - Helmet, CORS, RateLimit  |  |
+|  |   - TanStack Query v5         |/api/v1 |   - Auth & RBAC Middleware   |  |
+|  |   - AuthContext & ThemeContext|        |   - Controllers -> Services  |  |
+|  |   - Receipt PDF/DOC Generator |        |   - Repositories -> SQLite   |  |
+|  +-------------------------------+        +------------------------------+  |
+|                                                         |                   |
+|                                                         | node:sqlite       |
+|                                                         v (DatabaseSync)    |
+|                                           +------------------------------+  |
+|                                           |         Database/            |  |
+|                                           |  - app.db (WAL + FKs ON)     |  |
+|                                           |  - backups/ (VACUUM INTO)    |  |
+|                                           +------------------------------+  |
++-----------------------------------------------------------------------------+
+
+6.2 Backend 4-Tier Layered Request Pipeline (ASCII Diagram)
+-----------------------------------------------------------
+  [Client: React 19 SPA]
+           |  HTTP Request (JSON + Cookie: mcteb_session / Bearer Token)
+           v
+  +-------------------------------------------------------------------+
+  | 1. Global Express Middleware (backend/src/app.ts)                 |
+  |    helmet() -> cors() -> express.json(10mb) -> cookieParser()     |
+  |    -> pinoHttp() -> globalRateLimiter -> authenticate()           |
+  +-------------------------------------------------------------------+
+           |
+           v
+  +-------------------------------------------------------------------+
+  | 2. Routes & Perimeter Guards (src/routes/, src/admin/)            |
+  |    /api/v1/*  and isolated /api/v1/admin/*                        |
+  |    Middleware: authRateLimiter, requireAuth, requireRole(...)     |
+  +-------------------------------------------------------------------+
+           |
+           v
+  +-------------------------------------------------------------------+
+  | 3. Controller Layer (src/controllers/, src/admin/)                |
+  |    - Parses req.body / req.params / req.query via Zod schemas     |
+  |    - Extracts client IP & authenticated req.user                  |
+  |    - Translates service results to HTTP status codes & JSON       |
+  +-------------------------------------------------------------------+
+           |
+           v
+  +-------------------------------------------------------------------+
+  | 4. Service Layer (src/services/, src/admin/admin.service.ts)      |
+  |    - Enforces municipal business rules (18+ age, stock, IDOR)     |
+  |    - Wraps multi-step writes in db.atomic() (BEGIN IMMEDIATE)     |
+  |    - Triggers AuditService.record() & NotificationsService        |
+  +-------------------------------------------------------------------+
+           |
+           v
+  +-------------------------------------------------------------------+
+  | 5. Repository Layer (src/repositories/)                           |
+  |    - Executes 100% parameterized SQLite prepared statements       |
+  |    - Maps SQL rows to typed domain interfaces                     |
+  +-------------------------------------------------------------------+
+           |
+           v
+  +-------------------------------------------------------------------+
+  | 6. SQLite Engine (backend/db/client.ts -> Database/app.db)        |
+  |    node:sqlite DatabaseSync (WAL, FKs ON, 5s busy_timeout)        |
+  +-------------------------------------------------------------------+
+
+6.3 Mermaid Reference Diagrams
+------------------------------
+```mermaid
+flowchart TD
+    Shared["packages/shared (@mcteb/shared)"] --> API["backend (@mcteb/backend)"]
+    Shared --> Web["frontend (@mcteb/frontend)"]
+    Web -->|HTTP/JSON /api/v1| API
+    API -->|node:sqlite DatabaseSync WAL| DB[("Database/app.db")]
+```
+
+```mermaid
+flowchart LR
+    Client["React SPA"] --> MW["Helmet/CORS/RateLimit/Auth"]
+    MW --> Routes["Routes & RBAC"]
+    Routes --> Ctrl["Controllers + Zod"]
+    Ctrl --> Svc["Services + db.atomic()"]
+    Svc --> Repo["Repositories (Parameterized SQL)"]
+    Repo --> DB[("SQLite WAL")]
+```
+
+
+================================================================================
+7. SYSTEM DESIGN AND COMPONENT DESCRIPTIONS
+================================================================================
+
+7.1 Shared Contract Package (packages/shared — @mcteb/shared)
+------------------------------------------------------------
+  - src/enums.ts & src/enums/index.ts:
+    Defines canonical Zod enums and TypeScript types:
+    * UserRole: 'Administrator' | 'Municipal Staff' | 'Borrower'
+    * UserStatus: 'Active' | 'Pending Verification' | 'Suspended'
+    * ToolAvailabilityStatus: 'Available' | 'Reserved' | 'Borrowed' |
+      'Returned' | 'Maintenance' | 'Damaged' | 'Archived'
+    * ToolConditionStatus: 'Excellent' | 'Good' | 'Fair' | 'Needs Repair' |
+      'Under Maintenance'
+    * ReservationStatus: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' |
+      'Completed'
+    * RentalStatus: 'Pending' | 'Reserved' | 'Borrowed' | 'Returned' |
+      'Completed'
+    * TOOL_CATEGORIES: Agriculture, Fishing, Carpentry, Construction,
+      Electrical, Power Equipment, Emergency Response
+    * MaintenanceSeverity: 'Minor' | 'Moderate' | 'Severe' | 'Critical'
+    * MaintenanceStatus: 'Reported' | 'Scheduled' | 'In Progress' |
+      'Completed' | 'Decommissioned'
+    * Barangay: Chanarian, Ihubok II (Kaychanarianan), Ihubok I (Kayvaluganan),
+      Kayhuvokan, San Antonio, San Joaquin
+  - src/permissions.ts:
+    Authoritative RBAC permission matrix (Permissions) mapping 19 granular
+    actions (e.g., CATALOG_VIEW, RESERVATION_CREATE, RENTAL_RELEASE,
+    TOOL_MANAGE, USER_ROLE_UPDATE) to allowed roles via hasPermission().
+  - src/schemas/:
+    Zod schemas for audit, feedback, maintenance, notification, rental,
+    reservation, tool, and user validation (including RegisterUserSchema 18+
+    age refinement and 5-image tool upload cap).
+  - src/dates.ts:
+    Manila timezone (Asia/Manila) date parsing and formatting helpers.
+  - src/image-moderation.ts:
+    Multi-image validator (MAX_TOOL_IMAGES = 5) enforcing valid image URLs/data
+    URLs, blocking embedded <script>/XSS payloads in SVGs, and rejecting
+    filenames/content matching prohibited categories (Explicit/adult, Violent/
+    graphic, Hate symbols, Illegal/inappropriate materials).
+
+7.2 Backend Application (backend — @mcteb/backend)
+--------------------------------------------------
+  - Database Layer (backend/db/):
+    * client.ts: Singleton wrapper around Node's DatabaseSync opening
+      Database/app.db with WAL, foreign_keys=ON, busy_timeout=5000, and
+      synchronous=NORMAL. Exposes db.atomic(fn) executing BEGIN IMMEDIATE /
+      COMMIT / ROLLBACK.
+    * schema.sql: Canonical DDL for 8 core domain tables + 16 performance
+      indexes (plus sessions table ensured by migrate.ts & session.repository.ts).
+    * init.ts, migrate.ts: Idempotent database initialization and schema
+      evolution (including automatic removal of legacy fee/payment columns and
+      backfilling user age from birth_date).
+    * seed/ (seed.ts, reset-demo.ts, validate-fixtures.ts, fixtures/index.ts):
+      Idempotent seeding of 4 demo accounts (a0000000-... prefixes) and 7
+      catalog tools (b0000000-... prefixes), guarded against accidental runs
+      when NODE_ENV=production unless ALLOW_DEMO_SEED=true.
+  - Configuration & Utilities (backend/src/config/, backend/src/utils/):
+    * env.ts: Zod-validated environment loader (NODE_ENV, PORT, DATABASE_PATH,
+      CORS_ORIGINS, SESSION_SECRET, LOG_LEVEL, ALLOW_DEMO_SEED) with automatic
+      path resolution for Database/app.db.
+    * crypto.ts: scrypt password hashing/verification, timingSafeEqual, 32-byte
+      session token generation, and UUID v4 generation.
+    * errors.ts: AppError hierarchy (400 badRequest, 401 unauthorized, 403
+      forbidden, 404 notFound, 409 conflict, 500 internal).
+    * logger.ts: Structured Pino logger instance.
+  - Middleware (backend/src/middleware/):
+    * auth.ts: extractAuthToken (cookie mcteb_session or Bearer header),
+      authenticate (validates active session, lockout_until, and Suspended
+      status), requireAuth, requireRole, and requirePermission.
+    * rateLimit.ts: globalRateLimiter (300 req / 15 min) and authRateLimiter
+      (10 req / 15 min).
+    * validate.ts: Generic Zod request validation middleware factory.
+    * errorHandler.ts: Centralized translation of AppError, ZodError, and
+      unexpected errors into standardized JSON responses.
+  - Domain Modules (src/routes/, src/controllers/, src/services/,
+    src/repositories/):
+    * Auth (auth): Registration, login, logout, session lookup (/me).
+    * Users (users): User listing, profile updates, status/role updates.
+    * Tools (tools): Catalog filtering, serial verification, tool CRUD, archival.
+    * Reservations (reservations): Advance booking creation, date overlap stock
+      check, staff review (Approve/Reject), borrower/staff cancellation.
+    * Rentals (rentals): Handover release, return inspection, atomic stock
+      adjustments, maintenance auto-flagging on damaged returns.
+    * Maintenance (maintenance): Defect reporting, repair workflow, return to
+      service restoration.
+    * Feedback (feedback): 3-axis ratings, surname-masked public reviews,
+      admin visibility moderation.
+    * Notifications (notifications): User alert feed, mark read / mark all read.
+    * Audit (audit): Immutable security and action log recording and querying.
+  - Administrative Perimeter (backend/src/admin/):
+    * admin.routes.ts, admin.controller.ts, admin.service.ts: Dedicated
+      Administrator-only route subtree (/api/v1/admin/*) serving system overview
+      counts, live SQLite health metrics (database path, size bytes, table
+      count, uptime, Node version), user management, and audit access.
+
+7.3 Frontend Application (frontend — @mcteb/frontend)
+-----------------------------------------------------
+  - Entry & Routing (src/main.tsx, src/app/App.tsx, src/app/routes.tsx):
+    Mounts React 19 SPA with QueryClientProvider (TanStack Query), AuthProvider,
+    ThemeProvider, and BrowserRouter/Routes with ProtectedRoute role guards.
+  - Layout & Reusable UI (src/components/layout/, src/components/ui/):
+    * AppShell.tsx: Role-scoped navigation sidebar/mobile drawer, unread
+      notification badge polling, user avatar resolution, and light/dark toggle.
+    * ProtectedRoute.tsx: UX-level route guard redirecting unauthenticated
+      visitors to /login and enforcing allowedRoles.
+    * UI Primitives: Alert, Badge, Button, Card, EmptyState, Input, Modal,
+      Skeleton.
+  - Specialized Components (src/components/catalog/, src/components/receipt/):
+    * CategoryNav.tsx, ToolCard.tsx, ToolDetailsModal.tsx, ToolImageGallery.tsx:
+      Catalog browsing, 3+ image carousel navigation, and Borrow Now trigger.
+    * ToolBorrowingReceiptForm.tsx, ToolBorrowingReceiptModal.tsx:
+      8-section interactive borrowing receipt form with organization header,
+      condition/status checkboxes, mandatory warning paragraphs, print preview,
+      and PDF/Word download actions.
+  - Feature Modules (src/features/):
+    * auth/         : LoginPage.tsx, RegisterPage.tsx
+    * dashboard/    : DashboardPage.tsx (role-aware overview)
+    * catalog/      : CatalogPage.tsx, ToolDetailPage.tsx
+    * reservations/ : MyReservationsPage.tsx, ReservationQueuePage.tsx,
+                      ReservationFormModal.tsx
+    * rentals/      : MyRentalsPage.tsx, RentalDeskPage.tsx,
+                      ReturnInspectionModal.tsx, BorrowingReceiptPage.tsx
+    * inventory/    : InventoryPage.tsx, ToolFormModal.tsx
+    * maintenance/  : MaintenancePage.tsx, MaintenanceReportModal.tsx
+    * feedback/     : FeedbackPage.tsx, SubmitFeedbackModal.tsx
+    * notifications/: NotificationsPage.tsx
+    * profile/      : ProfilePage.tsx
+    * admin/        : UsersPage.tsx, AuditLogPage.tsx
+  - Client Libraries (src/lib/):
+    * api.ts: Native fetch()-based apiRequest wrapper targeting /api/v1,
+      injecting Bearer token from localStorage and credentials: 'include'.
+    * auth-context.tsx & theme-context.tsx: Client auth and theme contexts.
+    * borrowing-receipt.ts: Pre-population mapper (from rentals or approved
+      reservations), native A4 PDF (%PDF-1.4) binary byte generator, and
+      Word-compatible .doc HTML export builder.
+    * local-storage.ts: Client-side image moderation helper
+      (moderateImageFileClient) and localStorage cache for avatars/tool images.
+
+
+================================================================================
+8. DATABASE DESIGN AND ENTITY RELATIONSHIP DIAGRAM (ERD)
+================================================================================
+
+8.1 Database Engine & Pragmas (backend/db/client.ts)
+----------------------------------------------------
+  Engine        : SQLite 3 via Node.js native node:sqlite (DatabaseSync)
+  Database File : Database/app.db (configurable via DATABASE_PATH)
+  Authoritative : backend/db/schema.sql (tables 1-8) + sessions (migrate.ts)
+
+  Applied Connection Pragmas:
+    PRAGMA journal_mode = WAL;       -- Concurrent readers & writers
+    PRAGMA foreign_keys = ON;        -- Strict referential integrity
+    PRAGMA busy_timeout = 5000;      -- 5s retry wait on write lock contention
+    PRAGMA synchronous = NORMAL;     -- Optimal WAL durability/speed balance
+
+8.2 Entity Relationship Diagram (ASCII)
+---------------------------------------
+  +-------------------+         1 : N          +----------------------+
+  |       users       |<-----------------------|       sessions       |
+  | PK: id            |   ON DELETE CASCADE    | PK: token            |
+  | UK: email         |                        | FK: user_id          |
+  +-------------------+                        +----------------------+
+     |   |   |   |   |
+     |   |   |   |   +----- 1 : N (CASCADE) ----> [notifications] (FK: user_id)
+     |   |   |   +--------- 1 : N (SET NULL) ---> [audit_logs]    (FK: actor_id)
+     |   |   +------------- 1 : N (SET NULL) ---> [tools]         (FK: owner_id)
+     |   |
+     |   +----- 1 : N (RESTRICT) ----+
+     |                               |
+     v 1 : N (RESTRICT)              v
+  +-------------------+      1 : N (RESTRICT)      +-------------------+
+  |   reservations    |<---------------------------|       tools       |
+  | PK: id            |                            | PK: id            |
+  | FK: user_id       |      1 : N (RESTRICT)      | FK: owner_id      |
+  | FK: tool_id       |<--+  +-------------------->|                   |
+  | FK: reviewed_by   |   |  |                     +-------------------+
+  +-------------------+   |  |                       ^       ^       ^
+            |             |  |                       |       |       |
+      1 : 0..1            |  |   +-------------------+       |       |
+     (SET NULL)           |  |   | 1:N (RESTRICT)            |       |
+            v             |  |   |                           |       |
+  +-------------------+   |  |   |   +-------------------+   |       |
+  |      rentals      |---+--+---+-->|    maintenance    |---+       |
+  | PK: id            |   |      |   | PK: id            |           |
+  | FK: reservation_id|   |      |   | FK: tool_id       |           |
+  | FK: user_id       |---+      |   | FK: rental_id     |           |
+  | FK: tool_id       |----------+   | FK: reported_by   | (users)   |
+  | FK: released_by   | (users)      +-------------------+           |
+  | FK: received_by   | (users)                                      |
+  +-------------------+                                              |
+            |                                                        |
+            +--- 1 : N (SET NULL) ---> +-------------------+         |
+                                       |     feedback      |---------+
+                                       | PK: id            | (tool_id)
+                                       | FK: user_id       | (users)
+                                       | FK: rental_id     |
+                                       +-------------------+
+
+8.3 Mermaid ER Diagram
+----------------------
+```mermaid
+erDiagram
+    users ||--o{ sessions : "authenticates"
+    users ||--o{ tools : "owns / uploads"
+    users ||--o{ reservations : "requests"
+    users ||--o{ rentals : "borrows"
+    users ||--o{ maintenance : "reports"
+    users ||--o{ feedback : "submits"
+    users ||--o{ notifications : "receives"
+    users ||--o{ audit_logs : "performs"
+    tools ||--o{ reservations : "reserved in"
+    tools ||--o{ rentals : "loaned in"
+    tools ||--o{ maintenance : "serviced in"
+    tools ||--o{ feedback : "reviewed in"
+    reservations ||--o| rentals : "fulfilled by"
+    rentals ||--o{ maintenance : "triggers"
+    rentals ||--o{ feedback : "rated in"
+```
+
+8.4 Relational Table Specifications (9 Tables)
+----------------------------------------------
+  1. users
+     - Key Columns : id (TEXT PK), full_name, email (UNIQUE), password_hash,
+                     phone, birth_date, barangay, province (DEFAULT 'Batanes'),
+                     age (INTEGER), avatar_url, address, role, status,
+                     failed_login_attempts (DEFAULT 0), lockout_until,
+                     created_at, updated_at.
+     - Constraints : role CHECK IN ('Administrator','Municipal Staff',
+                     'Borrower'); status CHECK IN ('Active',
+                     'Pending Verification','Suspended').
+
+  2. tools
+     - Key Columns : id (TEXT PK), name, category, description, specifications,
+                     availability_status, condition_status, total_quantity
+                     (DEFAULT 1), available_quantity (DEFAULT 1), serial_number,
+                     image_url, images_json, owner_id (FK users SET NULL),
+                     created_at, updated_at.
+     - Constraints : availability_status CHECK IN ('Available','Reserved',
+                     'Borrowed','Returned','Maintenance','Damaged','Archived');
+                     condition_status CHECK IN ('Excellent','Good','Fair',
+                     'Needs Repair','Under Maintenance').
+
+  3. reservations
+     - Key Columns : id (TEXT PK), user_id (FK users RESTRICT), tool_id
+                     (FK tools RESTRICT), quantity (DEFAULT 1), pickup_date,
+                     return_date, purpose, status (DEFAULT 'Pending'),
+                     staff_notes, reviewed_by (FK users SET NULL), reviewed_at,
+                     created_at, updated_at.
+     - Constraints : status CHECK IN ('Pending','Approved','Rejected',
+                     'Cancelled','Completed').
+
+  4. rentals
+     - Key Columns : id (TEXT PK), reservation_id (FK reservations SET NULL),
+                     user_id (FK users RESTRICT), tool_id (FK tools RESTRICT),
+                     quantity (DEFAULT 1), due_date, returned_at, status
+                     (DEFAULT 'Borrowed'), initial_condition,
+                     returned_condition, inspection_notes, released_by
+                     (FK users SET NULL), received_by (FK users SET NULL),
+                     created_at, updated_at.
+     - Constraints : status CHECK IN ('Pending','Reserved','Borrowed',
+                     'Returned','Completed'); initial_condition &
+                     returned_condition CHECK IN ('Excellent','Good','Fair',
+                     'Needs Repair','Under Maintenance').
+
+  5. maintenance
+     - Key Columns : id (TEXT PK), tool_id (FK tools RESTRICT), rental_id
+                     (FK rentals SET NULL), reported_by (FK users RESTRICT),
+                     issue_description, severity, status (DEFAULT 'Reported'),
+                     technician_name, scheduled_date, completed_at,
+                     resolution_notes, created_at, updated_at.
+     - Constraints : severity CHECK IN ('Minor','Moderate','Severe',
+                     'Critical'); status CHECK IN ('Reported','Scheduled',
+                     'In Progress','Completed','Decommissioned').
+
+  6. feedback
+     - Key Columns : id (TEXT PK), user_id (FK users RESTRICT), tool_id
+                     (FK tools RESTRICT), rental_id (FK rentals SET NULL),
+                     overall_rating, tool_condition_rating, service_rating,
+                     comments, is_public (DEFAULT 1), created_at.
+     - Constraints : Ratings CHECK BETWEEN 1 AND 5; is_public CHECK IN (0, 1).
+
+  7. notifications
+     - Key Columns : id (TEXT PK), user_id (FK users CASCADE), title, message,
+                     type, link_url, is_read (DEFAULT 0), created_at.
+     - Constraints : type CHECK IN ('info','success','warning','danger');
+                     is_read CHECK IN (0, 1).
+
+  8. audit_logs
+     - Key Columns : id (TEXT PK), actor_id (FK users SET NULL), actor_name,
+                     action, target_type, target_id, details, ip_address,
+                     created_at.
+
+  9. sessions (created in migrate.ts & SessionRepository)
+     - Key Columns : token (TEXT PK), user_id (FK users CASCADE), created_at,
+                     expires_at.
+
+8.5 Database Performance Indexes (17 Indexes Total)
+---------------------------------------------------
+  From schema.sql (16 indexes):
+    idx_users_email, idx_tools_category, idx_tools_availability,
+    idx_tools_serial, idx_tools_owner, idx_reservations_user,
+    idx_reservations_tool, idx_reservations_status, idx_rentals_user,
+    idx_rentals_tool, idx_rentals_status, idx_maintenance_tool,
+    idx_maintenance_status, idx_feedback_tool,
+    idx_notifications_user_unread (user_id, is_read), idx_audit_logs_created.
+  From migrate.ts / SessionRepository (1 index):
+    idx_sessions_user (user_id).
+
+
+================================================================================
+9. SYSTEM INTEGRATION AND COMMUNICATION EXPLANATION
+================================================================================
+
+9.1 Shared Contract Integration (@mcteb/shared)
+-----------------------------------------------
+  Both frontend and backend import validation schemas, domain enums, permission
+  constants, and TypeScript interfaces directly from @mcteb/shared. When a form
+  is submitted on the frontend (e.g., RegisterUserSchema or CreateToolSchema),
+  the exact same Zod validation rules and TypeScript contract execute on the
+  backend controller, eliminating schema drift between client and server.
+
+9.2 Client-Server HTTP/JSON Communication
+-----------------------------------------
+  - Development Proxy: Vite dev server on http://localhost:5173 proxies all
+    /api/* requests to http://localhost:3000 (frontend/vite.config.ts),
+    eliminating CORS preflight friction during local development.
+  - API Client (frontend/src/lib/api.ts): All client requests pass through
+    apiRequest<T>() using native fetch() with Content-Type: application/json,
+    credentials: 'include' (sending the mcteb_session HTTP-only cookie), and
+    Authorization: Bearer <token> read from localStorage ('mcteb_token').
+  - Server State Caching: TanStack Query (@tanstack/react-query v5) caches
+    REST responses, manages loading/error states, and invalidates queries after
+    mutations.
+
+9.3 Core End-to-End Transactional Workflows
+-------------------------------------------
+  1. Authentication & Session Establishment:
+     User submits credentials -> authRateLimiter checks IP quota (10 req / 15m)
+     -> AuthController.login parses LoginSchema -> AuthService.login checks
+     lockout_until -> crypto.verifyPassword runs scrypt + timingSafeEqual ->
+     on failure, increments failed_login_attempts (locks for 15 min at 5); on
+     success, resets counter, creates 7-day session in SQLite, records
+     USER_LOGIN in audit_logs, sets mcteb_session HTTP-only cookie, and returns
+     { user, token }.
+
+  2. Advance Reservation Submission & Staff Review:
+     Borrower submits POST /api/v1/reservations -> ReservationsService validates
+     tool availability status and checks overlapping approved/pending quantity
+     against total_quantity -> inside db.atomic(), inserts Pending reservation,
+     writes RESERVATION_CREATED audit log, notifies borrower, and dispatches
+     alerts to all Municipal Staff and Administrators. When staff executes
+     PATCH /api/v1/reservations/:id/review, an atomic transaction updates status
+     (Approved/Rejected), records audit log, and notifies the borrower.
+
+  3. Physical Handover Release & Return Inspection:
+     - Handover (POST /api/v1/rentals/release): Inside db.atomic(), verifies
+       available_quantity >= quantity, creates Borrowed rental record,
+       decrements tools.available_quantity, marks linked reservation Completed,
+       writes RENTAL_RELEASED audit log, and notifies the borrower.
+     - Return (POST /api/v1/rentals/:id/return): Inside db.atomic(), records
+       returned_condition and inspection_notes, sets rental to Returned,
+       increments tools.available_quantity, and if returned_condition is
+       'Needs Repair' or 'Under Maintenance', updates tool availability_status to
+       'Maintenance' and condition_status accordingly, logs RENTAL_RETURNED, and
+       notifies the borrower.
+
+
+================================================================================
+10. APIS, MIDDLEWARE, PROTOCOLS, AND INTEGRATION TECHNOLOGIES USED
+================================================================================
+
+10.1 Protocols & Data Formats
+-----------------------------
+  - Transport & API Style : HTTP/1.1 RESTful JSON API (/api/v1/*)
+  - Character Encoding    : UTF-8
+  - Date/Time Standard    : ISO-8601 strings & Asia/Manila timezone formatting
+  - Media Format          : Static SVG/image URLs & Base64 Data URLs (<= 5/tool)
+  - Receipt Export Formats: Native binary A4 PDF (%PDF-1.4, 595.28 x 841.89 pt)
+                            and Word-compatible HTML document (.doc)
+
+10.2 Complete Backend Endpoint Catalog
+--------------------------------------
+  Health Check:
+    GET    /health                             Public server status & uptime
+
+  Authentication (/api/v1/auth):
+    POST   /api/v1/auth/register               Register 18+ resident (rate-ltd)
+    POST   /api/v1/auth/login                  Authenticate user (rate-ltd)
+    POST   /api/v1/auth/logout                 Revoke session & clear cookie
+    GET    /api/v1/auth/me                     Get authenticated user profile
+
+  Users (/api/v1/users):
+    GET    /api/v1/users                       List all users (Admin)
+    GET    /api/v1/users/:id                   Get user profile (Self / Admin)
+    PATCH  /api/v1/users/:id/profile           Update profile (Self / Admin)
+    PATCH  /api/v1/users/:id/status            Update user status (Admin)
+    PATCH  /api/v1/users/:id/role              Update user role (Admin)
+
+  Tools & Equipment (/api/v1/tools):
+    GET    /api/v1/tools                       Public catalog search & filter
+    GET    /api/v1/tools/verify-serial         Check serial number uniqueness
+    GET    /api/v1/tools/:id                   Get single tool details
+    POST   /api/v1/tools                       Create tool (Staff / Admin)
+    PATCH  /api/v1/tools/:id                   Update tool (Staff / Admin)
+    PUT    /api/v1/tools/:id                   Update tool (Staff / Admin)
+    POST   /api/v1/tools/:id/archive           Archive tool (Staff / Admin)
+    DELETE /api/v1/tools/:id                   Delete tool (Staff / Admin)
+
+  Reservations (/api/v1/reservations):
+    GET    /api/v1/reservations                List reservations (role-scoped)
+    GET    /api/v1/reservations/:id            Get reservation details
+    POST   /api/v1/reservations                Submit advance booking
+    PATCH  /api/v1/reservations/:id/review     Approve / Reject (Staff / Admin)
+    POST   /api/v1/reservations/:id/cancel     Cancel reservation
+    PATCH  /api/v1/reservations/:id/cancel     Cancel reservation (alias)
+
+  Rentals (/api/v1/rentals):
+    GET    /api/v1/rentals                     List rentals (role-scoped)
+    GET    /api/v1/rentals/:id                 Get rental details
+    POST   /api/v1/rentals/release             Release tool at desk (Staff/Admin)
+    POST   /api/v1/rentals/:id/return          Return inspection (Staff/Admin)
+
+  Maintenance (/api/v1/maintenance):
+    GET    /api/v1/maintenance                 List tickets (Staff / Admin)
+    GET    /api/v1/maintenance/:id             Get ticket (Staff / Admin)
+    POST   /api/v1/maintenance                 Create defect report (Staff/Admin)
+    PATCH  /api/v1/maintenance/:id             Update/resolve ticket (Staff/Admin)
+
+  Feedback (/api/v1/feedback):
+    GET    /api/v1/feedback/public             Public reviews (surname-masked)
+    GET    /api/v1/feedback/all                All reviews (Staff / Admin)
+    POST   /api/v1/feedback                    Submit 3-axis rating (Auth)
+    PATCH  /api/v1/feedback/:id/moderate       Moderate visibility (Admin)
+
+  Notifications (/api/v1/notifications):
+    GET    /api/v1/notifications               List user's notifications (Auth)
+    PATCH  /api/v1/notifications/mark-all-read Mark all alerts read (Auth)
+    PATCH  /api/v1/notifications/:id/read      Mark single alert read (Auth)
+
+  Security Audit (/api/v1/audit):
+    GET    /api/v1/audit                       Query immutable audit logs (Admin)
+
+  Isolated Admin Perimeter (/api/v1/admin — strictly Administrator only):
+    GET    /api/v1/admin/overview              System entity counts & metrics
+    GET    /api/v1/admin/health                SQLite DB size, table count, Node
+    GET    /api/v1/admin/users                 Administrative user listing
+    PATCH  /api/v1/admin/users/:id/status      Update account status
+    PATCH  /api/v1/admin/users/:id/role        Update user role
+    GET    /api/v1/admin/audit                 Administrative audit log feed
+
+10.3 Middleware Stack & Key Libraries
+-------------------------------------
+  Backend Stack:
+    - express 4.21.2            : HTTP server & modular routers
+    - helmet 8.0.0              : CSP, X-Frame-Options, HSTS, nosniff headers
+    - cors 2.8.5                : Configurable origin allowlist + credentials
+    - cookie-parser 1.4.7       : Cookie extraction signed with SESSION_SECRET
+    - express-rate-limit 7.5.0  : Global (300/15m) & Auth (10/15m) throttling
+    - pino 9.6.0 & pino-http    : High-performance structured JSON logging
+    - zod 3.23.8                : Schema validation & environment enforcement
+    - node:sqlite DatabaseSync  : Native embedded SQLite engine (Node >= 20)
+    - node:crypto               : scrypt, timingSafeEqual, randomBytes, UUID
+
+  Frontend Stack:
+    - react 19.0.0 / react-dom  : UI rendering library
+    - vite 6.1.0                : Fast dev bundler & /api proxy
+    - react-router-dom 7.1.5    : Client-side SPA routing
+    - @tanstack/react-query 5.66: Async API caching & mutation lifecycle
+    - react-hook-form 7.54.2    : Form state & validation integration
+    - tailwindcss 3.4.17        : Utility-first responsive CSS + dark mode
+    - lucide-react 0.475.0      : Consistent iconography
+
+
+================================================================================
+11. SECURITY IMPLEMENTATION
+================================================================================
+
+  1. Password Cryptography & Timing-Attack Resistance (backend/src/utils/crypto.ts):
+     - Hashes passwords using Node's native scrypt KDF with a 16-byte random
+       hex salt and 64-byte derived key, formatted as:
+       scrypt$<salt_hex>$<hash_hex>.
+     - Verifies credentials using crypto.timingSafeEqual() after validating
+       buffer length equality, preventing microsecond timing side-channel leaks.
+
+  2. Brute-Force & Rate-Limiting Controls:
+     - authRateLimiter restricts /auth/register and /auth/login to 10 requests
+       per 15-minute window per IP; globalRateLimiter caps general API traffic at
+       300 requests per 15-minute window.
+     - AuthRepository.incrementFailedAttempts tracks consecutive failed logins
+       and locks the account (lockout_until = +15 minutes) on the 5th failure.
+       Subsequent login or authenticated requests while locked or Suspended are
+       rejected with 403 Forbidden. Successful login resets the failure counter.
+
+  3. Session Management & Token Revocation (backend/src/repositories/session.repository.ts):
+     - Generates 32-byte (256-bit) random hex tokens stored server-side in the
+       SQLite sessions table with a 7-day TTL.
+     - Supports dual transport: HTTP-only cookie (mcteb_session; httpOnly: true,
+       sameSite: 'lax', secure: true in production) and Authorization: Bearer.
+     - Logout immediately deletes the token row from SQLite and clears the
+       cookie.
+
+  4. Server-Enforced RBAC & IDOR Protection:
+     - Frontend ProtectedRoute serves strictly as a UX safeguard; all security
+       boundaries are enforced server-side via requireAuth, requireRole(), and
+       requirePermission().
+     - /api/v1/admin/* mounts requireAuth + requireRole('Administrator') globally
+       on the router perimeter.
+     - Service-layer IDOR checks ensure Borrowers can only view/cancel their own
+       reservations, rentals, and profiles (req.user.id), and are explicitly
+       blocked (403 Forbidden) from creating, editing, archiving, or deleting
+       catalog tools.
+
+  5. Administrative Deadlock & Self-Lockout Safeguards (users.service.ts):
+     - Administrators cannot suspend their own active account.
+     - The system counts remaining active Administrators and blocks suspending
+       or demoting the sole remaining active Administrator.
+
+  6. SQL Injection, XSS, & Content Poisoning Defenses:
+     - 100% of SQLite queries execute through parameterized statements
+       (db.prepare('... ?')).
+     - Dual-layer validation pairs shared Zod schemas (stripping/rejecting
+       invalid fields) with SQLite CHECK constraints and PRAGMA foreign_keys=ON.
+     - Helmet configures strict Content Security Policy (defaultSrc 'self',
+       scriptSrc 'self') and disables X-Powered-By.
+     - Image moderation (packages/shared/src/image-moderation.ts) rejects SVGs
+       containing <script>, javascript:, or inline event handlers (onload=,
+       onerror=), enforces the 5-image cap, and filters prohibited content.
+
+  7. Privacy Protection & Immutable Audit Logging:
+     - Public community feedback (/api/v1/feedback/public) truncates reviewer
+       surnames (e.g., "Ana R.") and excludes phone numbers and addresses.
+     - Security-sensitive events (USER_REGISTERED, USER_LOGIN,
+       USER_STATUS_UPDATED, USER_ROLE_UPDATED, RESERVATION_*, RENTAL_*,
+       MAINTENANCE_*, FEEDBACK_*) are persisted in audit_logs with actor ID,
+       target entity, details, and client IP address.
+
+
+================================================================================
+12. TESTING PROCEDURES AND RESULTS
+================================================================================
+
+12.1 Testing Strategy & Tooling
+-------------------------------
+  MCTEB implements a three-tier automated test suite powered by Vitest, React
+  Testing Library (jsdom), and Supertest, complemented by TypeScript static type
+  checking and ESLint analysis:
+
+    1. Shared Unit Tests (packages/shared) : Pure Zod schema & image moderation.
+    2. Backend Integration & Service Tests (backend) : Full Express middleware
+       stack + Supertest HTTP integration + ToolsService RBAC/serial tests
+       against SQLite migrations and seeded fixtures.
+    3. Frontend Unit & Component Tests (frontend) : Vitest + jsdom + Testing
+       Library verifying UI components, multi-image modals, localStorage image
+       helpers, and 8-section PDF Tool Borrowing Receipt generation.
+
+12.2 Executed Verification Commands & Observed Results
+------------------------------------------------------
+  The following checks were executed directly against the workspace:
+
+  1. TypeScript Static Typecheck (`pnpm run typecheck`):
+     - Command : pnpm --filter @mcteb/shared build && pnpm -r typecheck
+     - Result  : PASS (Exit Code 0) — Zero TypeScript compiler errors across
+                 @mcteb/shared, @mcteb/backend, and @mcteb/frontend.
+
+  2. ESLint Code Quality (`pnpm run lint`):
+     - Command : eslint .
+     - Result  : PASS (Exit Code 0) — 0 errors (349 non-blocking warnings
+                 across test mocks, utility scripts, and unsafe-any annotations).
+
+  3. Shared Package Tests (`pnpm --filter @mcteb/shared test`):
+     - File    : packages/shared/src/image-moderation.test.ts (4 tests)
+                 (Vitest also executes compiled dist/image-moderation.test.js)
+     - Result  : PASS — 4 / 4 source tests passing (8 / 8 total Vitest runs):
+                 * Accepts valid tool photos without false positives.
+                 * Rejects explicit, violent, hate symbol, and illegal uploads.
+                 * Rejects SVGs with embedded <script> or prohibited text.
+                 * Enforces maximum of 5 images per tool.
+
+  4. Backend Integration & Service Tests (`pnpm --filter @mcteb/backend test`):
+     - Files   : 2 test files — 12 / 12 tests PASSING (Duration: 1.80s)
+       (Note: Supertest binds an ephemeral 127.0.0.1 loopback socket, so
+        backend integration tests require an environment allowing localhost
+        socket binding.)
+       a) backend/src/services/tools.service.test.ts (3 / 3 PASS):
+          * Forbids Borrowers (403) from creating, updating, archiving, or
+            deleting tools while allowing Municipal Staff & Administrators.
+          * Verifies unique Serial ID numbers and throws 409 Conflict on
+            duplicate serial numbers during create or update.
+          * Enforces max 5 images limit and rejects restricted image content.
+       b) backend/src/app.test.ts (9 / 9 PASS):
+          * GET /health returns 200 OK with status='ok' and timestamp.
+          * GET /api/v1/tools returns seeded public catalog items.
+          * POST /api/v1/auth/register rejects underage (< 18) registration
+            with 400 Bad Request.
+          * POST /api/v1/auth/login succeeds with seeded demo borrower.
+          * Borrower cannot access admin-only /api/v1/users (403 Forbidden).
+          * Administrator can access /api/v1/users (200 OK).
+          * Unmapped /api/v1/nonexistent returns 404 Not Found.
+          * POST /api/v1/auth/register accepts 18+ adult borrower with province
+            and age (201 Created).
+          * Borrower receives 403 Forbidden on tool upload/edit/delete while
+            Municipal Staff can create, edit, and delete tools (201/200/404).
+
+  5. Frontend Unit & Component Tests (`pnpm --filter @mcteb/frontend test`):
+     - Files   : 4 test files — 12 / 12 tests PASSING (Duration: 12.94s)
+       a) frontend/src/app.test.ts (4 / 4 PASS):
+          * Enforces 18+ age validation on RegisterUserSchema.
+          * Persists profile pictures and single tool images in localStorage.
+          * Caps and resolves up to 5 tool images in localStorage.
+          * Moderates uploaded image files and rejects invalid MIME types.
+       b) frontend/src/components/ui/Button.test.tsx (2 / 2 PASS):
+          * Renders children correctly; disables button when isLoading=true.
+       c) frontend/src/components/catalog/ToolDetailsModal.test.tsx (2 / 2 PASS):
+          * Renders tool metadata, 3-image carousel navigation, and Borrow Now
+            action; shows Edit/Delete only when canManage=true.
+       d) frontend/src/components/receipt/ToolBorrowingReceiptForm.test.tsx
+          (4 / 4 PASS):
+          * Renders all 8 receipt sections, condition/status checkboxes, and
+            exact warning terms.
+          * Pre-populates from rental data, supports digital edits, Blank Form
+            clear, and Reset Data restoration.
+          * Generates valid A4 %PDF-1.4 soft copy bytes containing receipt
+            fields and warning terms.
+          * Pre-populates Approved reservation receipts with Borrowed status,
+            authorized personnel signer, and combined remarks.
+
+  6. Prettier Formatting Check (`pnpm run format:check`):
+     - Result  : Reported formatting drift in 183 files (exit code 1); resolved
+                 by running `pnpm run format` (`prettier --write .`) prior to
+                 final release commits.
+
+  Summary Total:
+    28 / 28 unique automated source test cases passing across 7 source test
+    files (4 shared + 12 backend + 12 frontend), with TypeScript typecheck and
+    ESLint passing with 0 errors.
+
+
+================================================================================
+13. DEPLOYMENT INFORMATION AND USER INSTRUCTIONS
+================================================================================
+
+13.1 System Prerequisites
+-------------------------
+  - Node.js : >= 20.0.0 (22.x or 24.x recommended; provides built-in node:sqlite)
+  - pnpm    : 12.x (12.15.0 configured via packageManager)
+  - OS      : Windows 10/11, macOS 12+, or Ubuntu 22.04+ (64-bit)
+  - Database: Built-in node:sqlite (no external DB installer required)
+
+13.2 Automated First-Time Setup
+-------------------------------
+  Windows (Command Prompt or PowerShell):
+    setup.bat
+    -- or --
+    powershell -ExecutionPolicy Bypass -File Development\scripts\setup.ps1
+
+  Linux / macOS (Bash):
+    chmod +x Development/scripts/setup.sh
+    ./Development/scripts/setup.sh
+
+  The automated setup verifies Node.js/pnpm, copies .env.example to .env (if
+  absent), installs dependencies via pnpm, verifies node:sqlite, initializes
+  Database/app.db, runs migrations, and seeds demo data.
+
+13.3 Manual Setup, Build, and Deployment Steps
+----------------------------------------------
+  1. Configure Environment:
+     Copy .env.example to .env and customize for the deployment environment:
+       NODE_ENV=production           (or development)
+       PORT=3000
+       DATABASE_PATH=./Database/app.db
+       CORS_ORIGINS=https://tools.basco.gov.ph
+       SESSION_SECRET=<min-32-char-cryptographically-random-secret>
+       LOG_LEVEL=info
+       ALLOW_DEMO_SEED=false
+
+  2. Install, Initialize Database, and Build:
+     pnpm install
+     pnpm run db:init
+     pnpm run db:migrate
+     pnpm run db:seed              # Optional: development/demo fixtures only
+     pnpm run build                # Builds @mcteb/shared, backend, and Vite SPA
+
+  3. Run the Application:
+     - Development Mode (Frontend :5173 + Backend :3000):
+       pnpm run dev
+       * Frontend SPA   : http://localhost:5173
+       * Backend API    : http://localhost:3000/api/v1
+       * Health Check   : http://localhost:3000/health
+     - Production Mode:
+       Serve the static bundle generated in frontend/dist/ and run the compiled
+       backend server via `pnpm --filter @mcteb/backend start` (node
+       dist/server.js) behind an Nginx or Caddy HTTPS reverse proxy.
+
+  4. Database Backup, Demo Reset, and Restoration:
+     - Online Hot Backup (safe while server is running):
+       pnpm run db:backup          # Outputs to Database/backups/mcteb-backup-*.db
+     - Reset Demo Data Only (preserves custom non-demo records):
+       pnpm run db:reset-demo -- --force
+     - Restore Backup:
+       Stop server (Development/scripts/stop.bat or Ctrl+C), copy the desired
+       snapshot over Database/app.db, and restart the server.
+
+13.4 User Instructions & Development Demo Accounts
+--------------------------------------------------
+  All seeded development demo accounts authenticate with password: Basco@2026!
+
+  Role: Borrower
+    Demo Accounts : borrower@basco.gov.ph (Ana Reyes - Barangay III)
+                    farmer@basco.gov.ph   (Pedro Batanes - Barangay IV)
+    Instructions  :
+      1. Sign in (or register a new adult 18+ Basco resident account).
+      2. Browse/search the Equipment Catalog (/catalog) by category or keyword;
+         open any tool card to inspect multi-image galleries and stock counts.
+      3. Click "Borrow Now" to submit an advance reservation (quantity, pickup
+         date, return date, purpose).
+      4. Track approvals in My Reservations (/my-reservations), check active
+         loans in My Rentals (/my-rentals), view/print/download your A4 PDF or
+         Word Tool Borrowing Receipt (/borrowing-receipt), monitor alerts in
+         Notifications (/notifications), and submit 3-axis tool reviews.
+
+  Role: Municipal Staff
+    Demo Account  : staff@basco.gov.ph (Juan dela Cruz - Barangay II)
+    Instructions  :
+      1. Open Inventory (/staff/inventory) to add new equipment (with unique
+         serial verification and up to 5 photos), edit quantities, or archive
+         retired tools.
+      2. Open Reservation Queue (/staff/reservations) to approve or reject
+         pending resident bookings with staff rationale notes.
+      3. Open Rental Desk (/staff/rentals) to hand over approved or walk-in
+         equipment, generate official Tool Borrowing Receipts, and process
+         return inspections (recording condition and defect notes).
+      4. Open Maintenance (/staff/maintenance) to log defect tickets and
+         certify repaired equipment back to Available status.
+
+  Role: Administrator
+    Demo Account  : admin@basco.gov.ph (Maria Santos - Barangay I Poblacion)
+    Instructions  :
+      1. Includes all Municipal Staff capabilities plus the isolated
+         Administrative Perimeter.
+      2. Open Users (/admin/users) to review resident accounts, update account
+         statuses (Active/Suspended), and assign roles (protected against
+         self-suspension and sole-admin demotion).
+      3. Open Audit Log (/admin/audit) and Dashboard (/dashboard) to inspect
+         immutable system audit trails, entity counts, and SQLite health.
+
+
+================================================================================
+14. CONCLUSION AND RECOMMENDATIONS
+================================================================================
+
+Conclusion:
+  The Municipal Community Tool and Equipment Bank (MCTEB) delivers a reliable,
+  secure, and maintainable digital platform tailored to the operational realities
+  of Basco, Batanes. By combining an end-to-end TypeScript monorepo
+  (@mcteb/shared, @mcteb/backend, @mcteb/frontend) with Node.js's built-in
+  node:sqlite engine in WAL mode, MCTEB eliminates external database setup
+  friction and sustains full functionality even during island WAN outages.
+  Strict 4-tier backend separation of concerns, atomic multi-row database
+  operations, scrypt + timing-safe authentication, server-enforced RBAC with
+  IDOR and admin-deadlock protections, standardized A4 PDF Tool Borrowing
+  Receipts, and 28 passing automated tests across all workspace packages ensure
+  both civic accountability and long-term technical maintainability.
+
+Recommendations for Future Phases & Operational Hardening:
+  1. Phase 2 — Hardware & Desk Automation:
+     - Add printable QR/barcode asset tags linked to tool serial numbers so desk
+       staff can scan equipment with a webcam or USB barcode scanner during
+       handover and return inspection.
+     - Integrate an HTML5 canvas digital signature pad into
+       ToolBorrowingReceiptForm.tsx for touch-screen signing at the municipal
+       rental counter.
+
+  2. Phase 3 — Cellular SMS Gateway Integration:
+     - Integrate a Philippine SMS gateway (e.g., Semaphore API) alongside the
+       existing in-app NotificationsService to dispatch SMS reminders for
+       approved pickups, overdue returns, and typhoon emergency equipment
+       availability to residents in low-connectivity barangays.
+
+  3. Phase 4 — PWA Offline Sync & Inter-Island Scaling:
+     - Implement Service Worker caching and IndexedDB offline queueing so desk
+       tablets in remote barangays or neighboring islands (Sabtang, Itbayat)
+       can record handovers offline and auto-sync when connectivity returns.
+     - If expanded into a multi-municipality provincial system, migrate the
+       repository layer (backend/src/repositories/) from SQLite to PostgreSQL;
+       the strict 4-tier architecture preserves service business logic intact.
+
+  4. Production Operations & Performance Optimization:
+     - Deploy behind Nginx or Caddy with TLS/HTTPS enabled so NODE_ENV=production
+       enforces the `secure` flag on `mcteb_session` cookies.
+     - Schedule automated cron/Task Scheduler execution of `pnpm run db:backup`
+       and configure log rotation for Pino JSON logs.
+     - Refactor static page imports in frontend/src/app/routes.tsx to use
+       React.lazy() and <Suspense> to eliminate the >500 kB Vite chunk warning,
+       and run `pnpm run format` to maintain 100% Prettier consistency.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

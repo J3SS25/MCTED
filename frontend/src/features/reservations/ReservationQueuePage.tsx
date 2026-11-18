@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../lib/api';
+import { useAuth } from '../../lib/auth-context';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -8,19 +9,22 @@ import { Input, Select } from '../../components/ui/Input';
 import { Alert } from '../../components/ui/Alert';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { ToolBorrowingReceiptModal } from '../../components/receipt/ToolBorrowingReceiptModal';
+import {
+  ToolBorrowingReceiptModal,
+  useReservationApprovalReceipt,
+} from '../../components/receipt/ToolBorrowingReceiptModal';
 import { Check, X, CalendarCheck, FileText } from 'lucide-react';
 import { formatDate } from '@mcteb/shared';
 
 export function ReservationQueuePage() {
+  const { user } = useAuth();
   const [reservations, setReservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('Pending');
 
-  // Review modal state
-  const [selectedRes, setSelectedRes] = useState<any>(null);
-  const [decision, setDecision] = useState<'Approved' | 'Rejected'>('Approved');
-  const [staffNotes, setStaffNotes] = useState('');
+  // Rejection modal state
+  const [rejectRes, setRejectRes] = useState<any>(null);
+  const [rejectNotes, setRejectNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [receiptReservation, setReceiptReservation] = useState<Record<string, unknown> | null>(
@@ -44,31 +48,32 @@ export function ReservationQueuePage() {
     fetchQueue();
   }, [filterStatus]);
 
-  const handleReviewSubmit = async (e: React.FormEvent) => {
+  const approvalFlow = useReservationApprovalReceipt({
+    reviewerName: user?.full_name,
+    onApproved: async () => {
+      setMessage('Reservation was successfully approved.');
+      await fetchQueue();
+    },
+  });
+
+  const handleRejectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRes) return;
+    if (!rejectRes) return;
     setSubmitting(true);
 
     try {
-      const updated = await apiRequest<Record<string, unknown>>(
-        `/reservations/${selectedRes.id}/review`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            decision,
-            staff_notes: staffNotes,
-          }),
-        },
-      );
+      await apiRequest(`/reservations/${rejectRes.id}/review`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          decision: 'Rejected',
+          staff_notes: rejectNotes,
+        }),
+      });
 
-      setMessage(`Reservation was successfully ${decision.toLowerCase()}.`);
-      setSelectedRes(null);
-      setStaffNotes('');
+      setMessage('Reservation was successfully rejected.');
+      setRejectRes(null);
+      setRejectNotes('');
       await fetchQueue();
-
-      if (decision === 'Approved') {
-        setReceiptReservation(updated);
-      }
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Review action failed');
     } finally {
@@ -166,7 +171,10 @@ export function ReservationQueuePage() {
                       size="sm"
                       variant="outline"
                       className="gap-1.5"
-                      onClick={() => setReceiptReservation(res)}
+                      onClick={() => {
+                        approvalFlow.closeApproval();
+                        setReceiptReservation(res);
+                      }}
                     >
                       <FileText className="h-3.5 w-3.5" />
                       Borrowing Receipt
@@ -179,8 +187,8 @@ export function ReservationQueuePage() {
                         variant="primary"
                         className="gap-1.5"
                         onClick={() => {
-                          setSelectedRes(res);
-                          setDecision('Approved');
+                          setReceiptReservation(null);
+                          approvalFlow.openApproval(res);
                         }}
                       >
                         <Check className="h-4 w-4" /> Approve
@@ -190,8 +198,8 @@ export function ReservationQueuePage() {
                         variant="danger"
                         className="gap-1.5"
                         onClick={() => {
-                          setSelectedRes(res);
-                          setDecision('Rejected');
+                          setRejectRes(res);
+                          setRejectNotes('');
                         }}
                       >
                         <X className="h-4 w-4" /> Reject
@@ -206,46 +214,54 @@ export function ReservationQueuePage() {
       )}
 
       <ToolBorrowingReceiptModal
-        isOpen={!!receiptReservation}
-        onClose={() => setReceiptReservation(null)}
-        source={receiptReservation}
+        isOpen={approvalFlow.isApproving || !!receiptReservation}
+        onClose={() => {
+          if (approvalFlow.isApproving) {
+            approvalFlow.closeApproval();
+          } else {
+            setReceiptReservation(null);
+          }
+        }}
+        source={approvalFlow.source ?? receiptReservation}
       />
 
-      {/* Decision Modal */}
-      {selectedRes && (
+      {/* Rejection Decision Modal */}
+      {rejectRes && (
         <Modal
-          isOpen={!!selectedRes}
-          onClose={() => setSelectedRes(null)}
-          title={`${decision} Reservation Request`}
+          isOpen={!!rejectRes}
+          onClose={() => {
+            setRejectRes(null);
+            setRejectNotes('');
+          }}
+          title="Reject Reservation Request"
         >
-          <form onSubmit={handleReviewSubmit} className="space-y-4">
+          <form onSubmit={handleRejectSubmit} className="space-y-4">
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              You are about to mark this request for <strong>{selectedRes.tool_name}</strong> by{' '}
-              <strong>{selectedRes.borrower_name}</strong> as <Badge status={decision} />.
+              You are about to mark this request for <strong>{rejectRes.tool_name}</strong> by{' '}
+              <strong>{rejectRes.borrower_name}</strong> as <Badge status="Rejected" />.
             </p>
 
             <Input
               label="Staff Decision Notes / Reason"
-              placeholder={
-                decision === 'Approved'
-                  ? 'Verified ID and safety equipment'
-                  : 'Reason for rejection (e.g. maintenance conflict)'
-              }
-              value={staffNotes}
-              onChange={(e) => setStaffNotes(e.target.value)}
-              required={decision === 'Rejected'}
+              placeholder="Reason for rejection (e.g. maintenance conflict)"
+              value={rejectNotes}
+              onChange={(e) => setRejectNotes(e.target.value)}
+              required
             />
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => setSelectedRes(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setRejectRes(null);
+                  setRejectNotes('');
+                }}
+              >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                variant={decision === 'Approved' ? 'primary' : 'danger'}
-                isLoading={submitting}
-              >
-                Confirm {decision}
+              <Button type="submit" variant="danger" isLoading={submitting}>
+                Confirm Rejection
               </Button>
             </div>
           </form>

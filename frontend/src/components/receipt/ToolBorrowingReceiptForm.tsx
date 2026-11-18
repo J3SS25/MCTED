@@ -48,8 +48,16 @@ export function ToolBorrowingReceiptForm({
   );
   const [isPrintPreview, setIsPrintPreview] = useState(false);
 
+  const prevSourceKeyRef = useRef<unknown>(
+    initialSource ? (initialSource.id ?? initialSource) : null,
+  );
+
   useEffect(() => {
-    setFormData(createDefaultBorrowingReceipt(initialSource));
+    const nextKey = initialSource ? (initialSource.id ?? initialSource) : null;
+    if (prevSourceKeyRef.current !== nextKey) {
+      prevSourceKeyRef.current = nextKey;
+      setFormData(createDefaultBorrowingReceipt(initialSource));
+    }
   }, [initialSource]);
 
   const updateField = <K extends keyof BorrowingReceiptData>(
@@ -121,10 +129,10 @@ export function ToolBorrowingReceiptForm({
     label: string,
     value: string,
     onChange: (val: string) => void,
-    options?: { type?: 'text' | 'date' | 'time' | 'number'; placeholder?: string; min?: string },
+    options?: { type?: 'text' | 'date' | 'number'; placeholder?: string; min?: string },
   ) => {
     const inputType = options?.type ?? 'text';
-    const isDateOrTime = inputType === 'date' || inputType === 'time';
+    const isDate = inputType === 'date';
 
     return (
       <div className="space-y-0.5">
@@ -143,10 +151,10 @@ export function ToolBorrowingReceiptForm({
           placeholder={isPrintPreview ? '' : options?.placeholder}
           readOnly={isPrintPreview}
           className={`${inputBaseClass} ${
-            isDateOrTime || isPrintPreview ? 'print:hidden' : 'print:border-0 print:border-b print:border-slate-500 print:rounded-none print:bg-transparent print:px-0 print:py-0.5'
-          } ${isPrintPreview && isDateOrTime ? 'hidden' : ''}`}
+            isDate || isPrintPreview ? 'print:hidden' : 'print:border-0 print:border-b print:border-slate-500 print:rounded-none print:bg-transparent print:px-0 print:py-0.5'
+          } ${isPrintPreview && isDate ? 'hidden' : ''}`}
         />
-        {(isDateOrTime || isPrintPreview) && (
+        {(isDate || isPrintPreview) && (
           <div
             aria-hidden="true"
             className={`${
@@ -502,7 +510,7 @@ export function ToolBorrowingReceiptForm({
             <h2 className="bg-slate-100 border-b border-slate-300 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-800">
               4. Borrowing Schedule
             </h2>
-            <div className="p-2.5 grid grid-cols-2 gap-x-3 gap-y-2">
+            <div className="p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2">
               {renderPrintableField(
                 `${formId}-date-borrowed`,
                 'Date Borrowed',
@@ -511,25 +519,11 @@ export function ToolBorrowingReceiptForm({
                 { type: 'date' },
               )}
               {renderPrintableField(
-                `${formId}-time-borrowed`,
-                'Time Borrowed',
-                formData.timeBorrowed,
-                (v) => updateField('timeBorrowed', v),
-                { type: 'time' },
-              )}
-              {renderPrintableField(
                 `${formId}-expected-return-date`,
                 'Expected Return Date',
                 formData.expectedReturnDate,
                 (v) => updateField('expectedReturnDate', v),
                 { type: 'date' },
-              )}
-              {renderPrintableField(
-                `${formId}-expected-return-time`,
-                'Expected Return Time',
-                formData.expectedReturnTime,
-                (v) => updateField('expectedReturnTime', v),
-                { type: 'time' },
               )}
             </div>
           </section>
@@ -540,22 +534,13 @@ export function ToolBorrowingReceiptForm({
               5. Return Details
             </h2>
             <div className="p-2.5 space-y-2">
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                {renderPrintableField(
-                  `${formId}-actual-return-date`,
-                  'Actual Return Date',
-                  formData.actualReturnDate,
-                  (v) => updateField('actualReturnDate', v),
-                  { type: 'date' },
-                )}
-                {renderPrintableField(
-                  `${formId}-actual-return-time`,
-                  'Actual Return Time',
-                  formData.actualReturnTime,
-                  (v) => updateField('actualReturnTime', v),
-                  { type: 'time' },
-                )}
-              </div>
+              {renderPrintableField(
+                `${formId}-actual-return-date`,
+                'Actual Return Date',
+                formData.actualReturnDate,
+                (v) => updateField('actualReturnDate', v),
+                { type: 'date' },
+              )}
 
               <div className="space-y-1">
                 <span className="block text-[10px] font-bold uppercase tracking-wide text-slate-600">

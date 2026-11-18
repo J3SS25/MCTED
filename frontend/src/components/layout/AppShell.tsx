@@ -17,7 +17,6 @@ import {
   LogOut,
   Menu,
   X,
-  FileText,
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth-context';
 import { useTheme } from '../../lib/theme-context';
@@ -91,11 +90,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         icon: <CalendarCheck className="h-5 w-5" />,
       },
       { label: 'My Rentals', href: '/my-rentals', icon: <ShoppingBag className="h-5 w-5" /> },
-      {
-        label: 'Borrowing Receipt Form',
-        href: '/borrowing-receipt',
-        icon: <FileText className="h-5 w-5" />,
-      },
       { label: 'Feedback', href: '/feedback', icon: <MessageSquare className="h-5 w-5" /> },
       {
         label: 'Notifications',
@@ -119,11 +113,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         icon: <CalendarCheck className="h-5 w-5" />,
       },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
-      {
-        label: 'Borrowing Receipt Form',
-        href: '/borrowing-receipt',
-        icon: <FileText className="h-5 w-5" />,
-      },
       {
         label: 'Inventory Management',
         href: '/staff/inventory',
@@ -162,11 +151,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         icon: <CalendarCheck className="h-5 w-5" />,
       },
       { label: 'Rental Desk', href: '/staff/rentals', icon: <ShoppingBag className="h-5 w-5" /> },
-      {
-        label: 'Borrowing Receipt Form',
-        href: '/borrowing-receipt',
-        icon: <FileText className="h-5 w-5" />,
-      },
       {
         label: 'Inventory Management',
         href: '/staff/inventory',

@@ -34,13 +34,10 @@ export interface BorrowingReceiptData {
 
   // 4. Borrowing Schedule
   dateBorrowed: string;
-  timeBorrowed: string;
   expectedReturnDate: string;
-  expectedReturnTime: string;
 
   // 5. Return Details
   actualReturnDate: string;
-  actualReturnTime: string;
   conditionUponReturn: ReceiptConditionOption;
   receivedBy: string;
   returnRemarks: string;
@@ -98,28 +95,6 @@ function extractIsoDate(value?: string | null): string {
   return parsed.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
 }
 
-function extractTime24(value?: string | null): string {
-  if (!value) return '';
-  const trimmed = value.trim();
-  // Pure date string (YYYY-MM-DD) has no time component
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return '';
-
-  // SQLite DATETIME('now') returns 'YYYY-MM-DD HH:MM:SS' in UTC
-  const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(trimmed)
-    ? `${trimmed.replace(' ', 'T')}Z`
-    : trimmed;
-
-  const parsed = new Date(normalized);
-  if (Number.isNaN(parsed.getTime())) return '';
-
-  return parsed.toLocaleTimeString('en-GB', {
-    timeZone: 'Asia/Manila',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-}
-
 export function createBlankBorrowingReceipt(): BorrowingReceiptData {
   return {
     receiptNo: '',
@@ -139,11 +114,8 @@ export function createBlankBorrowingReceipt(): BorrowingReceiptData {
     conditionBefore: '',
     toolRemarks: '',
     dateBorrowed: '',
-    timeBorrowed: '',
     expectedReturnDate: '',
-    expectedReturnTime: '',
     actualReturnDate: '',
-    actualReturnTime: '',
     conditionUponReturn: '',
     receivedBy: '',
     returnRemarks: '',
@@ -201,7 +173,6 @@ export function createDefaultBorrowingReceipt(
     purpose && staffNotes ? `${purpose} (Staff Note: ${staffNotes})` : purpose || staffNotes;
 
   const dateBorrowed = extractIsoDate(pickupDateRaw);
-  const timeBorrowed = extractTime24(str('reviewed_at') || str('created_at'));
   const dateSigned =
     extractIsoDate(str('reviewed_at')) || dateBorrowed || extractIsoDate(str('created_at'));
 
@@ -223,11 +194,8 @@ export function createDefaultBorrowingReceipt(
     conditionBefore,
     toolRemarks,
     dateBorrowed,
-    timeBorrowed,
     expectedReturnDate: extractIsoDate(dueDateRaw),
-    expectedReturnTime: '',
     actualReturnDate: extractIsoDate(returnedAtRaw),
-    actualReturnTime: extractTime24(returnedAtRaw),
     conditionUponReturn,
     receivedBy: str('received_by_name'),
     returnRemarks: str('inspection_notes'),
@@ -431,18 +399,8 @@ export function generateBorrowingReceiptPdfBytes(data: BorrowingReceiptData): Ui
   drawText(`Date Borrowed      : ${fieldValue(data.dateBorrowed, '__________________')}`, left + 6, y, {
     size: 8.5,
   });
-  drawText(`Time Borrowed       : ${fieldValue(data.timeBorrowed, '______________')}`, left + 275, y, {
-    size: 8.5,
-  });
-  y -= 14;
   drawText(
     `Expected Return Date: ${fieldValue(data.expectedReturnDate, '_________________')}`,
-    left + 6,
-    y,
-    { size: 8.5 },
-  );
-  drawText(
-    `Expected Return Time: ${fieldValue(data.expectedReturnTime, '______________')}`,
     left + 275,
     y,
     { size: 8.5 },
@@ -454,12 +412,6 @@ export function generateBorrowingReceiptPdfBytes(data: BorrowingReceiptData): Ui
   drawText(
     `Actual Return Date : ${fieldValue(data.actualReturnDate, '__________________')}`,
     left + 6,
-    y,
-    { size: 8.5 },
-  );
-  drawText(
-    `Actual Return Time  : ${fieldValue(data.actualReturnTime, '______________')}`,
-    left + 275,
     y,
     { size: 8.5 },
   );

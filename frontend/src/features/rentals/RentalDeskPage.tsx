@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { apiRequest } from '../../lib/api';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -73,22 +72,13 @@ export function RentalDeskPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Municipal Tool Rental Desk
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Coordinate equipment pickup handovers and process return inspections.
-          </p>
-        </div>
-
-        <Link to="/borrowing-receipt">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <FileText className="h-4 w-4" />
-            New / Blank Receipt Form
-          </Button>
-        </Link>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          Municipal Tool Rental Desk
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Coordinate equipment pickup handovers and process return inspections.
+        </p>
       </div>
 
       {/* Section 1: Ready for Pickup (Approved Reservations) */}

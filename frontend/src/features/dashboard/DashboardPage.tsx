@@ -1,18 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
 import { apiRequest } from '../../lib/api';
+import { Alert } from '../../components/ui/Alert';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { ToolBorrowingReceiptModal } from '../../components/receipt/ToolBorrowingReceiptModal';
+import {
+  ToolBorrowingReceiptModal,
+  useReservationApprovalReceipt,
+} from '../../components/receipt/ToolBorrowingReceiptModal';
 import {
   CalendarCheck,
   ShoppingBag,
   ClipboardList,
   Wrench,
   ArrowRight,
+  Check,
   CheckCircle,
   AlertCircle,
   Activity,
@@ -56,83 +61,92 @@ export function DashboardPage() {
   const [recentItems, setRecentItems] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState<string | null>(null);
   const [receiptReservation, setReceiptReservation] = useState<Record<string, unknown> | null>(
     null,
   );
 
-  useEffect(() => {
-    async function loadDashboardData() {
-      try {
-        if (!user) return;
+  const loadDashboardData = useCallback(async () => {
+    try {
+      if (!user) return;
 
-        if (user.role === 'Borrower') {
-          const [res, rent, toolsRes] = await Promise.all([
-            apiRequest<any[]>('/reservations'),
-            apiRequest<any[]>('/rentals'),
-            apiRequest<{ items: Tool[]; total: number }>('/tools?limit=100'),
-          ]);
+      if (user.role === 'Borrower') {
+        const [res, rent, toolsRes] = await Promise.all([
+          apiRequest<any[]>('/reservations'),
+          apiRequest<any[]>('/rentals'),
+          apiRequest<{ items: Tool[]; total: number }>('/tools?limit=100'),
+        ]);
 
-          const tools = toolsRes.items || [];
-          setStats((prev) => ({
-            ...prev,
-            reservationsCount: res.length,
-            rentalsCount: rent.filter((r) => r.status === 'Borrowed').length,
-            completedRentalsCount: rent.filter(
-              (r) => r.status === 'Returned' || r.status === 'Completed',
-            ).length,
-            maintenanceCount: 0,
-            inventory: {
-              ...prev.inventory,
-              total: tools.length,
-              Available: tools.filter((t) => t.availability_status === 'Available').length,
-            },
-          }));
-
-          setRecentItems(res.slice(0, 5));
-        } else {
-          // Staff / Admin
-          const [res, rent, maint, toolsRes, auditRes] = await Promise.all([
-            apiRequest<any[]>('/reservations'),
-            apiRequest<any[]>('/rentals'),
-            apiRequest<any[]>('/maintenance'),
-            apiRequest<{ items: Tool[]; total: number }>('/tools?limit=100'),
-            apiRequest<{ items: AuditLog[] }>('/audit?limit=6').catch(() => ({ items: [] })),
-          ]);
-
-          const tools = toolsRes.items || [];
-          const inventoryCounts: InventoryStatusCounts = {
+        const tools = toolsRes.items || [];
+        setStats((prev) => ({
+          ...prev,
+          reservationsCount: res.length,
+          rentalsCount: rent.filter((r) => r.status === 'Borrowed').length,
+          completedRentalsCount: rent.filter(
+            (r) => r.status === 'Returned' || r.status === 'Completed',
+          ).length,
+          maintenanceCount: 0,
+          inventory: {
+            ...prev.inventory,
             total: tools.length,
             Available: tools.filter((t) => t.availability_status === 'Available').length,
-            Borrowed: tools.filter((t) => t.availability_status === 'Borrowed').length,
-            Reserved: tools.filter((t) => t.availability_status === 'Reserved').length,
-            Maintenance: tools.filter(
-              (t) => t.availability_status === 'Maintenance' || t.availability_status === 'Damaged',
-            ).length,
-            Archived: tools.filter((t) => t.availability_status === 'Archived').length,
-          };
+          },
+        }));
 
-          setStats({
-            reservationsCount: res.filter((r) => r.status === 'Pending').length,
-            rentalsCount: rent.filter((r) => r.status === 'Borrowed').length,
-            completedRentalsCount: rent.filter(
-              (r) => r.status === 'Returned' || r.status === 'Completed',
-            ).length,
-            maintenanceCount: maint.filter((m) => m.status !== 'Completed').length,
-            inventory: inventoryCounts,
-          });
+        setRecentItems(res.slice(0, 5));
+      } else {
+        // Staff / Admin
+        const [res, rent, maint, toolsRes, auditRes] = await Promise.all([
+          apiRequest<any[]>('/reservations'),
+          apiRequest<any[]>('/rentals'),
+          apiRequest<any[]>('/maintenance'),
+          apiRequest<{ items: Tool[]; total: number }>('/tools?limit=100'),
+          apiRequest<{ items: AuditLog[] }>('/audit?limit=6').catch(() => ({ items: [] })),
+        ]);
 
-          setRecentItems(res.filter((r) => r.status === 'Pending').slice(0, 5));
-          setActivityLogs(auditRes.items || []);
-        }
-      } catch (err) {
-        console.error('Failed to load dashboard data', err);
-      } finally {
-        setLoading(false);
+        const tools = toolsRes.items || [];
+        const inventoryCounts: InventoryStatusCounts = {
+          total: tools.length,
+          Available: tools.filter((t) => t.availability_status === 'Available').length,
+          Borrowed: tools.filter((t) => t.availability_status === 'Borrowed').length,
+          Reserved: tools.filter((t) => t.availability_status === 'Reserved').length,
+          Maintenance: tools.filter(
+            (t) => t.availability_status === 'Maintenance' || t.availability_status === 'Damaged',
+          ).length,
+          Archived: tools.filter((t) => t.availability_status === 'Archived').length,
+        };
+
+        setStats({
+          reservationsCount: res.filter((r) => r.status === 'Pending').length,
+          rentalsCount: rent.filter((r) => r.status === 'Borrowed').length,
+          completedRentalsCount: rent.filter(
+            (r) => r.status === 'Returned' || r.status === 'Completed',
+          ).length,
+          maintenanceCount: maint.filter((m) => m.status !== 'Completed').length,
+          inventory: inventoryCounts,
+        });
+
+        setRecentItems(res.filter((r) => r.status === 'Pending').slice(0, 5));
+        setActivityLogs(auditRes.items || []);
       }
+    } catch (err) {
+      console.error('Failed to load dashboard data', err);
+    } finally {
+      setLoading(false);
     }
-
-    loadDashboardData();
   }, [user]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  const approvalFlow = useReservationApprovalReceipt({
+    reviewerName: user?.full_name,
+    onApproved: async () => {
+      setMessage('Reservation was successfully approved.');
+      await loadDashboardData();
+    },
+  });
 
   if (loading) {
     return (
@@ -184,6 +198,11 @@ export function DashboardPage() {
       </div>
 
       {/* Role-Aware Metric Summary Cards */}
+      {message && (
+        <Alert variant="success" onClose={() => setMessage(null)}>
+          {message}
+        </Alert>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="hover:border-civic-accent/50 transition-colors">
           <CardContent className="p-5 flex items-center justify-between">
@@ -361,17 +380,34 @@ export function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 self-end sm:self-center">
+                      <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
                         <Badge status={item.status} />
                         {(item.status === 'Approved' || item.status === 'Completed') && (
                           <Button
                             size="sm"
                             variant="outline"
                             className="gap-1.5"
-                            onClick={() => setReceiptReservation(item)}
+                            onClick={() => {
+                              approvalFlow.closeApproval();
+                              setReceiptReservation(item);
+                            }}
                           >
                             <FileText className="h-3.5 w-3.5" />
                             Borrowing Receipt
+                          </Button>
+                        )}
+                        {isStaffOrAdmin && item.status === 'Pending' && (
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            className="gap-1.5"
+                            onClick={() => {
+                              setReceiptReservation(null);
+                              approvalFlow.openApproval(item);
+                            }}
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            Approve
                           </Button>
                         )}
                         <Link to={isStaffOrAdmin ? '/staff/reservations' : `/my-reservations`}>
@@ -462,9 +498,15 @@ export function DashboardPage() {
         </div>
       </div>
       <ToolBorrowingReceiptModal
-        isOpen={!!receiptReservation}
-        onClose={() => setReceiptReservation(null)}
-        source={receiptReservation}
+        isOpen={approvalFlow.isApproving || !!receiptReservation}
+        onClose={() => {
+          if (approvalFlow.isApproving) {
+            approvalFlow.closeApproval();
+          } else {
+            setReceiptReservation(null);
+          }
+        }}
+        source={approvalFlow.source ?? receiptReservation}
       />
     </div>
   );
